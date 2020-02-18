@@ -2,20 +2,20 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define BUFFERSIZE 1024
 #define YY_DECL int alpha_yylex(void* yyval)
 
-typedef struct alpha_token_t token;
-
-token {
+struct alpha_token_t {
     unsigned int numLine;
     unsigned int numToken;
-    char    *content;
-    char    *type;
-    token *alpha_yylex;
+    char *content;
+    char *type;
+    char *extraType;
+    struct alpha_token_t *next;
 };
 
-token *HEAD; //Gloabal pointer to the start of tokens list
+struct alpha_token_t *HEAD = NULL; //Global pointer to the start of tokens list
 
-void addToken(unsigned int numline, unsigned int numToken, char *content, char *type);
+void addToken(unsigned int numLine, unsigned int numToken, char *content, char *type, char* extraType);
 
 void printTokenList();
