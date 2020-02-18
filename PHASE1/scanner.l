@@ -104,7 +104,7 @@ ID [a-zA-Z][a-zA-Z_0-9]*
 {INTEGER}       {   int bufsize = BUFFERSIZE;
                     char* fullType = malloc(sizeof(char) * bufsize);
                     strcpy(fullType, "INT_CONST\t");
-                    if(sizeof(yytext) >= bufsize){
+                    if(strlen(yytext) >= bufsize){
                         bufsize += BUFFERSIZE;
                         fullType = realloc(fullType, bufsize);
                     }
@@ -115,7 +115,7 @@ ID [a-zA-Z][a-zA-Z_0-9]*
 {REAL}          {   int bufsize = BUFFERSIZE;
                     char* fullType = malloc(sizeof(char) * bufsize);
                     strcpy(fullType, "REAL_CONST\t");
-                    if(sizeof(yytext) >= bufsize){
+                    if(strlen(yytext) >= bufsize){
                         bufsize += BUFFERSIZE;
                         fullType = realloc(fullType, bufsize);
                     }
@@ -126,7 +126,7 @@ ID [a-zA-Z][a-zA-Z_0-9]*
 {ID}            {   int bufsize = BUFFERSIZE;
                     char* fullType = malloc(sizeof(char) * bufsize);
                     strcpy(fullType, "IDENT\t");
-                    if(sizeof(yytext) >= bufsize){
+                    if(strlen(yytext) >= bufsize){
                         bufsize += BUFFERSIZE;
                         fullType = realloc(fullType, bufsize);
                     }
