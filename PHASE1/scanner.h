@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define BUFFERSIZE 1024
+#define BUFFERSIZE 256
 #define YY_DECL int alpha_yylex(void* yyval)
 
 struct alpha_token_t {
