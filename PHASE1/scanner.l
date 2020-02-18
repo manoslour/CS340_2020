@@ -57,49 +57,49 @@ ID [a-zA-Z][a-zA-Z_0-9]*
 
 %%
 
-{IF}        {addToken(yylineno, ++tokenNum, yytext, "KEYWORD IF", "<-enumerated");}
-{ELSE}      {addToken(yylineno, ++tokenNum, yytext, "KEYWORD ELSE", "<-enumerated");}
-{WHILE}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD WHILE", "<-enumerated");}
-{FOR}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD FOR", "<-enumerated");}
-{FUNCTION}  {addToken(yylineno, ++tokenNum, yytext, "KEYWORD FUNCTION", "<-enumerated");}
-{RETURN}    {addToken(yylineno, ++tokenNum, yytext, "KEYWORD RETURN", "<-enumerated");}
-{BREAK}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD BREAK", "<-enumerated");}
-{CONTINUE}  {addToken(yylineno, ++tokenNum, yytext, "KEYWORD CONTINUE", "<-enumerated");}
-{AND}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD AND", "<-enumerated");}
-{NOT}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD NOT", "<-enumerated");}
-{OR}        {addToken(yylineno, ++tokenNum, yytext, "KEYWORD OR", "<-enumerated");}
-{LOCAL}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD LOCAL", "<-enumerated");}
-{TRUE}      {addToken(yylineno, ++tokenNum, yytext, "KEYWORD TRUE", "<-enumerated");}
-{FALSE}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD FALSE", "<-enumerated");}
-{NIL}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD NIL", "<-enumerated");}
+{IF}        {addToken(yylineno, ++tokenNum, yytext, "KEYWORD IF", "\t<-enumerated");}
+{ELSE}      {addToken(yylineno, ++tokenNum, yytext, "KEYWORD ELSE", "\t<-enumerated");}
+{WHILE}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD WHILE", "\t<-enumerated");}
+{FOR}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD FOR", "\t<-enumerated");}
+{FUNCTION}  {addToken(yylineno, ++tokenNum, yytext, "KEYWORD FUNCTION", "\t<-enumerated");}
+{RETURN}    {addToken(yylineno, ++tokenNum, yytext, "KEYWORD RETURN", "\t<-enumerated");}
+{BREAK}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD BREAK", "\t<-enumerated");}
+{CONTINUE}  {addToken(yylineno, ++tokenNum, yytext, "KEYWORD CONTINUE", "\t<-enumerated");}
+{AND}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD AND", "\t<-enumerated");}
+{NOT}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD NOT", "\t<-enumerated");}
+{OR}        {addToken(yylineno, ++tokenNum, yytext, "KEYWORD OR", "\t<-enumerated");}
+{LOCAL}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD LOCAL", "\t<-enumerated");}
+{TRUE}      {addToken(yylineno, ++tokenNum, yytext, "KEYWORD TRUE", "\t<-enumerated");}
+{FALSE}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD FALSE", "\t<-enumerated");}
+{NIL}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD NIL", "\t<-enumerated");}
 
-{ASSIGN}    {addToken(yylineno, ++tokenNum, yytext, "OPERATOR ASSIGN", "<-enumerated");}
-{PLUS}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR PLUS", "<-enumerated");}
-{MINUS}     {addToken(yylineno, ++tokenNum, yytext, "OPERATOR MINUS", "<-enumerated");}
-{MULT}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR MULT", "<-enumerated");}
-{DIV}       {addToken(yylineno, ++tokenNum, yytext, "OPERATOR DIV", "<-enumerated");}
-{MOD}       {addToken(yylineno, ++tokenNum, yytext, "OPERATOR MOD", "<-enumerated");}
-{EQUAL}     {addToken(yylineno, ++tokenNum, yytext, "OPERATOR EQUAL", "<-enumerated");}
-{NOT_EQUAL}   {addToken(yylineno, ++tokenNum, yytext, "OPERATOR NOT_EQUAL", "<-enumerated");}
-{INCR}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR INCR", "<-enumerated");}
-{DECR}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR DECR", "<-enumerated");}
-{GREATER}   {addToken(yylineno, ++tokenNum, yytext, "OPERATOR GREATER", "<-enumerated");}
-{LESS}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR LESS", "<-enumerated");}
-{GREATER_EQ}    {addToken(yylineno, ++tokenNum, yytext, "OPERATOR GREATER_EQ", "<-enumerated");}
-{LESS_EQ}       {addToken(yylineno, ++tokenNum, yytext, "OPERATOR LESS_EQ", "<-enumerated");}
+{ASSIGN}    {addToken(yylineno, ++tokenNum, yytext, "OPERATOR ASSIGN", "\t<-enumerated");}
+{PLUS}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR PLUS", "\t<-enumerated");}
+{MINUS}     {addToken(yylineno, ++tokenNum, yytext, "OPERATOR MINUS", "\t<-enumerated");}
+{MULT}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR MULT", "\t<-enumerated");}
+{DIV}       {addToken(yylineno, ++tokenNum, yytext, "OPERATOR DIV", "\t<-enumerated");}
+{MOD}       {addToken(yylineno, ++tokenNum, yytext, "OPERATOR MOD", "\t<-enumerated");}
+{EQUAL}     {addToken(yylineno, ++tokenNum, yytext, "OPERATOR EQUAL", "\t<-enumerated");}
+{NOT_EQUAL}   {addToken(yylineno, ++tokenNum, yytext, "OPERATOR NOT_EQUAL", "\t<-enumerated");}
+{INCR}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR INCR", "\t<-enumerated");}
+{DECR}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR DECR", "\t<-enumerated");}
+{GREATER}   {addToken(yylineno, ++tokenNum, yytext, "OPERATOR GREATER", "\t<-enumerated");}
+{LESS}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR LESS", "\t<-enumerated");}
+{GREATER_EQ}    {addToken(yylineno, ++tokenNum, yytext, "OPERATOR GREATER_EQ", "\t<-enumerated");}
+{LESS_EQ}       {addToken(yylineno, ++tokenNum, yytext, "OPERATOR LESS_EQ", "\t<-enumerated");}
 
-{LCURLY_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION LCURLY_BRC", "<-enumerated");}
-{RCURLY_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION RCURLY_BRC", "<-enumerated");}
-{L_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION L_BRCK", "<-enumerated");}
-{R_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION R_BRCK", "<-enumerated");}
-{L_PAR}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION L_PAR", "<-enumerated");}
-{R_PAR}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION R_PAR", "<-enumerated");}
-{SEMICOL}       {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION SEMICOL", "<-enumerated");}
-{COMMA}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION COMMA", "<-enumerated");}
-{COLON}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION COLON", "<-enumerated");}
-{DCOLON}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION DCOLON", "<-enumerated");}
-{DOT}           {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION DOT", "<-enumerated");}
-{DDOT}          {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION DDOT", "<-enumerated");}
+{LCURLY_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION LCURLY_BRC", "\t<-enumerated");}
+{RCURLY_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION RCURLY_BRC", "\t<-enumerated");}
+{L_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION L_BRCK", "\t<-enumerated");}
+{R_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION R_BRCK", "\t<-enumerated");}
+{L_PAR}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION L_PAR", "\t<-enumerated");}
+{R_PAR}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION R_PAR", "\t<-enumerated");}
+{SEMICOL}       {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION SEMICOL", "\t<-enumerated");}
+{COMMA}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION COMMA", "\t<-enumerated");}
+{COLON}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION COLON", "\t<-enumerated");}
+{DCOLON}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION DCOLON", "\t<-enumerated");}
+{DOT}           {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION DOT", "\t<-enumerated");}
+{DDOT}          {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION DDOT", "\t<-enumerated");}
 
 {INTEGER}       {   int bufsize = BUFFERSIZE;
                     char* fullType = malloc(sizeof(char) * bufsize);
