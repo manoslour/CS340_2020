@@ -11,11 +11,12 @@ struct alpha_token_t {
     char *content;
     char *type;
     char *extraType;
+    char *subType;
     struct alpha_token_t *next;
 };
 
 struct alpha_token_t *HEAD = NULL; //Global pointer to the start of tokens list
 
-void addToken(unsigned int numLine, unsigned int numToken, char *content, char *type, char* extraType);
+void addToken(unsigned int numLine, unsigned int numToken, char *content, char *type, char* extraType, char *subType);
 
 void printTokenList();
