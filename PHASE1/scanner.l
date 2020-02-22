@@ -3,6 +3,8 @@
 
 %{
     #include "scanner.h"
+    int startLine;
+    int nested = 0;
     int tokenNum = 0;
 %}
 
@@ -54,57 +56,60 @@ INTEGER [0-9]+
 REAL [0-9]+\.[0-9]+
 WHITESPACE [\t\n\r ]
 ID [a-zA-Z][a-zA-Z_0-9]*
+LINE_COMMENT "//".*
+
+%x COMMENT
 
 %%
 
-{IF}        {addToken(yylineno, ++tokenNum, yytext, "KEYWORD IF", "\t<-enumerated");}
-{ELSE}      {addToken(yylineno, ++tokenNum, yytext, "KEYWORD ELSE", "\t<-enumerated");}
-{WHILE}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD WHILE", "\t<-enumerated");}
-{FOR}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD FOR", "\t<-enumerated");}
-{FUNCTION}  {addToken(yylineno, ++tokenNum, yytext, "KEYWORD FUNCTION", "\t<-enumerated");}
-{RETURN}    {addToken(yylineno, ++tokenNum, yytext, "KEYWORD RETURN", "\t<-enumerated");}
-{BREAK}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD BREAK", "\t<-enumerated");}
-{CONTINUE}  {addToken(yylineno, ++tokenNum, yytext, "KEYWORD CONTINUE", "\t<-enumerated");}
-{AND}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD AND", "\t<-enumerated");}
-{NOT}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD NOT", "\t<-enumerated");}
-{OR}        {addToken(yylineno, ++tokenNum, yytext, "KEYWORD OR", "\t<-enumerated");}
-{LOCAL}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD LOCAL", "\t<-enumerated");}
-{TRUE}      {addToken(yylineno, ++tokenNum, yytext, "KEYWORD TRUE", "\t<-enumerated");}
-{FALSE}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD FALSE", "\t<-enumerated");}
-{NIL}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD NIL", "\t<-enumerated");}
+{IF}        {addToken(yylineno, ++tokenNum, yytext, "KEYWORD\tIF", "\t<-enumerated");}
+{ELSE}      {addToken(yylineno, ++tokenNum, yytext, "KEYWORD\tELSE", "\t<-enumerated");}
+{WHILE}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD\tWHILE", "\t<-enumerated");}
+{FOR}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD\tFOR", "\t<-enumerated");}
+{FUNCTION}  {addToken(yylineno, ++tokenNum, yytext, "KEYWORD\tFUNCTION", "\t<-enumerated");}
+{RETURN}    {addToken(yylineno, ++tokenNum, yytext, "KEYWORD\tRETURN", "\t<-enumerated");}
+{BREAK}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD\tBREAK", "\t<-enumerated");}
+{CONTINUE}  {addToken(yylineno, ++tokenNum, yytext, "KEYWORD\tCONTINUE", "\t<-enumerated");}
+{AND}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD\tAND", "\t<-enumerated");}
+{NOT}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD\tNOT", "\t<-enumerated");}
+{OR}        {addToken(yylineno, ++tokenNum, yytext, "KEYWORD\tOR", "\t<-enumerated");}
+{LOCAL}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD\tLOCAL", "\t<-enumerated");}
+{TRUE}      {addToken(yylineno, ++tokenNum, yytext, "KEYWORD\tTRUE", "\t<-enumerated");}
+{FALSE}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD\tFALSE", "\t<-enumerated");}
+{NIL}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD\tNIL", "\t<-enumerated");}
 
-{ASSIGN}    {addToken(yylineno, ++tokenNum, yytext, "OPERATOR ASSIGN", "\t<-enumerated");}
-{PLUS}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR PLUS", "\t<-enumerated");}
-{MINUS}     {addToken(yylineno, ++tokenNum, yytext, "OPERATOR MINUS", "\t<-enumerated");}
-{MULT}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR MULT", "\t<-enumerated");}
-{DIV}       {addToken(yylineno, ++tokenNum, yytext, "OPERATOR DIV", "\t<-enumerated");}
-{MOD}       {addToken(yylineno, ++tokenNum, yytext, "OPERATOR MOD", "\t<-enumerated");}
-{EQUAL}     {addToken(yylineno, ++tokenNum, yytext, "OPERATOR EQUAL", "\t<-enumerated");}
-{NOT_EQUAL}   {addToken(yylineno, ++tokenNum, yytext, "OPERATOR NOT_EQUAL", "\t<-enumerated");}
-{INCR}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR INCR", "\t<-enumerated");}
-{DECR}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR DECR", "\t<-enumerated");}
-{GREATER}   {addToken(yylineno, ++tokenNum, yytext, "OPERATOR GREATER", "\t<-enumerated");}
-{LESS}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR LESS", "\t<-enumerated");}
-{GREATER_EQ}    {addToken(yylineno, ++tokenNum, yytext, "OPERATOR GREATER_EQ", "\t<-enumerated");}
-{LESS_EQ}       {addToken(yylineno, ++tokenNum, yytext, "OPERATOR LESS_EQ", "\t<-enumerated");}
+{ASSIGN}    {addToken(yylineno, ++tokenNum, yytext, "OPERATOR\tASSIGN", "\t<-enumerated");}
+{PLUS}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR\tPLUS", "\t<-enumerated");}
+{MINUS}     {addToken(yylineno, ++tokenNum, yytext, "OPERATOR\tMINUS", "\t<-enumerated");}
+{MULT}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR\tMULT", "\t<-enumerated");}
+{DIV}       {addToken(yylineno, ++tokenNum, yytext, "OPERATOR\tDIV", "\t<-enumerated");}
+{MOD}       {addToken(yylineno, ++tokenNum, yytext, "OPERATOR\tMOD", "\t<-enumerated");}
+{EQUAL}     {addToken(yylineno, ++tokenNum, yytext, "OPERATOR\tEQUAL", "\t<-enumerated");}
+{NOT_EQUAL}   {addToken(yylineno, ++tokenNum, yytext, "OPERATOR\tNOT_EQUAL", "\t<-enumerated");}
+{INCR}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR\tINCR", "\t<-enumerated");}
+{DECR}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR\tDECR", "\t<-enumerated");}
+{GREATER}   {addToken(yylineno, ++tokenNum, yytext, "OPERATOR\tGREATER", "\t<-enumerated");}
+{LESS}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR\tLESS", "\t<-enumerated");}
+{GREATER_EQ}    {addToken(yylineno, ++tokenNum, yytext, "OPERATOR\tGREATER_EQ", "\t<-enumerated");}
+{LESS_EQ}       {addToken(yylineno, ++tokenNum, yytext, "OPERATOR\tLESS_EQ", "\t<-enumerated");}
 
-{LCURLY_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION LCURLY_BRC", "\t<-enumerated");}
-{RCURLY_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION RCURLY_BRC", "\t<-enumerated");}
-{L_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION L_BRCK", "\t<-enumerated");}
-{R_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION R_BRCK", "\t<-enumerated");}
-{L_PAR}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION L_PAR", "\t<-enumerated");}
-{R_PAR}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION R_PAR", "\t<-enumerated");}
-{SEMICOL}       {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION SEMICOL", "\t<-enumerated");}
-{COMMA}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION COMMA", "\t<-enumerated");}
-{COLON}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION COLON", "\t<-enumerated");}
-{DCOLON}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION DCOLON", "\t<-enumerated");}
-{DOT}           {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION DOT", "\t<-enumerated");}
-{DDOT}          {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION DDOT", "\t<-enumerated");}
+{LCURLY_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION\tLCURLY_BRC", "\t<-enumerated");}
+{RCURLY_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION\tRCURLY_BRC", "\t<-enumerated");}
+{L_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION\tL_BRCK", "\t<-enumerated");}
+{R_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION\tR_BRCK", "\t<-enumerated");}
+{L_PAR}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION\tL_PAR", "\t<-enumerated");}
+{R_PAR}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION\tR_PAR", "\t<-enumerated");}
+{SEMICOL}       {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION\tSEMICOL", "\t<-enumerated");}
+{COMMA}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION\tCOMMA", "\t<-enumerated");}
+{COLON}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION\tCOLON", "\t<-enumerated");}
+{DCOLON}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION\tDCOLON", "\t<-enumerated");}
+{DOT}           {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION\tDOT", "\t<-enumerated");}
+{DDOT}          {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION\tDDOT", "\t<-enumerated");}
 
 {INTEGER}       {   int bufsize = BUFFERSIZE;
                     char* fullType = malloc(sizeof(char) * bufsize);
                     strcpy(fullType, "INT_CONST\t");
-                    if(strlen(yytext) >= bufsize){
+                    if(yyleng >= bufsize){
                         bufsize += BUFFERSIZE;
                         fullType = realloc(fullType, bufsize);
                     }
@@ -115,7 +120,7 @@ ID [a-zA-Z][a-zA-Z_0-9]*
 {REAL}          {   int bufsize = BUFFERSIZE;
                     char* fullType = malloc(sizeof(char) * bufsize);
                     strcpy(fullType, "REAL_CONST\t");
-                    if(strlen(yytext) >= bufsize){
+                    if(yyleng >= bufsize){
                         bufsize += BUFFERSIZE;
                         fullType = realloc(fullType, bufsize);
                     }
@@ -126,7 +131,7 @@ ID [a-zA-Z][a-zA-Z_0-9]*
 {ID}            {   int bufsize = BUFFERSIZE;
                     char* fullType = malloc(sizeof(char) * bufsize);
                     strcpy(fullType, "IDENT\t");
-                    if(strlen(yytext) >= bufsize){
+                    if(yyleng >= bufsize){
                         bufsize += BUFFERSIZE;
                         fullType = realloc(fullType, bufsize);
                     }
@@ -137,6 +142,40 @@ ID [a-zA-Z][a-zA-Z_0-9]*
                 }
 
 {WHITESPACE}    {}
+
+{LINE_COMMENT}  {addToken(yylineno, ++tokenNum, "", "COMMENT\tLINE_COMMENT", "\t<-enumerated");}
+
+
+"/*"    {
+            nested++;
+            startLine = yylineno;
+            BEGIN(COMMENT);
+        }
+
+<COMMENT>[^/*]* 
+<COMMENT>"/"+[^*/]*
+<COMMENT>"/"+"*"    {   printf("Entered nested++\n");
+                        nested++; }
+<COMMENT>"*"+[^*/]*
+<COMMENT>"*"+"/"    {   
+                        nested--;
+                        if(nested == 0){
+                            
+                            char start[sizeof(startLine)];
+                            char end[sizeof(yylineno)];
+                            snprintf(start, sizeof(start), "%d", startLine);
+                            snprintf(end, sizeof(end), "%d", yylineno);
+                            char* comm_content = strcat(start, "-");
+                            comm_content = strcat(comm_content, end);
+                            addToken(startLine, ++tokenNum, comm_content, "COMMENT\tBLOCK COMMENT", "<-enumerated");
+
+                            BEGIN(INITIAL);
+                        }
+                    }
+<COMMENT><<EOF>>    {
+                        printf("Comment Error: UNCLOSED COMMENT BLOCK at EOF in line: %d \n",yylineno);
+                        return -1;
+                    }
 
 .               {printf("Undefined Character: %s in line: %d\n", yytext, yylineno);}
 
