@@ -3,12 +3,12 @@
 
 %{
     #include "scanner.h"
-    unsigned int tokenNum = 0;
-    int nested;
-    int startLine;
-    char* buffer;
-    size_t stringSize;
+    char *buffer;
     int flag = 0;
+    int startLine;
+    int nested = 0;
+    int tokenNum = 0;
+    size_t stringSize;
 %}
 
 IF      "if"
@@ -34,18 +34,18 @@ MULT    "*"
 DIV     "/"
 MOD     "%"
 EQUAL   "=="
-N_EQUAL     "!="
+NOT_EQUAL     "!="
 INCR    "++"
 DECR    "--"
-GREATER     ">"
+GREATER ">"
 LESS    "<"
 GREATER_EQ    ">="
 LESS_EQ     "<="
 
-LC_BRC  "{"
-RC_BRC  "}"
-L_BRCK  "["
-R_BRCK  "]"
+LCURLY_BR  "{"
+RCURLY_BR  "}"
+L_BR  "["
+R_BR  "]"
 L_PAR   "("
 R_PAR   ")"
 SEMICOL ";"
@@ -55,20 +55,112 @@ DCOLON  "::"
 DOT     "."
 DDOT    ".."
 
-ID          [a-zA-Z][a-zA-Z_0-9]*
-DIGIT       [0-9]+
-INTEGER     (0[xX][0-9A-Fa-f]+)|([0-9]+)
-REAL        [0-9]*\.[0-9](e|E)?[0-9]*
-NEWLINE         [\n]
-WHITESPACE      [\r\t \v]+
-LINE_COMMENT    "//".*
+INTEGER [0-9]+
+REAL [0-9]+\.[0-9]+
+WHITESPACE [\t\n\r ]
+ID [a-zA-Z][a-zA-Z_0-9]*
+LINE_COMMENT "//".*
 
 %x COMMENT
 %x STRING
 
 %%
 
-            
+{IF}        {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "IF", "<-enumerated");}
+{ELSE}      {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "ELSE", "<-enumerated");}
+{WHILE}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "WHILE", "<-enumerated");}
+{FOR}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "FOR", "<-enumerated");}
+{FUNCTION}  {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "FUNCTION", "<-enumerated");}
+{RETURN}    {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "RETURN", "<-enumerated");}
+{BREAK}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "BREAK", "<-enumerated");}
+{CONTINUE}  {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "CONTINUE", "<-enumerated");}
+{AND}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "AND", "<-enumerated");}
+{NOT}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "NOT", "<-enumerated");}
+{OR}        {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "OR", "<-enumerated");}
+{LOCAL}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "LOCAL", "<-enumerated");}
+{TRUE}      {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "TRUE", "<-enumerated");}
+{FALSE}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "FALSE", "<-enumerated");}
+{NIL}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "NIL", "<-enumerated");}
+
+{ASSIGN}    {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "ASSIGN", "<-enumerated");}
+{PLUS}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "PLUS", "<-enumerated");}
+{MINUS}     {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "MINUS", "<-enumerated");}
+{MULT}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "MULT", "<-enumerated");}
+{DIV}       {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "DIV", "<-enumerated");}
+{MOD}       {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "MOD", "<-enumerated");}
+{EQUAL}     {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "EQUAL", "<-enumerated");}
+{NOT_EQUAL}   {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "NOT_EQUAL", "<-enumerated");}
+{INCR}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "INCR", "<-enumerated");}
+{DECR}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "DECR", "<-enumerated");}
+{GREATER}   {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "GREATER", "<-enumerated");}
+{LESS}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "LESS", "<-enumerated");}
+{GREATER_EQ}    {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "GREATER_EQ", "<-enumerated");}
+{LESS_EQ}       {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "LESS_EQ", "<-enumerated");}
+
+{LCURLY_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "LCURLY_BRC", "<-enumerated");}
+{RCURLY_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "RCURLY_BRC", "<-enumerated");}
+{L_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "L_BRCK", "<-enumerated");}
+{R_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "R_BRCK", "<-enumerated");}
+{L_PAR}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "L_PAR", "<-enumerated");}
+{R_PAR}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "R_PAR", "<-enumerated");}
+{SEMICOL}       {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "SEMICOL", "<-enumerated");}
+{COMMA}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "COMMA", "<-enumerated");}
+{COLON}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "COLON", "<-enumerated");}
+{DCOLON}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "DCOLON", "<-enumerated");}
+{DOT}           {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "DOT", "<-enumerated");}
+{DDOT}          {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "DDOT", "<-enumerated");}
+
+{INTEGER}       {addToken(yylineno, ++tokenNum, yytext, "INT_CONST", yytext, "<-integer");}
+
+{REAL}          {addToken(yylineno, ++tokenNum, yytext, "REAL_CONST", yytext, "<-real");}
+
+{ID}            {   int bufsize = BUFFERSIZE;
+                    char* fullType = malloc(sizeof(char) * bufsize);
+                    if(yyleng >= bufsize){
+                        bufsize += BUFFERSIZE;
+                        fullType = realloc(fullType, bufsize);
+                    }
+                    strcat(fullType, "\"");
+                    strcat(fullType, yytext);
+                    strcat(fullType, "\"");
+                    addToken(yylineno, ++tokenNum, yytext, "ID", fullType, "<-char*");
+                }
+
+{WHITESPACE}    {}
+
+{LINE_COMMENT}  {addToken(yylineno, ++tokenNum, "", "COMMENT", "LINE_COMMENT", "<-enumerated");}
+
+
+"/*"    {
+            nested++;
+            startLine = yylineno;
+            BEGIN(COMMENT);
+        }
+
+<COMMENT>[^/*]* 
+<COMMENT>"/"+[^*/]*
+<COMMENT>"/"+"*"    {   nested++; }
+<COMMENT>"*"+[^*/]*
+<COMMENT>"*"+"/"    {   
+                        nested--;
+                        if(nested == 0){
+                            char start[250];
+                            char end[250];
+                            snprintf(start, sizeof(start), "%d", startLine);
+                            snprintf(end, sizeof(end), "%d", yylineno);
+                            char* comm_content = malloc(sizeof(char) * BUFFERSIZE);
+                            comm_content = strcat(start, "-");
+                            comm_content = strcat(comm_content, end);
+                            addToken(startLine, ++tokenNum, comm_content, "COMMENT", "BLOCK COMMENT", "<-enumerated");
+
+                            BEGIN(INITIAL);
+                        }
+                    }
+<COMMENT><<EOF>>    {
+                        printf("Comment Error: UNCLOSED COMMENT BLOCK at EOF in line: %d \n",yylineno);
+                        return -1;
+                    }
+
 "\""   {    
             stringSize = strlen(yytext);
             buffer = (char *)malloc(stringSize * sizeof(char));
@@ -119,10 +211,10 @@ LINE_COMMENT    "//".*
                             strcat(buffer, yytext);
                             if(flag==1) {
                                 int line=yylineno-1;
-                                insertToken(line, ++tokenNum, buffer, "STRING", "");
+                                addToken(line, ++tokenNum, buffer, "STRING", buffer, "<-char*");
                             }
                             else{
-                               insertToken(yylineno, ++tokenNum, buffer, "STRING", ""); 
+                               addToken(yylineno, ++tokenNum, buffer, "STRING", buffer, "<-char*"); 
                             }
                             BEGIN(INITIAL);
                         }
@@ -131,134 +223,56 @@ LINE_COMMENT    "//".*
                             return -1;
                         }
 
+.               {printf("Undefined Character: %s in line: %d\n", yytext, yylineno);}
 
-
-"/*"    {
-            nested = 1;
-            startLine = yylineno;
-            BEGIN(COMMENT);
-        }
-<COMMENT>[^/*]* 
-<COMMENT>"/"+[^*/]*
-<COMMENT>"/"+"*"    { nested++; }
-<COMMENT>"*"+[^*/]*
-<COMMENT>"*"+"/"    {   
-                        nested--;
-                        if(nested == 0){
-                            
-                            char start[100];
-                            char end[100];
-                            snprintf(start, sizeof(start), "%d", startLine);
-                            snprintf(end, sizeof(end), "%d", yylineno);
-                            char* comm_content = strcat(start, "-");
-                            comm_content = strcat(comm_content, end);
-                            insertToken(startLine, ++tokenNum, comm_content, "COMMENT", "BLOCK COMMENT");
-
-                            BEGIN(INITIAL);
-                        }
-                    }
-<COMMENT><<EOF>>    {
-                        printf("Comment Error: UNCLOSED COMMENT BLOCK at EOF in line: %d \n",yylineno);
-                        return -1;
-                    }
-
-{IF}        {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "IF");}
-{ELSE}      {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "ELSE");}
-{WHILE}     {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "WHILE");}
-{FOR}       {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "FOR");}
-{FUNCTION}  {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "FUNCTION");}
-{RETURN}    {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "RETURN");}
-{BREAK}     {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "BREAK");}
-{CONTINUE}  {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "CONTINUE");}
-{AND}       {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "AND");}
-{NOT}       {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "NOT");}
-{OR}        {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "OR");}
-{LOCAL}     {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "LOCAL");}
-{TRUE}      {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "TRUE");}
-{FALSE}     {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "FALSE");}
-{NIL}       {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "NIL");}
-
-{ASSIGN}    {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "ASSIGN");}
-{PLUS}      {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "PLUS");}
-{MINUS}     {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "MINUS");}
-{MULT}      {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "MULT");}
-{DIV}       {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "DIV");}
-{MOD}       {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "MOD");}
-{EQUAL}     {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "EQUAL");}
-{N_EQUAL}   {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "N_EQUAL");}
-{INCR}      {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "INCR");}
-{DECR}      {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "DECR");}
-{GREATER}   {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "GREATER");}
-{LESS}      {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "LESS");}
-{GREATER_EQ}    {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "GREATER_EQ");}
-{LESS_EQ}       {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "LESS_EQ");}
-
-{LC_BRC}        {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "LC_BRC");}
-{RC_BRC}        {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "RC_BRC");}
-{L_BRCK}        {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "L_BRCK");}
-{R_BRCK}        {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "R_BRCK");}
-{L_PAR}         {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "L_PAR");}
-{R_PAR}         {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "R_PAR");}
-{SEMICOL}       {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "SEMICOL");}
-{COMMA}         {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "COMMA");}
-{COLON}         {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "COLON");}
-{DCOLON}        {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "DCOLON");}
-{DOT}           {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "DOT");}
-{DDOT}          {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "DDOT");}
-
-{ID}        {insertToken(yylineno, ++tokenNum, yytext, "ID", "");}
-{DIGIT}     {insertToken(yylineno, ++tokenNum, yytext, "DIGIT", "");}
-{INTEGER}   {insertToken(yylineno, ++tokenNum, yytext, "INTEGER", "");}
-{REAL}      {insertToken(yylineno, ++tokenNum, yytext, "REAL", "");}
-{LINE_COMMENT}  {insertToken(yylineno, ++tokenNum, "\"\"", "COMMENT", "LINE COMMENT");}
-{WHITESPACE}    {}
-{NEWLINE}       {}
-.           {printf("Undefined Character: %s in line: %d\n", yytext, yylineno);}
 %%
 
-void insertToken(unsigned int numline, unsigned int numToken, char* content, char* type, char* extraType){
+void addToken(unsigned int numLine, unsigned int numToken, char *content, char *type, char *extraType, char *subType){
 
     struct alpha_token_t *last;
-    struct alpha_token_t *newNode = (struct alpha_token_t*)malloc(sizeof(struct alpha_token_t));
-    char* tmpContent;
-    tmpContent = strdup(content);
+    struct alpha_token_t *newToken = (struct alpha_token_t *)malloc(sizeof(struct alpha_token_t));
+    char *tmpContent = strdup(content);
+    char *tmpType = strdup(type);
+    char *tmpExtraType = strdup(extraType);
 
-    newNode->numline = numline;
-    newNode->numToken = numToken;
-    newNode->content = tmpContent;
-    newNode->type = type;
-    newNode->extraType = extraType;
-    newNode->next = NULL;
+    newToken->numLine = numLine;
+    newToken->numToken = numToken;
+    newToken->content = tmpContent;
+    newToken->type = tmpType;
+    newToken->extraType = tmpExtraType;
+    newToken->subType = subType;
+    newToken->next = NULL;
 
     last = HEAD;
-
+    
     if(HEAD == NULL){
-        HEAD = newNode;
+        HEAD = newToken;
     }
     else{
-
         while(last->next != NULL){
             last = last->next;
         }
-
-        last->next = newNode;
+        last->next = newToken;
     }
 }
 
-void printTokenList(){
+void printTokens(){
 
-    printf("\n------------ LEXICAL ANALYSIS ------------\n\n");
-
-    struct alpha_token_t *tmp;
-    tmp = HEAD;
+    struct alpha_token_t *tmp = HEAD;
+    printf("\n------------------\tLEXICAL ANALYSIS\t------------------\n\n");
 
     while(tmp != NULL){
-
-        printf("%d:\t", tmp->numline);
+        printf("%d:\t", tmp->numLine);
         printf("#%d\t", tmp->numToken);
-        printf("%s\t ", tmp->content);
+        if(!strcmp(tmp->type, "STRING")) printf("%s", tmp->content);    
+        else {
+            printf("\"");
+            printf("%s", tmp->content);
+            printf("\"\t");
+        }
         printf("%s\t", tmp->type);
-        printf("%s\n", tmp->extraType);
+        printf("%s\t", tmp->extraType);
+        printf("%s\n", tmp->subType);
 
         tmp = tmp->next;
     }
@@ -277,7 +291,7 @@ int main(int argc, char** argv)
     }
 
     alpha_yylex(HEAD);
-    printTokenList();
+    printTokens();
 
     return 0;
 }
