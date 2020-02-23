@@ -157,7 +157,7 @@ LINE_COMMENT "//".*
                         }
                     }
 <COMMENT><<EOF>>    {
-                        printf("Comment Error: UNCLOSED COMMENT BLOCK at EOF in line: %d \n",yylineno);
+                        printf("\033[0;31mComment Error\033[0m: \033[0;32mUNCLOSED COMMENT BLOCK\033[0m at EOF in line: %d \n",yylineno);
                         return -1;
                     }
 
@@ -203,7 +203,7 @@ LINE_COMMENT "//".*
                             buffer = realloc(buffer, stringSize);
                             strcat(buffer, "\\");
                         }
-<STRING>"\\".           {   printf("Warning: Invalid Escape Character %s\n", yytext);}                        
+<STRING>"\\".           {   printf("\033[0;31mWarning\033[0m: \033[0;32mInvalid Escape Character\033[0m '\033[0;31m%s\033[0m' in line: %d\n", yytext,yylineno);}                        
 <STRING>"\""            { 
                             
                             stringSize = stringSize + strlen(yytext);
@@ -219,11 +219,11 @@ LINE_COMMENT "//".*
                             BEGIN(INITIAL);
                         }
 <STRING><<EOF>>         {
-                            printf("String Error: UNCLOSED STRING at EOF in line: %d \n",yylineno);
+                            printf("\033[0;31mString Error\033[0m: \033[0;32mUNCLOSED STRING\033[0m at EOF in line: %d \n",yylineno);
                             return -1;
                         }
 
-.               {printf("Undefined Character: %s in line: %d\n", yytext, yylineno);}
+.               {printf("\033[0;31mUndefined Character\033[0m: \033[0;32m%s\033[0m in line: %d\n", yytext, yylineno);}
 
 %%
 
