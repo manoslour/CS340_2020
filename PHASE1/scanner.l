@@ -110,7 +110,7 @@ LINE_COMMENT "//".*
 {DOT}           {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "DOT", "<-enumerated");}
 {DDOT}          {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "DDOT", "<-enumerated");}
 
-{INTEGER}       {addToken(yylineno, ++tokenNum, yytext, "INT_CONST", yytext,"<-integer");}
+{INTEGER}       {addToken(yylineno, ++tokenNum, yytext, "INT_CONST", yytext, "<-integer");}
 
 {REAL}          {addToken(yylineno, ++tokenNum, yytext, "REAL_CONST", yytext, "<-real");}
 
@@ -139,8 +139,7 @@ LINE_COMMENT "//".*
 
 <COMMENT>[^/*]* 
 <COMMENT>"/"+[^*/]*
-<COMMENT>"/"+"*"    {   printf("Entered nested++\n");
-                        nested++; }
+<COMMENT>"/"+"*"    {   nested++; }
 <COMMENT>"*"+[^*/]*
 <COMMENT>"*"+"/"    {   
                         nested--;
