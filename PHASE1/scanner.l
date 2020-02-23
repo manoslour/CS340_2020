@@ -144,8 +144,8 @@ LINE_COMMENT "//".*
 <COMMENT>"*"+"/"    {   
                         nested--;
                         if(nested == 0){
-                            char start[250];
-                            char end[250];
+                            char start[BUFFERSIZE];
+                            char end[BUFFERSIZE];
                             snprintf(start, sizeof(start), "%d", startLine);
                             snprintf(end, sizeof(end), "%d", yylineno);
                             char* comm_content = malloc(sizeof(char) * BUFFERSIZE);
@@ -157,7 +157,7 @@ LINE_COMMENT "//".*
                         }
                     }
 <COMMENT><<EOF>>    {
-                        printf("Comment Error: UNCLOSED COMMENT BLOCK at EOF in line: %d \n",yylineno);
+                        printf("Comment Error: UNCLOSED COMMENT BLOCK at EOF in line: %d \n",startLine);
                         return -1;
                     }
 
