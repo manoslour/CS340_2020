@@ -15,8 +15,33 @@ struct alpha_token_t {
     struct alpha_token_t *next;
 };
 
+struct errorToken {
+    char *output;
+    char* content;
+    unsigned int numLine;
+    struct errorToken *next;
+};
+
+void red () {
+    printf("\033[1;31m");
+}
+
+void yellow {
+    printf("\033[1;33m");
+}
+
+void reset () {
+    printf("\033[0m");
+}
+
 struct alpha_token_t *HEAD = NULL; //Global pointer to the start of tokens list
+
+struct errorToken *ERROR_HEAD = NULL; // GLobal pointer to the start of error_tokkens list
+
+void addError(char *output, char *content, unsigned int numLine);
 
 void addToken(unsigned int numLine, unsigned int numToken, char *content, char *type, char* extraType, char *subType);
 
 void printTokenList();
+
+void printErrorList();

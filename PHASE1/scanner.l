@@ -173,7 +173,8 @@ LINE_COMMENT "//".*
                         }
                     }
 <COMMENT><<EOF>>    {
-                        printf("Comment Error: UNCLOSED COMMENT BLOCK at EOF in line: %d \n",startLine);
+                        addError("Error", "UNCLOSED COMMENT BLOCK at EOF", startLine);
+                        //printf("Comment Error: UNCLOSED COMMENT BLOCK at EOF in line: %d \n",startLine);
                         return -1;
                     }
 
@@ -219,7 +220,10 @@ LINE_COMMENT "//".*
                             buffer = realloc(buffer, stringSize);
                             strcat(buffer, "\\");
                         }
-<STRING>"\\".           {   printf("Warning: Invalid Escape Character %s\n", yytext);}                        
+<STRING>"\\".           {   
+                            addError("Warning Invalid Escape Character", yytext, yylineno);
+                            //printf("Warning: Invalid Escape Character %s\n", yytext);
+                        }                        
 <STRING>"\""            { 
                             
                             stringSize = stringSize + strlen(yytext);
@@ -235,11 +239,14 @@ LINE_COMMENT "//".*
                             BEGIN(INITIAL);
                         }
 <STRING><<EOF>>         {
-                            printf("String Error: UNCLOSED STRING at EOF in line: %d \n",yylineno);
+                            addError("Error", "UNCLOSED STRING at EOF", yylineno);
+                            //printf("String Error: UNCLOSED STRING at EOF in line: %d \n",yylineno);
                             return -1;
                         }
 
-.               {printf("Undefined Character: %s in line: %d\n", yytext, yylineno);}
+.               {   addError("Undefined character", yytext, yylineno);
+                    //printf("Undefined Character: %s in line: %d\n", yytext, yylineno);
+                }
 
 %%
 
@@ -272,7 +279,30 @@ void addToken(unsigned int numLine, unsigned int numToken, char *content, char *
     }
 }
 
-void printTokens(){
+void addError(char *output, char *content, unsigned int numLine){
+    struct errorToken *last;
+    struct errorToken *newNode = (struct errorToken *)malloc(sizeof(struct errorToken));
+    char *tmpOutput = strdup(output);
+    char *tmpContent = strdup(content);
+
+    newNode->output = tmpOutput;
+    newNode->content = tmpContent;
+    newNode->numLine = numLine;
+    newNode->next = NULL;
+
+    last = ERROR_HEAD;
+
+    if(ERROR_HEAD == NULL){
+        ERROR_HEAD = newNode;
+    }else{
+        while(last->next != NULL){
+            last = last->next;
+        }
+        last->next = newNode;
+    }
+}
+
+void printTokenList(){
 
     struct alpha_token_t *tmp = HEAD;
     printf("\n------------------\tLEXICAL ANALYSIS\t------------------\n\n");
@@ -292,6 +322,20 @@ void printTokens(){
 
         tmp = tmp->next;
     }
+
+    printf("\n");
+}
+
+void printErrorList(){
+    struct errorToken *tmp = ERROR_HEAD;
+    printf("\n------------------\tErrors - Warnings\t------------------\n\n");
+    while(tmp != NULL){
+        printf("%d:\t", tmp->numLine);
+        printf("%s\t", tmp->output);
+        printf("%s\n", tmp->content);
+        tmp = tmp->next;
+    }
+    printf("\n");
 }
 
 int main(int argc, char** argv)
@@ -307,7 +351,8 @@ int main(int argc, char** argv)
     }
 
     alpha_yylex(HEAD);
-    printTokens();
+    printTokenList();
+    printErrorList();
 
     return 0;
 }
