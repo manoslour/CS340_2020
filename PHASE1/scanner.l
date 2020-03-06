@@ -5,7 +5,7 @@
     #include "scanner.h"
     char *buffer;
     int flag = 0;
-    int startLine;
+    int startLine, nestedStartLine;
     int nested = 0;
     int tokenNum = 0;
     size_t stringSize;
@@ -139,21 +139,37 @@ LINE_COMMENT "//".*
 
 <COMMENT>[^/*]* 
 <COMMENT>"/"+[^*/]*
-<COMMENT>"/"+"*"    {   nested++; }
+<COMMENT>"/"+"*"    {   nested++;
+                        nestedStartLine = yylineno;
+                    }
 <COMMENT>"*"+[^*/]*
 <COMMENT>"*"+"/"    {   
                         nested--;
+
+                        char start[BUFFERSIZE];
+                        char end[BUFFERSIZE];
+                        char* comm_content = malloc(sizeof(char) * BUFFERSIZE);
+
                         if(nested == 0){
-                            char start[BUFFERSIZE];
-                            char end[BUFFERSIZE];
+
                             snprintf(start, sizeof(start), "%d", startLine);
                             snprintf(end, sizeof(end), "%d", yylineno);
-                            char* comm_content = malloc(sizeof(char) * BUFFERSIZE);
+                            
                             comm_content = strcat(start, "-");
                             comm_content = strcat(comm_content, end);
+
                             addToken(startLine, ++tokenNum, comm_content, "COMMENT", "BLOCK COMMENT", "<-enumerated");
 
                             BEGIN(INITIAL);
+                        }else{
+
+                            snprintf(start, sizeof(start), "%d", nestedStartLine);
+                            snprintf(end, sizeof(end), "%d", yylineno);
+
+                            comm_content = strcat(start, "-");
+                            comm_content = strcat(comm_content, end);
+
+                            addToken(startLine, ++tokenNum, comm_content, "COMMENT", "NESTED COMMENT", "<-enumerated");
                         }
                     }
 <COMMENT><<EOF>>    {
