@@ -161,6 +161,7 @@ LINE_COMMENT "//".*
                             addToken(startLine, ++tokenNum, comm_content, "COMMENT", "BLOCK COMMENT", "<-enumerated");
 
                             BEGIN(INITIAL);
+                            
                         }else{
 
                             snprintf(start, sizeof(start), "%d", nestedStartLine);
