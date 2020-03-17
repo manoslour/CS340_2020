@@ -174,7 +174,7 @@ LINE_COMMENT "//".*
                         }
                     }
 <COMMENT><<EOF>>    {
-                        addError("Error", "UNCLOSED COMMENT BLOCK at EOF", startLine);
+                        addError(RED"Error :" RESET,GRN "UNCLOSED COMMENT BLOCK \033[0m at EOF", startLine);
                         //printf("Comment Error: UNCLOSED COMMENT BLOCK at EOF in line: %d \n",startLine);
                         return -1;
                     }
@@ -222,7 +222,7 @@ LINE_COMMENT "//".*
                             strcat(buffer, "\\");
                         }
 <STRING>"\\".           {   
-                            addError("Warning Invalid Escape Character", yytext, yylineno);
+                            addError(YEL "Warning: \033[0m \033[1;32m Invalid Escape Character\033[0m", yytext, yylineno);
                             //printf("Warning: Invalid Escape Character %s\n", yytext);
                         }                        
 <STRING>"\""            { 
@@ -240,7 +240,7 @@ LINE_COMMENT "//".*
                             BEGIN(INITIAL);
                         }
 <STRING><<EOF>>         {
-                            addError("Error", "UNCLOSED STRING at EOF", yylineno);
+                            addError(RED "Error" RESET,GRN "UNCLOSED STRING\033[0m at EOF", yylineno);
                             //printf("String Error: UNCLOSED STRING at EOF in line: %d \n",yylineno);
                             return -1;
                         }
@@ -329,11 +329,13 @@ void printTokenList(){
 
 void printErrorList(){
     struct errorToken *tmp = ERROR_HEAD;
-    printf("\n------------------\tErrors - Warnings\t------------------\n\n");
+    printf("\n------------------\t"YEL"Errors - Warnings\t "RESET"------------------\n\n");
     while(tmp != NULL){
-        printf("%d:\t", tmp->numLine);
+        printf(GRN"At line no "RESET"%d:\t", tmp->numLine);
         printf("%s\t", tmp->output);
+        if(!strcmp(YEL "Warning: \033[0m \033[1;32m Invalid Escape Character\033[0m", tmp->output)) printf(RED);
         printf("%s\n", tmp->content);
+        printf(RESET);
         tmp = tmp->next;
     }
     printf("\n");
