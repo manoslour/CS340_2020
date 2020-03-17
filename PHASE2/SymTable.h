@@ -20,7 +20,7 @@ struct symbol_list{
 	enum type type ;
 	unsigned int scope ;
 	bool isActive;
-	struct symbol_list *next;
+	struct symbol_list *next,*scope_next; // next shows the next symbol in the hash list, the scope_next shows the next symbol in scope_list gege?
 };
 
 /**
@@ -32,10 +32,15 @@ struct scope_list{
 	struct scope_list *next, *prev;
 };
 
+/*Global pointer to the scope list's head*/
 struct scope_list *scope_head = NULL;
 
 struct symbol_list *HashTable[Buckets];
 
 void print();
+void ScopePrint();
+void bubbleSort(struct scope_list *start); 
 
 bool add_scope_sym(char *name, unsigned int line,enum type type, unsigned int scope, bool isActive);
+
+bool ScopeListInsert(struct symbol_list *sym_node);
