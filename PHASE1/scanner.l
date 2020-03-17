@@ -174,7 +174,7 @@ LINE_COMMENT "//".*
                         }
                     }
 <COMMENT><<EOF>>    {
-                        addError(RED"Error :" RESET,GRN "UNCLOSED COMMENT BLOCK \033[0m at EOF", startLine);
+                        addError(RED"Error"RESET, "Unclosed COMMENT BLOCK at EOF", startLine);
                         //printf("Comment Error: UNCLOSED COMMENT BLOCK at EOF in line: %d \n",startLine);
                         return -1;
                     }
@@ -222,8 +222,8 @@ LINE_COMMENT "//".*
                             strcat(buffer, "\\");
                         }
 <STRING>"\\".           {   
-                            addError(YEL "Warning: \033[0m \033[1;32m Invalid Escape Character\033[0m", yytext, yylineno);
-                            //printf("Warning: Invalid Escape Character %s\n", yytext);
+                            addError(YEL"Warning\x1B[0m Invalid Escape Character", yytext, yylineno);
+                            //printf("Warning Invalid Escape Character %s\n", yytext);
                         }                        
 <STRING>"\""            { 
                             
@@ -240,12 +240,12 @@ LINE_COMMENT "//".*
                             BEGIN(INITIAL);
                         }
 <STRING><<EOF>>         {
-                            addError(RED "Error" RESET,GRN "UNCLOSED STRING\033[0m at EOF", yylineno);
+                            addError(RED"Error"RESET, "Unclosed STRING at EOF", yylineno);
                             //printf("String Error: UNCLOSED STRING at EOF in line: %d \n",yylineno);
                             return -1;
                         }
 
-.               {   addError("Undefined character", yytext, yylineno);
+.               {   addError("YELWarning\x1B[0m Undefined character", yytext, yylineno);
                     //printf("Undefined Character: %s in line: %d\n", yytext, yylineno);
                 }
 
@@ -329,9 +329,9 @@ void printTokenList(){
 
 void printErrorList(){
     struct errorToken *tmp = ERROR_HEAD;
-    printf("\n------------------\t"YEL"Errors - Warnings\t "RESET"------------------\n\n");
+    printf("\n------------------\tERRORS - WARNINGS\t------------------\n\n");
     while(tmp != NULL){
-        printf(GRN"At line no "RESET"%d:\t", tmp->numLine);
+        printf("%d:\t", tmp->numLine);
         printf("%s\t", tmp->output);
         if(!strcmp(YEL "Warning: \033[0m \033[1;32m Invalid Escape Character\033[0m", tmp->output)) printf(RED);
         printf("%s\n", tmp->content);
