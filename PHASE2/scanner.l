@@ -58,7 +58,8 @@ DDOT    ".."
 
 INTEGER [0-9]+
 REAL [0-9]+\.[0-9]+
-WHITESPACE [\t\n\r ]
+NEWLINE [\n]+
+WHITESPACE [\t\r ]
 ID [a-zA-Z][a-zA-Z_0-9]*
 LINE_COMMENT "//".*
 
@@ -67,49 +68,49 @@ LINE_COMMENT "//".*
 
 %%
 
-{IF}        {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "IF", "<-enumerated");}
-{ELSE}      {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "ELSE", "<-enumerated");}
-{WHILE}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "WHILE", "<-enumerated");}
-{FOR}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "FOR", "<-enumerated");}
-{FUNCTION}  {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "FUNCTION", "<-enumerated");}
-{RETURN}    {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "RETURN", "<-enumerated");}
-{BREAK}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "BREAK", "<-enumerated");}
-{CONTINUE}  {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "CONTINUE", "<-enumerated");}
-{AND}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "AND", "<-enumerated");}
-{NOT}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "NOT", "<-enumerated");}
-{OR}        {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "OR", "<-enumerated");}
-{LOCAL}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "LOCAL", "<-enumerated");}
-{TRUE}      {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "TRUE", "<-enumerated");}
-{FALSE}     {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "FALSE", "<-enumerated");}
-{NIL}       {addToken(yylineno, ++tokenNum, yytext, "KEYWORD", "NIL", "<-enumerated");}
+{IF}        {return IF;}
+{ELSE}      {return ELSE;}
+{WHILE}     {return WHILE;}
+{FOR}       {return FOR;}
+{FUNCTION}  {return FUNCTION;}
+{RETURN}    {return RETURN;}
+{BREAK}     {return BREAK;}
+{CONTINUE}  {return CONTINUE;}
+{AND}       {return AND;}
+{NOT}       {return NOT;}
+{OR}        {return OR;}
+{LOCAL}     {return LOCAL;}
+{TRUE}      {return TRUE;}
+{FALSE}     {return FALSE;}
+{NIL}       {return NIL;}
 
-{ASSIGN}    {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "ASSIGN", "<-enumerated");}
-{PLUS}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "PLUS", "<-enumerated");}
-{MINUS}     {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "MINUS", "<-enumerated");}
-{MULT}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "MULT", "<-enumerated");}
-{DIV}       {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "DIV", "<-enumerated");}
-{MOD}       {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "MOD", "<-enumerated");}
-{EQUAL}     {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "EQUAL", "<-enumerated");}
-{NOT_EQUAL}   {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "NOT_EQUAL", "<-enumerated");}
-{INCR}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "INCR", "<-enumerated");}
-{DECR}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "DECR", "<-enumerated");}
-{GREATER}   {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "GREATER", "<-enumerated");}
-{LESS}      {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "LESS", "<-enumerated");}
-{GREATER_EQ}    {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "GREATER_EQ", "<-enumerated");}
-{LESS_EQ}       {addToken(yylineno, ++tokenNum, yytext, "OPERATOR", "LESS_EQ", "<-enumerated");}
+{ASSIGN}    {return ASSIGN;}
+{PLUS}      {return PLUS;}
+{MINUS}     {return MINUS;}
+{MULT}      {return MULT;}
+{DIV}       {return DIV;}
+{MOD}       {return MOD;}
+{EQUAL}     {return EQUAL;}
+{NOT_EQUAL}   {return NOT_EQUAL;}
+{INCR}      {return INCR;}
+{DECR}      {return DECR;}
+{GREATER}   {return GREATER;}
+{LESS}      {return LESS;}
+{GREATER_EQ}    {return GREATER_EQ;}
+{LESS_EQ}       {return LESS_EQ;}
 
-{LCURLY_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "LCURLY_BRC", "<-enumerated");}
-{RCURLY_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "RCURLY_BRC", "<-enumerated");}
-{L_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "L_BRCK", "<-enumerated");}
-{R_BR}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "R_BRCK", "<-enumerated");}
-{L_PAR}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "L_PAR", "<-enumerated");}
-{R_PAR}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "R_PAR", "<-enumerated");}
-{SEMICOL}       {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "SEMICOL", "<-enumerated");}
-{COMMA}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "COMMA", "<-enumerated");}
-{COLON}         {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "COLON", "<-enumerated");}
-{DCOLON}        {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "DCOLON", "<-enumerated");}
-{DOT}           {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "DOT", "<-enumerated");}
-{DDOT}          {addToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "DDOT", "<-enumerated");}
+{LCURLY_BR}        {return LCURLY_BR;}
+{RCURLY_BR}        {return RCURLY_BR;}
+{L_BR}        {return L_BR;}
+{R_BR}        {return R_BR;}
+{L_PAR}         {return L_PAR;}
+{R_PAR}         {return R_PAR;}
+{SEMICOL}       {return SEMICOL;}
+{COMMA}         {return COMMA;}
+{COLON}         {return COLON;}
+{DCOLON}        {return DCOLON;}
+{DOT}           {return DOT;}
+{DDOT}          {return DDOT;}
 
 {INTEGER}       {addToken(yylineno, ++tokenNum, yytext, "INT_CONST", yytext, "<-integer");}
 
@@ -128,6 +129,8 @@ LINE_COMMENT "//".*
                 }
 
 {WHITESPACE}    {}
+
+{NEWLINE}       {return "\n";}
 
 {LINE_COMMENT}  {addToken(yylineno, ++tokenNum, "", "COMMENT", "LINE_COMMENT", "<-enumerated");}
 
