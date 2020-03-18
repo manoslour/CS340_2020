@@ -1,6 +1,27 @@
 %{
     #include "parser.h"
-    #include "scanner.h"
+    #include <stdlib.h>
+    #include <string.h>
+
+    #define BUFFERSIZE 256
+    #define YY_DECL int alpha_yylex(void* yyval)
+
+    #define RED   "\x1B[31m"
+    #define GRN   "\x1B[32m"
+    #define YEL   "\x1B[33m"
+    #define RESET "\x1B[0m"
+
+    struct errorToken {
+        char *output;
+        char* content;
+        unsigned int numLine;
+        struct errorToken *next;
+    };
+
+    struct errorToken *ERROR_HEAD = NULL; // GLobal pointer to the start of error_tokkens list
+    void addError(char *output, char *content, unsigned int numLine);
+    void printErrorList();
+
     char *buffer;
     int flag = 0;
     int startLine, nestedStartLine;
@@ -178,7 +199,7 @@ LINE_COMMENT "//".*
                     }
 <COMMENT><<EOF>>    {
                         addError(RED"Error"RESET, "Unclosed COMMENT BLOCK at EOF", startLine);
-                        return -1;
+                        //return -1;
                     }
 
 "\""   {    
@@ -228,6 +249,7 @@ LINE_COMMENT "//".*
                             stringSize = stringSize + strlen(yytext);
                             buffer = realloc(buffer, stringSize);
                             strcat(buffer, yytext);
+
                             yylval.stringValue = strdup(buffer);
 
                             BEGIN(INITIAL);
@@ -236,41 +258,12 @@ LINE_COMMENT "//".*
                         }
 <STRING><<EOF>>         {
                             addError(RED"Error"RESET, "Unclosed STRING at EOF", yylineno);
-                            return -1;
+                            //return -1;
                         }
 
 .                       {   addError(YEL"Warning\x1B[0m \tUndefined character", yytext, yylineno);}
 
 %%
-
-void addToken(unsigned int numLine, unsigned int numToken, char *content, char *type, char *extraType, char *subType){
-
-    struct alpha_token_t *last;
-    struct alpha_token_t *newToken = (struct alpha_token_t *)malloc(sizeof(struct alpha_token_t));
-    char *tmpContent = strdup(content);
-    char *tmpType = strdup(type);
-    char *tmpExtraType = strdup(extraType);
-
-    newToken->numLine = numLine;
-    newToken->numToken = numToken;
-    newToken->content = tmpContent;
-    newToken->type = tmpType;
-    newToken->extraType = tmpExtraType;
-    newToken->subType = subType;
-    newToken->next = NULL;
-
-    last = HEAD;
-    
-    if(HEAD == NULL){
-        HEAD = newToken;
-    }
-    else{
-        while(last->next != NULL){
-            last = last->next;
-        }
-        last->next = newToken;
-    }
-}
 
 void addError(char *output, char *content, unsigned int numLine){
     struct errorToken *last;
@@ -295,30 +288,6 @@ void addError(char *output, char *content, unsigned int numLine){
     }
 }
 
-void printTokenList(){
-
-    struct alpha_token_t *tmp = HEAD;
-    printf("\n------------------\tLEXICAL ANALYSIS\t------------------\n\n");
-
-    while(tmp != NULL){
-        printf("%d:\t", tmp->numLine);
-        printf("#%d\t", tmp->numToken);
-        if(!strcmp(tmp->type, "STRING")) printf("%s", tmp->content);    
-        else {
-            printf("\"");
-            printf("%s", tmp->content);
-            printf("\"\t");
-        }
-        printf("%s\t", tmp->type);
-        printf("%s\t", tmp->extraType);
-        printf("%s\n", tmp->subType);
-
-        tmp = tmp->next;
-    }
-
-    printf("\n");
-}
-
 void printErrorList(){
 
     struct errorToken *tmp = ERROR_HEAD;
@@ -332,23 +301,4 @@ void printErrorList(){
         tmp = tmp->next;
     }
     printf("\n");
-}
-
-int main(int argc, char** argv)
-{
-    if(argc > 1){
-        if(!(yyin = fopen(argv[1], "r"))){
-            fprintf(stderr,"Cannot read file: %s\n", argv[1]);
-            return 1;
-        }
-    }
-    else{
-        yyin = stdin;
-    }
-
-    alpha_yylex(HEAD);
-    printTokenList();
-    printErrorList();
-
-    return 0;
 }
