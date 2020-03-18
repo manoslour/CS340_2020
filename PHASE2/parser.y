@@ -11,14 +11,14 @@
 %defines
 
 %union{
-    char* stringValue;
     int intValue;
     double realValue;
+    char* stringValue;
 }
 
-%token <stringValue> ID
 %token <intValue> INTEGER
 %token <realValue> REAL
+%token <stringValue> ID
 
 %%
 

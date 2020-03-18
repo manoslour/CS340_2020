@@ -59,7 +59,7 @@ DDOT    ".."
 INTEGER [0-9]+
 REAL [0-9]+\.[0-9]+
 NEWLINE [\n]+
-WHITESPACE [\t\r ]
+WHITESPACE [\t\r ]+
 ID [a-zA-Z][a-zA-Z_0-9]*
 LINE_COMMENT "//".*
 
@@ -112,27 +112,26 @@ LINE_COMMENT "//".*
 {DOT}           {return DOT;}
 {DDOT}          {return DDOT;}
 
-{INTEGER}       {addToken(yylineno, ++tokenNum, yytext, "INT_CONST", yytext, "<-integer");}
+{INTEGER}       {   
+                    yylval.intValue = atoi(yytext); 
+                    return INTEGER;
+                }
 
-{REAL}          {addToken(yylineno, ++tokenNum, yytext, "REAL_CONST", yytext, "<-real");}
+{REAL}          {
+                    yylval.realValue = atof(yytext);
+                    return REAL;
+                }
 
-{ID}            {   int bufsize = BUFFERSIZE;
-                    char* fullType = malloc(sizeof(char) * bufsize);
-                    if(yyleng >= bufsize){
-                        bufsize += BUFFERSIZE;
-                        fullType = realloc(fullType, bufsize);
-                    }
-                    strcat(fullType, "\"");
-                    strcat(fullType, yytext);
-                    strcat(fullType, "\"");
-                    addToken(yylineno, ++tokenNum, yytext, "ID", fullType, "<-char*");
+{ID}            {   
+                    yylval.stringValue = strdup(yytext);
+                    return ID;
                 }
 
 {WHITESPACE}    {}
 
 {NEWLINE}       {return "\n";}
 
-{LINE_COMMENT}  {addToken(yylineno, ++tokenNum, "", "COMMENT", "LINE_COMMENT", "<-enumerated");}
+{LINE_COMMENT}  {return LINE_COMMENT;}
 
 
 "/*"    {
