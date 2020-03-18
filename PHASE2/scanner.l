@@ -1,7 +1,5 @@
-%option noyywrap
-%option yylineno
-
 %{
+    #include "parser.h"
     #include "scanner.h"
     char *buffer;
     int flag = 0;
@@ -10,6 +8,9 @@
     int tokenNum = 0;
     size_t stringSize;
 %}
+
+%option noyywrap
+%option yylineno
 
 IF      "if"
 ELSE    "else"
