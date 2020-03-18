@@ -161,7 +161,7 @@ LINE_COMMENT "//".*
                             comm_content = strcat(start, "-");
                             comm_content = strcat(comm_content, end);
 
-                            addToken(startLine, ++tokenNum, comm_content, "COMMENT", "BLOCK COMMENT", "<-enumerated");
+                            //addToken(startLine, ++tokenNum, comm_content, "COMMENT", "BLOCK COMMENT", "<-enumerated");
 
                             BEGIN(INITIAL);
                             
@@ -173,12 +173,11 @@ LINE_COMMENT "//".*
                             comm_content = strcat(start, "-");
                             comm_content = strcat(comm_content, end);
 
-                            addToken(startLine, ++tokenNum, comm_content, "COMMENT", "NESTED COMMENT", "<-enumerated");
+                            //addToken(startLine, ++tokenNum, comm_content, "COMMENT", "NESTED COMMENT", "<-enumerated");
                         }
                     }
 <COMMENT><<EOF>>    {
                         addError(RED"Error"RESET, "Unclosed COMMENT BLOCK at EOF", startLine);
-                        //printf("Comment Error: UNCLOSED COMMENT BLOCK at EOF in line: %d \n",startLine);
                         return -1;
                     }
 
@@ -196,7 +195,6 @@ LINE_COMMENT "//".*
                             strcat(buffer, yytext);
                         }
 <STRING>"\n"            {   
-                            
                             flag=1;
                             stringSize = stringSize + strlen(yytext);
                             buffer = realloc(buffer, stringSize);
@@ -224,33 +222,24 @@ LINE_COMMENT "//".*
                             buffer = realloc(buffer, stringSize);
                             strcat(buffer, "\\");
                         }
-<STRING>"\\".           {   
-                            addError(YEL"Warning\x1B[0m \tInvalid Escape Character", yytext, yylineno);
-                            //printf("Warning Invalid Escape Character %s\n", yytext);
-                        }                        
+<STRING>"\\".           {   addError(YEL"Warning\x1B[0m \tInvalid Escape Character", yytext, yylineno);}
+
 <STRING>"\""            { 
-                            
                             stringSize = stringSize + strlen(yytext);
                             buffer = realloc(buffer, stringSize);
                             strcat(buffer, yytext);
-                            if(flag == 1) {
-                                int line = yylineno-1;
-                                addToken(line, ++tokenNum, buffer, "STRING", buffer, "<-char*");
-                            }
-                            else{
-                               addToken(yylineno, ++tokenNum, buffer, "STRING", buffer, "<-char*"); 
-                            }
+                            yylval.stringValue = strdup(buffer);
+
                             BEGIN(INITIAL);
+
+                            return STRING;
                         }
 <STRING><<EOF>>         {
                             addError(RED"Error"RESET, "Unclosed STRING at EOF", yylineno);
-                            //printf("String Error: UNCLOSED STRING at EOF in line: %d \n",yylineno);
                             return -1;
                         }
 
-.               {   addError(YEL"Warning\x1B[0m \tUndefined character", yytext, yylineno);
-                    //printf("Undefined Character: %s in line: %d\n", yytext, yylineno);
-                }
+.                       {   addError(YEL"Warning\x1B[0m \tUndefined character", yytext, yylineno);}
 
 %%
 
