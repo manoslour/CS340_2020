@@ -1,33 +1,51 @@
 %{
+    #include <stdio.h>
+    int yyerror(char* yaccProvidedMessage);
+    int yylex(void);
 
-#include <stdio.h>
-#include "parser.h"
-
+    extern int yylineno;
+    extern char *yytext;
+    extern FILE *yyin;
 %}
 
-%union{}
-%token
+%defines
 
-%start program
+%union{
+    int intValue;
+    double realValue;
+    char* stringValue;
+}
 
+%token <intValue> INTEGER
+%token <realValue> REAL
+%token <stringValue> ID
+%token ASSIGN NOT OR AND EQUAL NOT_EQUAL GREATER GREATER_EQ LESS LESS_EQ
+%token PLUS MINUS MULT DIV MOD INCR DECR UMINUS
+%token COMMA SEMICOLON COLON DCOLON DOT DDOT L_BR R_BR L_PAR R_PAR LCURLY_BR RCURLY_BR
 
 %right ASSIGN
 %left OR
 %left AND
-%left EQUAL,NOT_EQUAL
-%nonassoc GREATER,GREATER_EQ,LESS,LESS_EQ
-%left PLUS,MINUS
-%left MULT,DIV,MOD
-%right NOT,INCR,DECR,UMINUS
-%left DOT,DDOT
-%left L_BR,R_BR
-%left L_PAR,R_PAR
+%nonassoc EQUAL, NOT_EQUAL 
+%nonassoc GREATER, GREATER_EQ, LESS, LESS_EQ
+%left PLUS, MINUS
+%left MULT, DIV, MOD
+%right NOT, INCR, DECR, UMINUS
+%left DOT, DDOT
+%left L_BR, R_BR
+%left L_PAR, R_PAR
+
+%start program
 
 %%
 
-program:	stmt
+program:	stmts
 			|
 			;
+
+stmts:		stmt
+			|stmts stmt
+
 stmt:		expr SEMICOLON
 			|ifstmt
 			|whilestmt
@@ -60,7 +78,7 @@ op:			PLUS
 			;
 
 term:		L_PAR expr R_PER
-			|MINUS expr
+			|MINUS expr %prec UMINUS
 			|NOT expr
 			|INCR lvalue
 			|lvalue INCR
@@ -105,29 +123,72 @@ normcall:	L_PAR elist R_PAR
 
 methodcall:	DDOT ID L_PAR elist R_PAR 
 
-elist:		
-
-objectdef:	
-
-indexed:
-
-indexelem:	LCURLY_BR expr COLON RCURLY_BR
+elist:		expr
+			|elist COMMA expr
+			|
 			;
 
-block:
+objectdef:	L_BR R_BR
+			|L_BR elist R_BR
+			|L_BR indexed R_BR
 
-funcdef:
+indexed:	indexedelem
+			|indexed COMMA indexedelem
+			| 
+			;
+
+indexedelem:	LCURLY_BR expr COLON RCURLY_BR
+			;
+
+block:		LCURLY_BR RCURLY_BR
+			|LCURLY_BR stmts  RCURLY_BR
+			;
+
+funcdef:	FUNCTION L_PAR idlist R_PAR block
+			|FUNCTION ID L_PAR idlist R_PAR block
+
+const:		REAL
+			|INTEGER
+			|NIL
+			|TRUE
+			|FALSE
+			;
 
 
 
+ifstsmt:	IF L_PAR expr R_PAR stmt
+			|IF L_PAR expr R_PAR stmt ELSE stmt
+			;
 
 
+whilestmt:	WHILE L_PAR expr R_PAR stmt
+			;
 
+forstmt:  	FOR L_PAR elist SEMICOLON expr SEMICOLON elist R_PAR stmt
+			;
 
+returnstmt:	RETURN SEMICOLON
+			|RETURN expr SEMICOLON
+			;
 
 %%
 
-int main(int argc, char **argv) {
-	yyparse();
-	return 0;
+int yyerror(char* yaccProvidedMessage){
+    fprintf(stderr, "%s: at line %d, before token: %s\n", yaccProvidedMessage, yylineno, yytext);
+    fprintf(stderr, "INPUT NOT VALID\n");
+}
+
+int main(int argc, char** argv){
+    if(argc > 1){
+        if(!(yyin = fopen(argv[1], "r"))){
+            fprintf(stderr, "Cannot read file: %s\n", argv[1]);
+            return 1;
+        }
+    }
+    else{
+        yyin = stdin;
+    }
+
+    yyparse();
+    return 0;
 }
