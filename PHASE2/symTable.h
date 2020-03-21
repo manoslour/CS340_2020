@@ -17,7 +17,7 @@ typedef struct Function {
     unsigned int line;
 };
 
-// A list of the symbols saved in each scope.
+// Used to create a list of the symbols saved in each scope.
 typedef struct ScopeListNode {
     unsigned int scope;
     symbolTableEntry *symbol_list;
@@ -42,7 +42,7 @@ SymbolTableEntry *SymbolTable[BUCKETS];
     
 int hashFunc(char* name);
 
-void insert(SymbolTableEntry symbol);
+void insert(SymbolTableEntry *symbol);
 
 int scopeLookup(int scope);
 
