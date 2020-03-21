@@ -19,9 +19,11 @@
 %token <intValue> INTEGER
 %token <realValue> REAL
 %token <stringValue> ID
+%token <stringValue> STRING
 %token ASSIGN NOT OR AND EQUAL NOT_EQUAL GREATER GREATER_EQ LESS LESS_EQ
 %token PLUS MINUS MULT DIV MOD INCR DECR UMINUS
 %token COMMA SEMICOLON COLON DCOLON DOT DDOT L_BR R_BR L_PAR R_PAR LCURLY_BR RCURLY_BR
+%token IF ELSE WHILE FOR RETURN 
 
 %right ASSIGN
 %left OR
@@ -149,6 +151,7 @@ funcdef:	FUNCTION L_PAR idlist R_PAR block
 
 const:		REAL
 			|INTEGER
+			|STRING
 			|NIL
 			|TRUE
 			|FALSE
