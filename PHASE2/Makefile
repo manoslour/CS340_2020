@@ -13,4 +13,5 @@ symTable.o: symTable.c
 	gcc -c symTable.c
 
 clean:
-	rm *c scanner parser
+	rm *o
+	rm parser.c parser.h scanner.c Makefile.save calc

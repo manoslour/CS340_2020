@@ -1,7 +1,7 @@
 %{
     #include <stdio.h>
     int yyerror(char* yaccProvidedMessage);
-    int yylex(void);
+    extern int yylex(void);
 
     extern int yylineno;
     extern char *yytext;
@@ -20,22 +20,21 @@
 %token <realValue> REAL
 %token <stringValue> ID
 %token <stringValue> STRING
-%token ASSIGN NOT OR AND EQUAL NOT_EQUAL GREATER GREATER_EQ LESS LESS_EQ
-%token PLUS MINUS MULT DIV MOD INCR DECR UMINUS
-%token COMMA SEMICOLON COLON DCOLON DOT DDOT L_BR R_BR L_PAR R_PAR LCURLY_BR RCURLY_BR
-%token IF ELSE WHILE FOR RETURN 
+%token IF ELSE WHILE FOR FUNCTION RETURN BREAK CONTINUE AND NOT OR LOCAL TRUE FALSE NIL
+%token ASSIGN PLUS MINUS MULT DIV MOD EQUAL NOT_EQUAL INCR DECR GREATER LESS GREATER_EQ LESS_EQ
+%token LCURLY_BR RCURLY_BR L_BR R_BR L_PAR R_PAR SEMICOLON COMMA COLON DCOLON DOT DDOT
 
 %right ASSIGN
 %left OR
 %left AND
-%nonassoc EQUAL, NOT_EQUAL 
-%nonassoc GREATER, GREATER_EQ, LESS, LESS_EQ
-%left PLUS, MINUS
-%left MULT, DIV, MOD
-%right NOT, INCR, DECR, UMINUS
-%left DOT, DDOT
-%left L_BR, R_BR
-%left L_PAR, R_PAR
+%nonassoc EQUAL NOT_EQUAL 
+%nonassoc GREATER GREATER_EQ LESS LESS_EQ
+%left PLUS MINUS
+%left MULT DIV MOD
+%right NOT INCR DECR UMINUS
+%left DOT DDOT
+%left L_BR R_BR
+%left L_PAR R_PAR
 
 %start program
 
@@ -47,13 +46,14 @@ program:	stmts
 
 stmts:		stmt
 			|stmts stmt
+			;
 
 stmt:		expr SEMICOLON
 			|ifstmt
 			|whilestmt
 			|forstmt
-			|break SEMICOLON
-			|continue SEMICOLON
+			|BREAK SEMICOLON
+			|CONTINUE SEMICOLON
 			|block
 			|funcdef
 			|SEMICOLON
@@ -79,7 +79,7 @@ op:			PLUS
 			|OR
 			;
 
-term:		L_PAR expr R_PER
+term:		L_PAR expr R_PAR
 			|MINUS expr %prec UMINUS
 			|NOT expr
 			|INCR lvalue
@@ -123,7 +123,8 @@ callsuffix:	normcall
 normcall:	L_PAR elist R_PAR
 			;
 
-methodcall:	DDOT ID L_PAR elist R_PAR 
+methodcall:		DDOT ID L_PAR elist R_PAR
+				;
 
 elist:		expr
 			|elist COMMA expr
@@ -133,6 +134,7 @@ elist:		expr
 objectdef:	L_BR R_BR
 			|L_BR elist R_BR
 			|L_BR indexed R_BR
+			;
 
 indexed:	indexedelem
 			|indexed COMMA indexedelem
@@ -148,6 +150,7 @@ block:		LCURLY_BR RCURLY_BR
 
 funcdef:	FUNCTION L_PAR idlist R_PAR block
 			|FUNCTION ID L_PAR idlist R_PAR block
+			;
 
 const:		REAL
 			|INTEGER
@@ -157,9 +160,12 @@ const:		REAL
 			|FALSE
 			;
 
+idlist:		ID
+			|idlist COMMA ID
+			|
+			;
 
-
-ifstsmt:	IF L_PAR expr R_PAR stmt
+ifstmt:	IF L_PAR expr R_PAR stmt
 			|IF L_PAR expr R_PAR stmt ELSE stmt
 			;
 
