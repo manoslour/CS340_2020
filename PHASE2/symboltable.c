@@ -35,7 +35,7 @@ bool ScopeLookUp(char *name, unsigned int scope){
 /*
 return 1 if a symbol exists in all the scopes and symbols that we have 0 elsewere
 */
-bool GeneralLookUp(char *name, unsigned int scope){
+bool GeneralLookUp(char *name){
 	
 	struct ScopeListEntry *temp = scope_head;
 	struct SymbolTableEntry *tmp;
@@ -266,7 +266,7 @@ int main (){
 	PrintScopeList();
 //	PrintHash();
 
-	if (ScopeLookUp("liokis",1)) printf("YES\n");
+	if (GeneralLookUp("print")) printf("YES\n");
 	else printf("NO\n");
 	printf("DONE\n");
 

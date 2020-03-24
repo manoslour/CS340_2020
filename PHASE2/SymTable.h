@@ -76,3 +76,5 @@ bool ScopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope);
 void Initialize();
 
 bool ScopeLookUp(char *name, unsigned int scope);
+
+bool GeneralLookUp(char *name);
