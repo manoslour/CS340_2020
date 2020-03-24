@@ -1,3 +1,6 @@
+#ifndef _SYMTABLE_H_
+#define _SYMTABLE_H_
+
 #include <stdio.h>
 
 #define BUCKETS 512
@@ -44,14 +47,16 @@ int hashFunc(char* name);
 
 void insert(SymbolTableEntry *symbol);
 
-int scopeLookup(int scope);
+int scopeLookup(unsigned int scope);
 
-int totalLookup(int scope);
+int totalLookup(unsigned int scope);
 
-void hide();
+void hide(unsigned int scope);
 
 char* generateFuncName();
 
 void initLibFuncs();
 
 void printScopeList();
+
+#endif
