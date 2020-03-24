@@ -54,6 +54,7 @@ stmt:		expr SEMICOLON		{printf("stmt: expr SEMICOLON at line %d --> %s\n", yylin
 			|ifstmt		{printf("stmt: ifstmt at line %d --> %s\n", yylineno, yytext);}
 			|whilestmt		{printf("stmt: whilestmt at line %d --> %s\n", yylineno, yytext);}
 			|forstmt		{printf("stmt: forstmt at line %d --> %s\n", yylineno, yytext);}
+			|returnstmt		{printf("stmt: returnstmt at line %d --> %s\n", yylineno, yytext);}
 			|BREAK SEMICOLON		{printf("stmt: BREAK SEMICOLON at line %d --> %s\n", yylineno, yytext);}
 			|CONTINUE SEMICOLON		{printf("stmt: CONTINUE SEMICOLON at line %d --> %s\n", yylineno, yytext);}
 			|block		{printf("stmt: block at line %d --> %s\n", yylineno, yytext);}
@@ -129,7 +130,7 @@ methodcall:		DDOT ID L_PAR elist R_PAR 	{printf("methodcall: ..ID (elist) at lin
 				;
 
 elist:		expr						{printf("elist: expr at line %d --> %s\n", yylineno, yytext);}
-			|elist COMMA expr			{printf("elist: elist comma expr at line %d --> %s\n", yylineno, yytext);}
+			|expr COMMA elist			{printf("elist: elist comma expr at line %d --> %s\n", yylineno, yytext);}
 			|
 			;
 
@@ -139,7 +140,7 @@ objectdef:	L_BR R_BR 					{printf("objectdef: [] at line %d --> %s\n", yylineno,
 			;
 
 indexed:	indexedelem					{printf("indexed: indexelem at line %d --> %s\n", yylineno, yytext);}
-			|indexed COMMA indexedelem 	{printf("indexed: indexed comma indexelem at line %d --> %s\n", yylineno, yytext);}
+			|indexedelem COMMA indexed 	{printf("indexed: indexed comma indexelem at line %d --> %s\n", yylineno, yytext);}
 			|
 			;
 
