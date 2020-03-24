@@ -1,8 +1,61 @@
 #include "SymTable.h"
 
 
+/*
+Return 1 if a symbol exists in a given scope 0 elsewere
+*/
+bool ScopeLookUp(char *name, unsigned int scope){
+	
+
+	struct ScopeListEntry *temp = scope_head;
+	struct SymbolTableEntry *tmp;
 
 
+	while (temp != NULL){
+
+		if(scope == temp->scope){
+			tmp = temp->symbols;
+			while (tmp != NULL) {
+				printf("MPIKA SCOPE \n");
+				if (tmp->type == LIBFUNC || tmp->type == USERFUNC){
+					if (!strcmp(tmp->value.funcVal->name, name)) return 1; // symbol find in a current scope return true
+				}
+				else {
+					if (!strcmp(tmp->value.varVal->name, name)) return 1; // symbol find in a current scope return true
+				}
+				tmp = tmp->scope_next;
+			}
+		} 
+		temp = temp->next;
+	} 
+	return 0;
+}
+
+
+/*
+return 1 if a symbol exists in all the scopes and symbols that we have 0 elsewere
+*/
+bool GeneralLookUp(char *name, unsigned int scope){
+	
+	struct ScopeListEntry *temp = scope_head;
+	struct SymbolTableEntry *tmp;
+
+	while (temp != NULL){
+		
+		tmp = temp->symbols;
+		while (tmp != NULL){
+			
+			if (tmp->type == LIBFUNC || tmp->type == USERFUNC)
+				if (!strcmp(tmp->value.funcVal->name, name)) return 1; // symbol find return true
+			else 
+				if (!strcmp(tmp->value.varVal->name, name)) return 1; // symbol find return true
+			
+			tmp = tmp->scope_next;
+		}
+		temp = temp->next;
+	}
+	return 0;
+}
 
 
 
@@ -107,7 +160,10 @@ bool hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned in
 		new_sym->value.funcVal = new_func;
 	}
 	else if (type == FORMAL){
-		
+		new_var = (struct Variable*)malloc(sizeof(struct Variable));
+		new_var->name = name ;
+		new_var->scope = scope;
+
 	}
 	else {
 		new_var = (struct Variable*)malloc(sizeof(struct Variable));
@@ -177,13 +233,13 @@ void PrintScopeList(){
 		tmp = temp->symbols;
 		while (tmp != NULL){
 			if (tmp->type == LIBFUNC) printf("\"%s\"\t [Library Function]\t (line %d)\t (scope %d)"
-				,tmp->value.funcVal->name,tmp->value.funcVal->scope,tmp->value.funcVal->line);
+				,tmp->value.funcVal->name,tmp->value.funcVal->line,tmp->value.funcVal->scope);
 			else if (tmp->type == USERFUNC) printf("\"%s\"\t [User Function]\t (line %d)\t (scope %d)"
-				,tmp->value.funcVal->name,tmp->value.funcVal->scope,tmp->value.funcVal->line);
+				,tmp->value.funcVal->name,tmp->value.funcVal->line,tmp->value.funcVal->scope);
 			else if (tmp->type == GLOBAL) printf("\"%s\"\t [Global Variable]\t (line %d)\t (scope %d)"
-				,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
+				,tmp->value.varVal->name,tmp->value.varVal->line,tmp->value.varVal->scope);
 			else if (tmp->type == LOCAL) printf("\"%s\"\t [Local Variable]\t (line %d)\t (scope %d)"
-				,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
+				,tmp->value.varVal->name,tmp->value.varVal->line,tmp->value.varVal->scope);
 			//else if (tmp->type == FORMAL) printf("\"%s\"\t [Formal Variable]\t (line %d)\t (scope %d)"
 				//,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
 
@@ -210,8 +266,8 @@ int main (){
 	PrintScopeList();
 //	PrintHash();
 
-
-
+	if (ScopeLookUp("liokis",1)) printf("YES\n");
+	else printf("NO\n");
 	printf("DONE\n");
 
 	return 0;

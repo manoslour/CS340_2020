@@ -74,3 +74,5 @@ bool hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned in
 bool ScopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope);
 
 void Initialize();
+
+bool ScopeLookUp(char *name, unsigned int scope);
