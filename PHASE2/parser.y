@@ -42,69 +42,69 @@
 
 %%
 
-program:	stmts {printf("promgram: stmts at line %d --> %s\n", yylineno, yytext);}
+program:	stmts	{printf("promgram: stmts at line %d --> %s\n", yylineno, yytext);}
 			|
 			;
 
-stmts:		stmt
-			|stmts stmt
+stmts:		stmt	{printf("stmts: stmt at line %d --> %s\n", yylineno, yytext);}
+			|stmts stmt		{printf("stmts: stmts stmt at line %d --> %s\n", yylineno, yytext);}	
 			;
 
-stmt:		expr SEMICOLON
-			|ifstmt
-			|whilestmt
-			|forstmt
-			|BREAK SEMICOLON
-			|CONTINUE SEMICOLON
-			|block
-			|funcdef
-			|SEMICOLON
+stmt:		expr SEMICOLON		{printf("stmt: expr SEMICOLON at line %d --> %s\n", yylineno, yytext);}
+			|ifstmt		{printf("stmt: ifstmt at line %d --> %s\n", yylineno, yytext);}
+			|whilestmt		{printf("stmt: whilestmt at line %d --> %s\n", yylineno, yytext);}
+			|forstmt		{printf("stmt: forstmt at line %d --> %s\n", yylineno, yytext);}
+			|BREAK SEMICOLON		{printf("stmt: BREAK SEMICOLON at line %d --> %s\n", yylineno, yytext);}
+			|CONTINUE SEMICOLON		{printf("stmt: CONTINUE SEMICOLON at line %d --> %s\n", yylineno, yytext);}
+			|block		{printf("stmt: block at line %d --> %s\n", yylineno, yytext);}
+			|funcdef		{printf("stmt: funcdef at line %d --> %s\n", yylineno, yytext);}
+			|SEMICOLON		{printf("stmt: SEMICOLON at line %d --> %s\n", yylineno, yytext);}
 			;
 
-expr:		assignexpr	
-			|expr op expr
-			|term
+expr:		assignexpr	{printf("expr: assignexpr at line %d --> %s\n", yylineno, yytext);}
+			|expr op expr		{printf("expr: expr op expr at line %d --> %s\n", yylineno, yytext);}
+			|term		{printf("expr: term at line %d --> %s\n", yylineno, yytext);}
 			;
 
-op:			PLUS
-			|MINUS
-			|MULT
-			|DIV
-			|MOD
-			|GREATER
-			|GREATER_EQ
-			|LESS
-			|LESS_EQ
-			|EQUAL
-			|NOT_EQUAL
-			|AND
-			|OR
+op:			PLUS		{printf("op: PLUS at line %d --> %s\n", yylineno, yytext);}
+			|MINUS		{printf("op: MINUS at line %d --> %s\n", yylineno, yytext);}
+			|MULT		{printf("op: MULT at line %d --> %s\n", yylineno, yytext);}
+			|DIV		{printf("op: DIV at line %d --> %s\n", yylineno, yytext);}
+			|MOD		{printf("op: MOD at line %d --> %s\n", yylineno, yytext);}
+			|GREATER		{printf("op: GREATER at line %d --> %s\n", yylineno, yytext);}
+			|GREATER_EQ		{printf("op: GREATER_EQ at line %d --> %s\n", yylineno, yytext);}
+			|LESS		{printf("op: LESS at line %d --> %s\n", yylineno, yytext);}
+			|LESS_EQ		{printf("op: LESS_EQ at line %d --> %s\n", yylineno, yytext);}
+			|EQUAL		{printf("op: EQUAL at line %d --> %s\n", yylineno, yytext);}
+			|NOT_EQUAL		{printf("op: NOT_EQUAL at line %d --> %s\n", yylineno, yytext);}
+			|AND		{printf("op: AND at line %d --> %s\n", yylineno, yytext);}
+			|OR		{printf("op: OR at line %d --> %s\n", yylineno, yytext);}
 			;
 
-term:		L_PAR expr R_PAR
-			|MINUS expr %prec UMINUS
-			|NOT expr
-			|INCR lvalue
-			|lvalue INCR
-			|DECR lvalue
-			|lvalue DECR
-			|primary
+term:		L_PAR expr R_PAR		{printf("term: L_PAR expr R_PAR at line %d --> %s\n", yylineno, yytext);}
+			|MINUS expr %prec UMINUS		{printf("term: MINUS expr at line %d --> %s\n", yylineno, yytext);}
+			|NOT expr		{printf("term: NOT expr at line %d --> %s\n", yylineno, yytext);}
+			|INCR lvalue		{printf("term: INCR lvalue at line %d --> %s\n", yylineno, yytext);}
+			|lvalue INCR		{printf("term: lvalue INCR at line %d --> %s\n", yylineno, yytext);}
+			|DECR lvalue		{printf("term: DECR lvalue at line %d --> %s\n", yylineno, yytext);}
+			|lvalue DECR		{printf("term: lvalue DECR at line %d --> %s\n", yylineno, yytext);}
+			|primary		{printf("term: primary at line %d --> %s\n", yylineno, yytext);}
 			;
 
-assignexpr:	lvalue ASSIGN expr
+assignexpr:	lvalue ASSIGN expr		{printf("assignexpr: lvalue ASSIGN expr at line %d --> %s\n", yylineno, yytext);}
 			;
 
-primary:	lvalue
-			|call
-			|objectdef
-			|L_PAR funcdef R_PAR
-			|const
+primary:	lvalue		{printf("primary: lvalue at line %d --> %s\n", yylineno, yytext);}
+			|call		{printf("primary: call at line %d --> %s\n", yylineno, yytext);}
+			|objectdef		{printf("primary: objectdef at line %d --> %s\n", yylineno, yytext);}
+			|L_PAR funcdef R_PAR		{printf("primary: L_PAR funcdef R_PAR at line %d --> %s\n", yylineno, yytext);}
+			|const		{printf("primary: const at line %d --> %s\n", yylineno, yytext);}
 			;
 
-lvalue:		ID				{printf("Entered ID\n");}
-			|LOCAL ID
-			|DCOLON ID
-			|member
+lvalue:		ID				{printf("lvalue: ID at line %d --> %s\n", yylineno, yytext);}
+			|LOCAL ID		{printf("lvalue: LOCAL ID at line %d --> %s\n", yylineno, yytext);}
+			|DCOLON ID		{printf("lvalue: DCOLON ID at line %d --> %s\n", yylineno, yytext);}
+			|member		{printf("lvalue: member at line %d --> %s\n", yylineno, yytext);}
 			;
 
 member:		lvalue DOT ID
