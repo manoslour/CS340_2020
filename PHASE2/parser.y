@@ -1,7 +1,9 @@
 %{
     #include <stdio.h>
+	#include "symTable.h"
+
     int yyerror(char* yaccProvidedMessage);
-    int yylex(void);
+    extern int yylex(void);
 
     extern int yylineno;
     extern char *yytext;
@@ -20,40 +22,40 @@
 %token <realValue> REAL
 %token <stringValue> ID
 %token <stringValue> STRING
-%token ASSIGN NOT OR AND EQUAL NOT_EQUAL GREATER GREATER_EQ LESS LESS_EQ
-%token PLUS MINUS MULT DIV MOD INCR DECR UMINUS
-%token COMMA SEMICOLON COLON DCOLON DOT DDOT L_BR R_BR L_PAR R_PAR LCURLY_BR RCURLY_BR
-%token IF ELSE WHILE FOR RETURN 
+%token IF ELSE WHILE FOR FUNCTION RETURN BREAK CONTINUE AND NOT OR LOCAL TRUE FALSE NIL
+%token ASSIGN PLUS MINUS MULT DIV MOD EQUAL NOT_EQUAL INCR DECR GREATER LESS GREATER_EQ LESS_EQ
+%token LCURLY_BR RCURLY_BR L_BR R_BR L_PAR R_PAR SEMICOLON COMMA COLON DCOLON DOT DDOT
 
 %right ASSIGN
 %left OR
 %left AND
-%nonassoc EQUAL, NOT_EQUAL 
-%nonassoc GREATER, GREATER_EQ, LESS, LESS_EQ
-%left PLUS, MINUS
-%left MULT, DIV, MOD
-%right NOT, INCR, DECR, UMINUS
-%left DOT, DDOT
-%left L_BR, R_BR
-%left L_PAR, R_PAR
+%nonassoc EQUAL NOT_EQUAL 
+%nonassoc GREATER GREATER_EQ LESS LESS_EQ
+%left PLUS MINUS
+%left MULT DIV MOD
+%right NOT INCR DECR UMINUS
+%left DOT DDOT
+%left L_BR R_BR
+%left L_PAR R_PAR
 
 %start program
 
 %%
 
-program:	stmts
+program:	stmts	{printf("promgram: stmts at line %d --> %s\n", yylineno, yytext);}
 			|
 			;
 
 stmts:		stmt
 			|stmts stmt
+			;
 
 stmt:		expr SEMICOLON
 			|ifstmt
 			|whilestmt
 			|forstmt
-			|break SEMICOLON
-			|continue SEMICOLON
+			|BREAK SEMICOLON
+			|CONTINUE SEMICOLON
 			|block
 			|funcdef
 			|SEMICOLON
@@ -79,7 +81,7 @@ op:			PLUS
 			|OR
 			;
 
-term:		L_PAR expr R_PER
+term:		L_PAR expr R_PAR
 			|MINUS expr %prec UMINUS
 			|NOT expr
 			|INCR lvalue
@@ -99,47 +101,49 @@ primary:	lvalue
 			|const
 			;
 
-lvalue:		ID
+lvalue:		ID				{printf("lvalue: ID at line %d --> %s\n", yylineno, yytext);}
 			|LOCAL ID
 			|DCOLON ID
 			|member
 			;
 
-member:		lvalue DOT ID
-			|lvalue L_BR expr R_BR
-			|call DOT ID
-			|call L_BR expr R_BR
+member:		lvalue DOT ID 							{printf("member: lvalue.ID at line %d --> %s\n", yylineno, yytext);}
+			|lvalue L_BR expr R_BR 					{printf("member: lvalue[expr] at line %d --> %s\n", yylineno, yytext);}
+			|call DOT ID 							{printf("member: call.ID at line %d --> %s\n", yylineno, yytext);}
+			|call L_BR expr R_BR 					{printf("member: lvalue[expr] at line %d --> %s\n", yylineno, yytext);}
 			;
 
-call:		call L_PAR elist R_PAR
-			|lvalue callsuffix
-			|L_PAR funcdef R_PAR L_PAR elist R_PAR
+call:		call L_PAR elist R_PAR					{printf("call: (elist) at line %d --> %s\n", yylineno, yytext);}
+			|lvalue callsuffix						{printf("call: lvalue callsuffix at line %d --> %s\n", yylineno, yytext);}
+			|L_PAR funcdef R_PAR L_PAR elist R_PAR	{printf("call: (funcdef) (elist) at line %d --> %s\n", yylineno, yytext);}
 			;
 
-callsuffix:	normcall
-			|methodcall
+callsuffix:	normcall 						{printf("callsuffix: normcall at line %d --> %s\n", yylineno, yytext);}
+			|methodcall						{printf("callsuffix: methodcall at line %d --> %s\n", yylineno, yytext);}
 			;
 
-normcall:	L_PAR elist R_PAR
+normcall:	L_PAR elist R_PAR 				{printf("normcall: (elist) at line %d --> %s\n", yylineno, yytext);}
 			;
 
-methodcall:	DDOT ID L_PAR elist R_PAR 
+methodcall:		DDOT ID L_PAR elist R_PAR 	{printf("methodcall: ..ID (elist) at line %d --> %s\n", yylineno, yytext);}
+				;
 
-elist:		expr
-			|elist COMMA expr
-			|
+elist:		expr						{printf("elist: expr at line %d --> %s\n", yylineno, yytext);}
+			|elist COMMA expr			{printf("elist: elist comma expr at line %d --> %s\n", yylineno, yytext);}
+			|							{printf("elist: empty at line %d --> %s\n", yylineno, yytext);}
 			;
 
-objectdef:	L_BR R_BR
-			|L_BR elist R_BR
-			|L_BR indexed R_BR
-
-indexed:	indexedelem
-			|indexed COMMA indexedelem
-			| 
+objectdef:	L_BR R_BR 					{printf("objectdef: [] at line %d --> %s\n", yylineno, yytext);}
+			|L_BR elist R_BR 			{printf("objectdef: [elist] at line %d --> %s\n", yylineno, yytext);}
+			|L_BR indexed R_BR 			{printf("objectdef: [indexed] at line %d --> %s\n", yylineno, yytext);}
 			;
 
-indexedelem:	LCURLY_BR expr COLON RCURLY_BR
+indexed:	indexedelem					{printf("indexed: indexelem at line %d --> %s\n", yylineno, yytext);}
+			|indexed COMMA indexedelem 	{printf("indexed: indexed comma indexelem at line %d --> %s\n", yylineno, yytext);}
+			| 							{printf("indexed: empty at line %d --> %s\n", yylineno, yytext);}
+			;
+
+indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR	{printf("indexelem: {expr:expr} at line %d --> %s\n", yylineno, yytext);}
 			;
 
 block:		LCURLY_BR RCURLY_BR
@@ -148,6 +152,7 @@ block:		LCURLY_BR RCURLY_BR
 
 funcdef:	FUNCTION L_PAR idlist R_PAR block
 			|FUNCTION ID L_PAR idlist R_PAR block
+			;
 
 const:		REAL
 			|INTEGER
@@ -157,9 +162,12 @@ const:		REAL
 			|FALSE
 			;
 
+idlist:		ID
+			|idlist COMMA ID
+			|
+			;
 
-
-ifstsmt:	IF L_PAR expr R_PAR stmt
+ifstmt:	IF L_PAR expr R_PAR stmt
 			|IF L_PAR expr R_PAR stmt ELSE stmt
 			;
 
@@ -173,6 +181,7 @@ forstmt:  	FOR L_PAR elist SEMICOLON expr SEMICOLON elist R_PAR stmt
 returnstmt:	RETURN SEMICOLON
 			|RETURN expr SEMICOLON
 			;
+
 
 %%
 
