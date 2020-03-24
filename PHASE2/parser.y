@@ -42,7 +42,7 @@
 
 %%
 
-program:	stmts	{printf("promgram: stmts at line %d --> %s\n", yylineno, yytext);}
+program:	stmts {printf("promgram: stmts at line %d --> %s\n", yylineno, yytext);}
 			|
 			;
 
@@ -101,7 +101,7 @@ primary:	lvalue
 			|const
 			;
 
-lvalue:		ID				{printf("lvalue: ID at line %d --> %s\n", yylineno, yytext);}
+lvalue:		ID				{printf("Entered ID\n");}
 			|LOCAL ID
 			|DCOLON ID
 			|member
@@ -146,40 +146,46 @@ indexed:	indexedelem
 indexedelem:	LCURLY_BR expr COLON RCURLY_BR
 			;
 
-block:		LCURLY_BR RCURLY_BR
-			|LCURLY_BR stmts  RCURLY_BR
+block:		LCURLY_BR RCURLY_BR 			{printf("block: LCURLY_BR RCURLY_BR  at line %d --> %s\n", yylineno, yytext);}		
+			|LCURLY_BR stmts  RCURLY_BR		{printf("block: LCURLY_BR stmts RCURLY_BR  at line %d --> %s\n", yylineno, yytext);}
 			;
 
-funcdef:	FUNCTION L_PAR idlist R_PAR block
-			|FUNCTION ID L_PAR idlist R_PAR block
+funcdef:	FUNCTION L_PAR idlist R_PAR block  		{printf("funcdef: FUNCTION L_PAR idlist R_PAR 
+													block at line %d --> %s\n", yylineno, yytext);}
+			|FUNCTION ID L_PAR idlist R_PAR block 	{printf("funcdef: FUNCTION ID L_PAR idlist R_PAR 
+													block  at line %d --> %s\n", yylineno, yytext);}
 			;
 
-const:		REAL
-			|INTEGER
-			|STRING
-			|NIL
-			|TRUE
-			|FALSE
+const:		REAL 		{printf("const: REAL at line %d --> %s\n", yylineno, yytext);}
+			|INTEGER	{printf("const: INTEGER at line %d --> %s\n", yylineno, yytext);}
+			|STRING 	{printf("const: STRING at line %d --> %s\n", yylineno, yytext);}
+			|NIL		{printf("const: NIL at line %d --> %s\n", yylineno, yytext);}
+			|TRUE		{printf("const: TRUE at line %d --> %s\n", yylineno, yytext);}
+			|FALSE 		{printf("const: FALSE at line %d --> %s\n", yylineno, yytext);}
 			;
 
-idlist:		ID
-			|idlist COMMA ID
+idlist:		ID 					{printf("idlist: ID at line %d --> %s\n", yylineno, yytext);}
+			|idlist COMMA ID 	{printf("idlist: COMMA ID at line %d --> %s\n", yylineno, yytext);}
 			|
 			;
 
-ifstmt:	IF L_PAR expr R_PAR stmt
-			|IF L_PAR expr R_PAR stmt ELSE stmt
+ifstmt:		IF L_PAR expr R_PAR stmt 		{printf("ifstmt: IF L_PAR expr R_PAR stmt 
+											at line %d --> %s\n", yylineno, yytext);}
+			|IF L_PAR expr R_PAR stmt ELSE stmt 	{printf("ifstmt: IF L_PAR expr R_PAR stmt ELSE stmt
+											at line %d --> %s\n", yylineno, yytext);}
 			;
 
 
-whilestmt:	WHILE L_PAR expr R_PAR stmt
+whilestmt:	WHILE L_PAR expr R_PAR stmt 	{printf("whilestmt: WHILE L_PAR expr R_PAR stmt 
+											at line %d --> %s\n", yylineno, yytext);}
 			;
 
-forstmt:  	FOR L_PAR elist SEMICOLON expr SEMICOLON elist R_PAR stmt
+forstmt:  	FOR L_PAR elist SEMICOLON expr SEMICOLON elist R_PAR stmt {printf("forstm: 
+							FOR L_PAR elist SEMICOLON expr SEMICOLON elist R_PAR stmt at line %d --> %s\n", yylineno, yytext);}
 			;
 
-returnstmt:	RETURN SEMICOLON
-			|RETURN expr SEMICOLON
+returnstmt:	RETURN SEMICOLON		{printf("returnstmt: RETURN SEMICOLON at line %d --> %s\n", yylineno, yytext);}
+			|RETURN expr SEMICOLON	{printf("returnstmt: RETURN expr SEMICOLON at line %d --> %s\n", yylineno, yytext);}
 			;
 
 
