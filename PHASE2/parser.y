@@ -164,7 +164,7 @@ const:		REAL 		{printf("const: REAL at line %d --> %s\n", yylineno, yytext);}
 			;
 
 idlist:		ID 					{printf("idlist: ID at line %d --> %s\n", yylineno, yytext);}
-			|idlist COMMA ID 	{printf("idlist: COMMA ID at line %d --> %s\n", yylineno, yytext);}
+			|ID COMMA idlist 	{printf("idlist: COMMA ID at line %d --> %s\n", yylineno, yytext);}
 			|
 			;
 
