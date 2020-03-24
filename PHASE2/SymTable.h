@@ -1,3 +1,6 @@
+#ifndef _SYMTABLE_H_
+#define _SYMTABLE_H_
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -5,6 +8,7 @@
 #include <string.h>
 
 #define Buckets 256
+//stuff for collor
 #define RED   "\x1B[31m"
 #define GRN   "\x1B[32m"
 #define YEL   "\x1B[33m"
@@ -13,9 +17,12 @@
 #define CYN   "\x1B[36m"
 #define WHT   "\x1B[37m"
 #define RESET "\x1B[0m"
+
+
 /**
 enumetate for the type of the symbol 
 */
+
 enum SymbolType {GLOBAL, LOCAL, FORMAL, USERFUNC, LIBFUNC}; 
 
 typedef struct Variable{
@@ -69,7 +76,7 @@ bool hide (int scope );
 
 bool enable (int scope );
 
-bool hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope);
+bool HashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope);
 
 bool ScopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope);
 
@@ -78,3 +85,9 @@ void Initialize();
 bool ScopeLookUp(char *name, unsigned int scope);
 
 bool GeneralLookUp(char *name);
+
+void HideScope(unsigned int scope);
+
+void ActivateScope(unsigned int scope);
+
+#endif

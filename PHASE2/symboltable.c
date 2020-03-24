@@ -1,6 +1,46 @@
 #include "SymTable.h"
 
 
+
+
+
+void ActivateScope(unsigned int scope){
+
+	struct ScopeListEntry *temp = scope_head;
+	struct SymbolTableEntry *tmp;
+	
+	while (temp != NULL){
+		if (temp->scope == scope ){
+			tmp = temp->symbols; 
+			while (tmp != NULL) {
+				tmp->isActive = 1;
+				tmp = tmp->scope_next;
+			}
+		}
+		temp = temp->next;
+	}
+
+}
+
+void HideScope(unsigned int scope){
+	
+	struct ScopeListEntry *temp = scope_head;
+	struct SymbolTableEntry *tmp;
+	
+	while (temp != NULL){
+		if (temp->scope == scope ){
+			tmp = temp->symbols; 
+			while (tmp != NULL) {
+				tmp->isActive = 0;
+				tmp = tmp->scope_next;
+			}
+		}
+		temp = temp->next;
+	}
+
+}
+
+
 /*
 Return 1 if a symbol exists in a given scope 0 elsewere
 */
@@ -60,18 +100,18 @@ bool GeneralLookUp(char *name){
 
 void Initialize(){
 
-	hashInsert("print", 0, LIBFUNC, 0);
-	hashInsert("input", 0, LIBFUNC, 0);
-	hashInsert("objectmemberkeys", 0, LIBFUNC, 0);
-	hashInsert("objecttotalmembers", 0, LIBFUNC, 0);
-	hashInsert("objectcopy", 0, LIBFUNC, 0);
-	hashInsert("tootalarguments", 0, LIBFUNC, 0);
-	hashInsert("argument", 0, LIBFUNC, 0);
-	hashInsert("typeof", 0, LIBFUNC, 0);
-	hashInsert("strtonum", 0, LIBFUNC, 0);
-	hashInsert("sqrt", 0, LIBFUNC, 0);
-	hashInsert("cos", 0, LIBFUNC, 0);
-	hashInsert("sin", 0, LIBFUNC, 0);
+	HashInsert("print", 0, LIBFUNC, 0);
+	HashInsert("input", 0, LIBFUNC, 0);
+	HashInsert("objectmemberkeys", 0, LIBFUNC, 0);
+	HashInsert("objecttotalmembers", 0, LIBFUNC, 0);
+	HashInsert("objectcopy", 0, LIBFUNC, 0);
+	HashInsert("tootalarguments", 0, LIBFUNC, 0);
+	HashInsert("argument", 0, LIBFUNC, 0);
+	HashInsert("typeof", 0, LIBFUNC, 0);
+	HashInsert("strtonum", 0, LIBFUNC, 0);
+	HashInsert("sqrt", 0, LIBFUNC, 0);
+	HashInsert("cos", 0, LIBFUNC, 0);
+	HashInsert("sin", 0, LIBFUNC, 0);
 
 
 }
@@ -135,7 +175,7 @@ bool ScopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope) {
 
 
 
-bool hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope){
+bool HashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope){
 
 	int pos = (int)*name % Buckets;
 	
@@ -202,6 +242,7 @@ void PrintHash(){
 		tmp = HashTable[i];
 		printf("\nHASH NUM %d :",i );
 		while (tmp != NULL){
+			
 			if (tmp->type == LIBFUNC) printf("\"%s\"\t [Library Function]\t (line %d)\t (scope %d)"
 				,tmp->value.funcVal->name,tmp->value.funcVal->scope,tmp->value.funcVal->line);
 			else if (tmp->type == USERFUNC) printf("\"%s\"\t [User Function]\t (line %d)\t (scope %d)"
@@ -228,9 +269,10 @@ void PrintScopeList(){
 
 	while (temp != NULL){
 
-		printf("\n-------------------- SCOPE %d -------------------- \n",temp->scope );
+		printf("\n-----------------------------"YEL " SCOPE %d "RESET"----------------------------- \n",temp->scope );
 		tmp = temp->symbols;
 		while (tmp != NULL){
+
 			if (tmp->type == LIBFUNC) printf("\"%s\"\t [Library Function]\t (line %d)\t (scope %d)"
 				,tmp->value.funcVal->name,tmp->value.funcVal->line,tmp->value.funcVal->scope);
 			else if (tmp->type == USERFUNC) printf("\"%s\"\t [User Function]\t (line %d)\t (scope %d)"
@@ -255,17 +297,19 @@ int main (){
 
 	Initialize();
 
-	hashInsert("Lome",3,LIBFUNC,0);
-	hashInsert("LOUKAS",1,LIBFUNC,1);
-	hashInsert("maria",2,GLOBAL,9);
-	hashInsert("manos",3,LIBFUNC,1);
-	hashInsert("sakis",3,LOCAL,3);
-	hashInsert("gus",3,USERFUNC,4);
-	hashInsert("liokis",3,USERFUNC,1); // -1 den emfanizei giati to scope to exw kanei unsigned 
+	HashInsert("Lome",3,LIBFUNC,0);
+	HashInsert("LOUKAS",1,LIBFUNC,1);
+	HashInsert("maria",2,GLOBAL,9);
+	HashInsert("manos",3,LIBFUNC,1);
+	HashInsert("sakis",3,LOCAL,3);
+	HashInsert("gus",3,USERFUNC,4);
+	HashInsert("liokis",3,USERFUNC,1); // -1 den emfanizei giati to scope to exw kanei unsigned 
+	HashInsert("mastoras",3,LOCAL,2);
+	HideScope(1);
 	PrintScopeList();
 //	PrintHash();
 
-	if (GeneralLookUp("print")) printf("YES\n");
+	if (GeneralLookUp("prigisnt")) printf("YES\n");
 	else printf("NO\n");
 	printf("DONE\n");
 
