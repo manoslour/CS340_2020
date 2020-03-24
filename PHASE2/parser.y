@@ -107,43 +107,43 @@ lvalue:		ID				{printf("lvalue: ID at line %d --> %s\n", yylineno, yytext);}
 			|member		{printf("lvalue: member at line %d --> %s\n", yylineno, yytext);}
 			;
 
-member:		lvalue DOT ID
-			|lvalue L_BR expr R_BR
-			|call DOT ID
-			|call L_BR expr R_BR
+member:		lvalue DOT ID 							{printf("member: lvalue.ID at line %d --> %s\n", yylineno, yytext);}
+			|lvalue L_BR expr R_BR 					{printf("member: lvalue[expr] at line %d --> %s\n", yylineno, yytext);}
+			|call DOT ID 							{printf("member: call.ID at line %d --> %s\n", yylineno, yytext);}
+			|call L_BR expr R_BR 					{printf("member: lvalue[expr] at line %d --> %s\n", yylineno, yytext);}
 			;
 
-call:		call L_PAR elist R_PAR
-			|lvalue callsuffix
-			|L_PAR funcdef R_PAR L_PAR elist R_PAR
+call:		call L_PAR elist R_PAR					{printf("call: (elist) at line %d --> %s\n", yylineno, yytext);}
+			|lvalue callsuffix						{printf("call: lvalue callsuffix at line %d --> %s\n", yylineno, yytext);}
+			|L_PAR funcdef R_PAR L_PAR elist R_PAR	{printf("call: (funcdef) (elist) at line %d --> %s\n", yylineno, yytext);}
 			;
 
-callsuffix:	normcall
-			|methodcall
+callsuffix:	normcall 						{printf("callsuffix: normcall at line %d --> %s\n", yylineno, yytext);}
+			|methodcall						{printf("callsuffix: methodcall at line %d --> %s\n", yylineno, yytext);}
 			;
 
-normcall:	L_PAR elist R_PAR
+normcall:	L_PAR elist R_PAR 				{printf("normcall: (elist) at line %d --> %s\n", yylineno, yytext);}
 			;
 
-methodcall:		DDOT ID L_PAR elist R_PAR
+methodcall:		DDOT ID L_PAR elist R_PAR 	{printf("methodcall: ..ID (elist) at line %d --> %s\n", yylineno, yytext);}
 				;
 
-elist:		expr
-			|elist COMMA expr
-			|
+elist:		expr						{printf("elist: expr at line %d --> %s\n", yylineno, yytext);}
+			|elist COMMA expr			{printf("elist: elist comma expr at line %d --> %s\n", yylineno, yytext);}
+			|							{printf("elist: empty at line %d --> %s\n", yylineno, yytext);}
 			;
 
-objectdef:	L_BR R_BR
-			|L_BR elist R_BR
-			|L_BR indexed R_BR
+objectdef:	L_BR R_BR 					{printf("objectdef: [] at line %d --> %s\n", yylineno, yytext);}
+			|L_BR elist R_BR 			{printf("objectdef: [elist] at line %d --> %s\n", yylineno, yytext);}
+			|L_BR indexed R_BR 			{printf("objectdef: [indexed] at line %d --> %s\n", yylineno, yytext);}
 			;
 
-indexed:	indexedelem
-			|indexed COMMA indexedelem
-			| 
+indexed:	indexedelem					{printf("indexed: indexelem at line %d --> %s\n", yylineno, yytext);}
+			|indexed COMMA indexedelem 	{printf("indexed: indexed comma indexelem at line %d --> %s\n", yylineno, yytext);}
+			| 							{printf("indexed: empty at line %d --> %s\n", yylineno, yytext);}
 			;
 
-indexedelem:	LCURLY_BR expr COLON RCURLY_BR
+indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR	{printf("indexelem: {expr:expr} at line %d --> %s\n", yylineno, yytext);}
 			;
 
 block:		LCURLY_BR RCURLY_BR 			{printf("block: LCURLY_BR RCURLY_BR  at line %d --> %s\n", yylineno, yytext);}		
