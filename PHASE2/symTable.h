@@ -2,6 +2,7 @@
 #define _SYMTABLE_H_
 
 #include <stdio.h>
+#include <stdbool.h>
 
 #define BUCKETS 512
 
@@ -11,22 +12,14 @@ typedef struct Variable {
     const char* name;
     unsigned int scope;
     unsigned int line;
-};
+}Variable;
 
 typedef struct Function {
     const char* name;
     // List of argumenst - TODO!!
     unsigned int scope;
     unsigned int line;
-};
-
-// Used to create a list of the symbols saved in each scope.
-typedef struct ScopeListNode {
-    unsigned int scope;
-    symbolTableEntry *symbol_list;
-
-    ScopeListNode *next;
-};
+}Function;
 
 typedef struct SymbolTableEntry {
     bool isActive;
@@ -36,9 +29,19 @@ typedef struct SymbolTableEntry {
     } value;
     enum SymbolType type;
 
-    SymbolTableEntry *next; //  Points to the next symbol in the hash list. 
-    ScopeListNode *scope_next; // Points to the next symbol in scope list
-};
+    struct SymbolTableEntry *next; //  Points to the next symbol in the hash list. 
+    struct ScopeListNode *scope_next; // Points to the next symbol in scope list
+
+}SymbolTableEntry;
+
+// Used to create a list of the symbols saved in each scope.
+typedef struct ScopeListNode {
+    unsigned int scope;
+    SymbolTableEntry *symbol_list;
+
+    struct ScopeListNode *next;
+}ScopeListNode;
+
 
 ScopeListNode *scopeListHead = NULL; // Global pointer to scope list's head.
 SymbolTableEntry *SymbolTable[BUCKETS];
