@@ -1,10 +1,17 @@
-all: scanner
+all: calc
 
-scanner: scanner.c
-	gcc -o scanner scanner.c
+calc: scanner.c parser.c symTable.o
+	gcc -o calc scanner.c parser.c symTable.o
 
 scanner.c: scanner.l
 	flex --outfile=scanner.c scanner.l
 
+parser.c: parser.y
+	bison --yacc --defines --output=parser.c parser.y
+
+symTable.o: symTable.c
+	gcc -c symTable.c
+
 clean:
-	rm *c scanner
+	rm *o
+	rm parser.c parser.h scanner.c calc
