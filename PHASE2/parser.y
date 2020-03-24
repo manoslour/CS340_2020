@@ -1,5 +1,6 @@
 %{
     #include <stdio.h>
+	#include "symTable.h"
     int yyerror(char* yaccProvidedMessage);
     extern int yylex(void);
 
@@ -99,7 +100,7 @@ primary:	lvalue
 			|const
 			;
 
-lvalue:		ID
+lvalue:		ID				{printf("Entered ID\n");}
 			|LOCAL ID
 			|DCOLON ID
 			|member
@@ -200,5 +201,7 @@ int main(int argc, char** argv){
     }
 
     yyparse();
+	initialize();
+	printScopeList();
     return 0;
 }
