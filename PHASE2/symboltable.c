@@ -16,13 +16,12 @@ bool ScopeLookUp(char *name, unsigned int scope){
 		if(scope == temp->scope){
 			tmp = temp->symbols;
 			while (tmp != NULL) {
-				printf("MPIKA SCOPE \n");
-				if (tmp->type == LIBFUNC || tmp->type == USERFUNC){
+				
+				if (tmp->type == LIBFUNC || tmp->type == USERFUNC)
 					if (!strcmp(tmp->value.funcVal->name, name)) return 1; // symbol find in a current scope return true
-				}
-				else {
+				else 
 					if (!strcmp(tmp->value.varVal->name, name)) return 1; // symbol find in a current scope return true
-				}
+				
 				tmp = tmp->scope_next;
 			}
 		} 
