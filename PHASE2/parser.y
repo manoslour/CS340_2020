@@ -42,7 +42,7 @@
 
 %%
 
-program:	stmts
+program:	stmts	{printf("promgram: stmts at line %d --> %s\n", yylineno, yytext);}
 			|
 			;
 
@@ -101,7 +101,7 @@ primary:	lvalue
 			|const
 			;
 
-lvalue:		ID				{printf("Entered ID\n");}
+lvalue:		ID				{printf("lvalue: ID at line %d --> %s\n", yylineno, yytext);}
 			|LOCAL ID
 			|DCOLON ID
 			|member
