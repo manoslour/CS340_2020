@@ -4,12 +4,13 @@
     #include <string.h>
 
     #define BUFFERSIZE 256
-    #define YY_DECL int alpha_yylex(void* yyval)
 
     #define RED   "\x1B[31m"
     #define GRN   "\x1B[32m"
     #define YEL   "\x1B[33m"
     #define RESET "\x1B[0m"
+
+    extern YYSTYPE yylval;
 
     struct errorToken {
         char *output;
@@ -70,7 +71,7 @@ L_BR  "["
 R_BR  "]"
 L_PAR   "("
 R_PAR   ")"
-SEMICOL ";"
+SEMICOLON ";"
 COMMA   ","
 COLON   ":"
 DCOLON  "::"
@@ -85,7 +86,7 @@ ID [a-zA-Z][a-zA-Z_0-9]*
 LINE_COMMENT "//".*
 
 %x COMMENT
-%x STRING
+%x FLEX_STRING
 
 %%
 
@@ -126,7 +127,7 @@ LINE_COMMENT "//".*
 {R_BR}        {return R_BR;}
 {L_PAR}         {return L_PAR;}
 {R_PAR}         {return R_PAR;}
-{SEMICOL}       {return SEMICOL;}
+{SEMICOLON}       {return SEMICOLON;}
 {COMMA}         {return COMMA;}
 {COLON}         {return COLON;}
 {DCOLON}        {return DCOLON;}
@@ -149,10 +150,8 @@ LINE_COMMENT "//".*
                 }
 
 {WHITESPACE}    {}
-
-{NEWLINE}       {return "\n";}
-
-{LINE_COMMENT}  {return LINE_COMMENT;}
+{NEWLINE}       {}
+{LINE_COMMENT}  {}
 
 
 "/*"    {
@@ -210,42 +209,42 @@ LINE_COMMENT "//".*
             BEGIN(STRING);
         }
 
-<STRING>[^\n\t\\\"]*    {
+<FLEX_STRING>[^\n\t\\\"]*    {
                             stringSize = stringSize + strlen(yytext);
                             buffer = realloc(buffer, stringSize);
                             strcat(buffer, yytext);
                         }
-<STRING>"\n"            {   
+<FLEX_STRING>"\n"            {   
                             flag=1;
                             stringSize = stringSize + strlen(yytext);
                             buffer = realloc(buffer, stringSize);
                             strcat(buffer, "\n"); 
 
                         }
-<STRING>"\\\""          {
+<FLEX_STRING>"\\\""          {
                             stringSize = stringSize + strlen(yytext);
                             buffer = realloc(buffer, stringSize);
                             strcat(buffer, "\"");
                         }
-<STRING>"\\n"           {   
+<FLEX_STRING>"\\n"           {   
                             stringSize = stringSize + strlen(yytext);
                             buffer = realloc(buffer, stringSize);
                             strcat(buffer, "\n"); 
 
                         }        
-<STRING>"\\t"           {
+<FLEX_STRING>"\\t"           {
                             stringSize = stringSize + strlen(yytext);
                             buffer = realloc(buffer, stringSize);
                             strcat(buffer, "\t");
                         }
-<STRING>"\\\\"          {
+<FLEX_STRING>"\\\\"          {
                             stringSize = stringSize + strlen(yytext);
                             buffer = realloc(buffer, stringSize);
                             strcat(buffer, "\\");
                         }
-<STRING>"\\".           {   addError(YEL"Warning\x1B[0m \tInvalid Escape Character", yytext, yylineno);}
+<FLEX_STRING>"\\".           {   addError(YEL"Warning\x1B[0m \tInvalid Escape Character", yytext, yylineno);}
 
-<STRING>"\""            { 
+<FLEX_STRING>"\""            { 
                             stringSize = stringSize + strlen(yytext);
                             buffer = realloc(buffer, stringSize);
                             strcat(buffer, yytext);
@@ -254,9 +253,9 @@ LINE_COMMENT "//".*
 
                             BEGIN(INITIAL);
 
-                            return STRING;
+                            return FLEX_STRING;
                         }
-<STRING><<EOF>>         {
+<FLEX_STRING><<EOF>>         {
                             addError(RED"Error"RESET, "Unclosed STRING at EOF", yylineno);
                             //return -1;
                         }
