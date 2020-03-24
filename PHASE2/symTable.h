@@ -35,15 +35,15 @@ typedef struct SymbolTableEntry {
 }SymbolTableEntry;
 
 // Used to create a list of the symbols saved in each scope.
-typedef struct ScopeListNode {
+typedef struct ScopeListEntry{
     unsigned int scope;
     SymbolTableEntry *symbol_list;
 
-    struct ScopeListNode *next;
-}ScopeListNode;
+    struct ScopeListEntry *next;
+}ScopeListEntry;
 
 
-ScopeListNode *scopeListHead = NULL; // Global pointer to scope list's head.
+ScopeListEntry *scopeListHead = NULL; // Global pointer to scope list's head.
 SymbolTableEntry *SymbolTable[BUCKETS];
     
 int hashFunc(char* name);
