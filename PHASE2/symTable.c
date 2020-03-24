@@ -1,4 +1,4 @@
-#include "symTable.h";
+#include "symTable.h"
 
 int hashFunc(char* name){
     //ADD CODE
