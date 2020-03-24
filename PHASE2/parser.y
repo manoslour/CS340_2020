@@ -8,6 +8,7 @@
     extern int yylineno;
     extern char *yytext;
     extern FILE *yyin;
+    unsigned int currscope = 0;
 %}
 
 %defines
@@ -102,7 +103,19 @@ primary:	lvalue		{printf("primary: lvalue at line %d --> %s\n", yylineno, yytext
 			|const		{printf("primary: const at line %d --> %s\n", yylineno, yytext);}
 			;
 
-lvalue:		ID				{printf("lvalue: ID at line %d --> %s\n", yylineno, yytext);}
+lvalue:		ID				{
+							printf("lvalue: ID at line %d --> %s\n", yylineno, yytext);
+							enum SymbolType type ;
+							char *tmp
+							if(generalLookUp(yytext, currscope) == -1  ) {
+								if(currscope == 0) type = Global;
+								else type = Local;
+								hashInsert(yytext, yylineno, type, currscope );
+							}
+
+
+
+							}
 			|LOCAL ID		{printf("lvalue: LOCAL ID at line %d --> %s\n", yylineno, yytext);}
 			|DCOLON ID		{printf("lvalue: DCOLON ID at line %d --> %s\n", yylineno, yytext);}
 			|member		{printf("lvalue: member at line %d --> %s\n", yylineno, yytext);}
@@ -192,6 +205,9 @@ int yyerror(char* yaccProvidedMessage){
 }
 
 int main(int argc, char** argv){
+    
+    initialize();
+
     if(argc > 1){
         if(!(yyin = fopen(argv[1], "r"))){
             fprintf(stderr, "Cannot read file: %s\n", argv[1]);
@@ -203,5 +219,6 @@ int main(int argc, char** argv){
     }
 
     yyparse();
+    printScopeList();
     return 0;
 }

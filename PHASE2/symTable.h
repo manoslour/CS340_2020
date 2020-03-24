@@ -62,7 +62,7 @@ void initialize();
 
 bool scopeLookUp(char *name, unsigned int scope);
 
-bool generalLookUp(char *name);
+int generalLookUp(char *name, unsigned int scope);
 
 void hideScope(unsigned int scope);
 
