@@ -1,5 +1,8 @@
 #include "symTable.h"
 
+ScopeListEntry *scope_head = NULL; //Global pointer to the scope list's head
+SymbolTableEntry *HashTable[Buckets];
+
 void activateScope(unsigned int scope){
 
 	ScopeListEntry *temp = scope_head;
@@ -33,7 +36,6 @@ void hideScope(unsigned int scope){
 		temp = temp->next;
 	}
 }
-
 
 /*
 Return 1 if a symbol exists in a given scope 0 elsewere

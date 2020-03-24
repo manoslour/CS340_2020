@@ -46,9 +46,6 @@ typedef struct ScopeListEntry{
 	struct ScopeListEntry *next, *prev;
 }ScopeListEntry;
 
-ScopeListEntry *scope_head = NULL; //Global pointer to the scope list's head
-SymbolTableEntry *HashTable[Buckets];
-
 void printHash();
 
 void printScopeList();

@@ -1,6 +1,7 @@
 %{
     #include <stdio.h>
 	#include "symTable.h"
+
     int yyerror(char* yaccProvidedMessage);
     extern int yylex(void);
 
@@ -201,7 +202,5 @@ int main(int argc, char** argv){
     }
 
     yyparse();
-	initialize();
-	printScopeList();
     return 0;
 }
