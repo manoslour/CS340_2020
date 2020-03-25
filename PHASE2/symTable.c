@@ -367,8 +367,7 @@ void printScopeList(){
 			else if (tmp->type == Local) printf("\"%s\"\t [Local Variable]\t (line %d)\t (scope %d)"
 				,tmp->value.varVal->name,tmp->value.varVal->line,tmp->value.varVal->scope);
 			else if (tmp->type == Formal) printf("\"%s\"\t [Formal Variable]\t (line %d)\t (scope %d)"
-				,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
-
+				,tmp->value.varVal->name,tmp->value.varVal->line,tmp->value.varVal->scope);
 			printf("\n");
 			tmp = tmp->scope_next; 
 		}
