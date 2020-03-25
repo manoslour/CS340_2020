@@ -25,7 +25,7 @@
 %token <intValue> INTEGER
 %token <realValue> REAL
 %token <stringValue> ID
-%token <stringValue> STRING
+%token <stringValue> FLEX_STRING
 %token IF ELSE WHILE FOR FUNCTION RETURN BREAK CONTINUE AND NOT OR LOCAL TRUE FALSE NIL
 %token ASSIGN PLUS MINUS MULT DIV MOD EQUAL NOT_EQUAL INCR DECR GREATER LESS GREATER_EQ LESS_EQ
 %token LCURLY_BR RCURLY_BR L_BR R_BR L_PAR R_PAR SEMICOLON COMMA COLON DCOLON DOT DDOT
@@ -249,7 +249,7 @@ funcdef:	FUNCTION
 
 const:		REAL 		{printf("const: REAL at line %d --> %s\n", yylineno, yytext);}
 			|INTEGER	{printf("const: INTEGER at line %d --> %s\n", yylineno, yytext);}
-			|STRING 	{printf("const: STRING at line %d --> %s\n", yylineno, yytext);}
+			|FLEX_STRING 	{printf("const: FLEX_STRING at line %d --> %s\n", yylineno, yytext);}
 			|NIL		{printf("const: NIL at line %d --> %s\n", yylineno, yytext);}
 			|TRUE		{printf("const: TRUE at line %d --> %s\n", yylineno, yytext);}
 			|FALSE 		{printf("const: FALSE at line %d --> %s\n", yylineno, yytext);}

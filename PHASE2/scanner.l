@@ -191,7 +191,7 @@ LINE_COMMENT "//".*
             buffer = (char *)malloc(stringSize * sizeof(char));
             strcpy(buffer, yytext);
 
-            BEGIN(STRING);
+            BEGIN(FLEX_STRING);
         }
 
 <FLEX_STRING>[^\n\t\\\"]*    {
