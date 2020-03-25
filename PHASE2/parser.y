@@ -119,22 +119,25 @@ lvalue:		ID				{
 			|LOCAL ID		{
 								printf("lvalue: LOCAL ID at line %d --> %s\n", yylineno, yytext);
 
-								if( scopeLookUp(yytext, currscope) == 1)
-									printf("Local var found\n");
-								else{
-									if(scopeLookUp(yytext, 0) == 2){
-										if(currscope == 0)
-											printf("Ok, found locally\n");
-										else
-											printf("Error, collision with library function\n");
-										break;
-									}
-
+								if( scopeLookUp(yytext, currscope) == 1){
+									printf("Ok, found locally\n");
+								}
+								else if(scopeLookUp(yytext, 0) == 2){
 									if(currscope == 0)
-										hashInsert(yytext, yylineno, Global, currscope);
+										printf("Ok, found in scope 0\n");
 									else
+										addError("Error, collision with library function", yytext, yylineno);
+								}
+								else{
+									if(currscope == 0){
+										printf("New Global var in scope %d\n", currscope);
+										hashInsert(yytext, yylineno, Global, currscope);
+									}
+									else{
+										printf("New Local var in scope %d\n", currscope);
 										hashInsert(yytext, yylineno, Local, currscope);
-								}							
+									}
+								}						
 							}
 
 			|DCOLON ID		{
