@@ -75,7 +75,7 @@ void printFormals(){
 				parse = tmp;
 				printf("Function \"%s\" has formals:\n", tmp->value.funcVal->name);
 				while (parse->formal_next != NULL) {
-					printf("\t\"%s\" [Formal] (line %d) (scope %d)\n", parse->value.varVal->name, parse->value.varVal->line, parse->value.varVal->scope);
+					printf("\t\"%s\" [Formal] (line %d) (scope %d)\n", parse->formal_next->value.varVal->name, parse->formal_next->value.varVal->line, parse->formal_next->value.varVal->scope);
 					parse = parse->formal_next;
 				}
 				printf("\n");
@@ -374,6 +374,6 @@ int main(){
 
 	insertFormal(func1, formal1);
 	insertFormal(func1, formal2);
-	
+
 	printFormals();
 }
