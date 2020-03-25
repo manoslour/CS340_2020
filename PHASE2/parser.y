@@ -9,6 +9,8 @@
     extern char *yytext;
     extern FILE *yyin;
     unsigned int currscope = 0;
+	unsigned int inFunc = 0;
+	struct SymbolTableEntry *tmp;
 %}
 
 %defines
@@ -122,7 +124,7 @@ lvalue:		ID				{
 								if( scopeLookUp(yytext, currscope) == 1){
 									printf("Ok, found locally\n");
 								}
-								else if(scopeLookUp(yytext, 0) == 2){
+								else if(scopeLookUp(yytext, 0) == 2 || scopeLookUp(yytext, 0) == 3){
 									if(currscope == 0)
 										printf("Ok, found in scope 0\n");
 									else
@@ -188,12 +190,60 @@ indexed:	indexedelem					{printf("indexed: indexelem at line %d --> %s\n", yylin
 indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR	{printf("indexelem: {expr:expr} at line %d --> %s\n", yylineno, yytext);}
 			;
 
-block:		LCURLY_BR RCURLY_BR 			{printf("block: LCURLY_BR RCURLY_BR  at line %d --> %s\n", yylineno, yytext);}		
-			|LCURLY_BR stmts  RCURLY_BR		{printf("block: LCURLY_BR stmts RCURLY_BR  at line %d --> %s\n", yylineno, yytext);}
+block:		LCURLY_BR	{
+							if (inFunc == 0) currscope++;
+							
+						} 
+
+
+
+
+			RCURLY_BR 	{	
+							hideScope(currscope);
+							if(inFunc == 1) inFunc = 0;
+							currscope--;
+					
+						}		
+			|LCURLY_BR {currscope++;} stmts  RCURLY_BR		{hideScope(currscope); currscope--; printf("block: LCURLY_BR stmts RCURLY_BR  at line %d --> %s\n", yylineno, yytext);}
 			;
 
-funcdef:	FUNCTION L_PAR idlist R_PAR block  		{printf("funcdef: FUNCTION L_PAR idlist R_PAR block at line %d --> %s\n", yylineno, yytext);}
-			|FUNCTION ID L_PAR idlist R_PAR block 	{printf("funcdef: FUNCTION ID L_PAR idlist R_PAR block  at line %d --> %s\n", yylineno, yytext);}
+funcdef:	FUNCTION
+					{	
+						
+						printf("\n\nto function einai : %s\n\n", yytext);
+					}
+			L_PAR 	{
+								currscope++;
+								inFunc = 1;
+							}
+				 idlist {
+					 		//to do 
+				 		}
+				 R_PAR block  		{printf("funcdef: FUNCTION L_PAR idlist R_PAR block at line %d --> %s\n", yylineno, yytext);}
+			|FUNCTION ID{
+							printf("\n\nto function einai : %s\n\n", yytext);
+							int found = scopeLookUp(yytext,currscope);
+							
+							
+
+							if(found == 1){
+								addError("Error variable already exists",yytext,yylineno);
+							}
+							else if(found == 2){
+								addError("Error function already exists in this scope ",yytext,yylineno);
+							}
+							else if (scopeLookUp(yytext,0) == 3){
+								addError("Error collision with library function",yytext,yylineno);
+							}
+							else {
+								tmp = hashInsert(yytext, yylineno, Userfunc, currscope);
+							}
+						} 
+			L_PAR		{currscope++;}
+
+			idlist 
+			R_PAR	{inFunc = 1;}
+			block 	{printf("funcdef: FUNCTION ID L_PAR idlist R_PAR block  at line %d --> %s\n", yylineno, yytext);}
 			;
 
 const:		REAL 		{printf("const: REAL at line %d --> %s\n", yylineno, yytext);}
