@@ -238,7 +238,7 @@ LINE_COMMENT "//".*
 
                             BEGIN(INITIAL);
 
-                            return FLEX_STRING;
+                            return STRING;
                         }
 <FLEX_STRING><<EOF>>         {
                             addError(RED"Error"RESET, "Unclosed STRING at EOF", yylineno);
