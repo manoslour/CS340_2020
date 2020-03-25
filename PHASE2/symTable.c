@@ -85,6 +85,7 @@ void printFormals(){
 		temp = temp->next;
 	}
 }
+
 void activateScope(unsigned int scope){
 
 	ScopeListEntry *temp = scope_head;
