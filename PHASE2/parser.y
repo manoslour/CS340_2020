@@ -54,7 +54,7 @@ stmts:		stmt	{printf("stmts: stmt at line %d --> %s\n", yylineno, yytext);}
 			;
 
 stmt:		expr SEMICOLON		{printf("stmt: expr SEMICOLON at line %d --> %s\n", yylineno, yytext);}
-			|ifstmt		{printf("stmt: ifstmt at line %d --> %s\n", yylineno, yytext);}
+			|ifstmt		 {printf("stmt: ifstmt at line %d --> %s\n", yylineno, yytext);}
 			|whilestmt		{printf("stmt: whilestmt at line %d --> %s\n", yylineno, yytext);}
 			|forstmt		{printf("stmt: forstmt at line %d --> %s\n", yylineno, yytext);}
 			|returnstmt		{printf("stmt: returnstmt at line %d --> %s\n", yylineno, yytext);}
@@ -191,25 +191,28 @@ indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR	{printf("indexelem: {expr:expr}
 			;
 
 block:		LCURLY_BR	{
+							printf("\n\nTO IN FUNCC EINAI %d\n\n" , inFunc);
 							if (inFunc == 0) currscope++;
 							
 						} 
-
-
-
-
 			RCURLY_BR 	{	
 							hideScope(currscope);
 							if(inFunc == 1) inFunc = 0;
 							currscope--;
 					
 						}		
-			|LCURLY_BR {currscope++;} stmts  RCURLY_BR		{hideScope(currscope); currscope--; printf("block: LCURLY_BR stmts RCURLY_BR  at line %d --> %s\n", yylineno, yytext);}
+			|LCURLY_BR {if (inFunc == 0) currscope++;} 
+			stmts  
+			RCURLY_BR	{
+							hideScope(currscope);
+							if(inFunc == 1) inFunc = 0;
+							currscope--;
+						}
 			;
 
 funcdef:	FUNCTION
 					{	
-						
+
 						printf("\n\nto function einai : %s\n\n", yytext);
 					}
 			L_PAR 	{
@@ -220,8 +223,8 @@ funcdef:	FUNCTION
 					 		//to do 
 				 		}
 				 R_PAR block  		{printf("funcdef: FUNCTION L_PAR idlist R_PAR block at line %d --> %s\n", yylineno, yytext);}
-			|FUNCTION ID{
-							printf("\n\nto function einai : %s\n\n", yytext);
+			|FUNCTION ID 	{
+							
 							int found = scopeLookUp(yytext,currscope);
 							
 							
@@ -239,10 +242,10 @@ funcdef:	FUNCTION
 								tmp = hashInsert(yytext, yylineno, Userfunc, currscope);
 							}
 						} 
-			L_PAR		{currscope++;}
+			L_PAR		{currscope++; inFunc = 1;}
 
 			idlist 
-			R_PAR	{inFunc = 1;}
+			R_PAR	
 			block 	{printf("funcdef: FUNCTION ID L_PAR idlist R_PAR block  at line %d --> %s\n", yylineno, yytext);}
 			;
 
