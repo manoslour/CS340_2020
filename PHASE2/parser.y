@@ -116,11 +116,20 @@ lvalue:		ID				{
 								}
 							}
 			|LOCAL ID		{
-							
-								if (scopeLookUp(yytext,currscope) == 0 ){
-									if (currscope == 0) hashInsert(yytext, yylineno, Global, currscope);
-									else hashInsert(yytext, yylineno, Local, currscope);
+								int lookUp = scopeLookUp(yytext,currscope);
+								if (lookUp == 2) {
+									addError("Colision of local var with function", yytext,yylineno);
 								}
+								eles if (lookUp == 1){
+									printf("Sympol \"%s\" allreaddy exists",yytext );
+								}
+								else{
+									if (currscope == 0) hashInsert(yytext, yylineno, Global,currscope);
+									else  hashInsert(yytext, yylineno, Local, currscope);
+								}
+
+
+
 								else printf("Variable \"%s\" allready exists in scope %d", yytext,yylineno);
 							}
 			|DCOLON ID		{
