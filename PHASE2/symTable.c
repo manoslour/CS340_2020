@@ -122,7 +122,7 @@ void hideScope(unsigned int scope){
 /*
 Return 1 if a symbol exists in a given scope 0 elsewere
 */
-bool scopeLookUp(char *name, unsigned int scope){
+int scopeLookUp(char *name, unsigned int scope){
 	
 	ScopeListEntry *temp = scope_head;
 	SymbolTableEntry *tmp;
@@ -133,7 +133,7 @@ bool scopeLookUp(char *name, unsigned int scope){
 			while (tmp != NULL) {
 				
 				if (tmp->type == Libfunc || tmp->type == Userfunc){
-					if (!strcmp(tmp->value.funcVal->name, name)) return 1; // symbol find in a current scope return true
+					if (!strcmp(tmp->value.funcVal->name, name)) return 2; // symbol find in a current scope return true
 				} 
 				
 				else if(tmp->type == Global || tmp->type == Local || tmp->type == Formal ){

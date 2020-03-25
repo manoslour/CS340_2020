@@ -115,19 +115,33 @@ lvalue:		ID				{
 									hashInsert(yytext, yylineno, type, currscope);
 								}
 							}
+
 			|LOCAL ID		{
-							printf("lvalue: LOCAL ID at line %d --> %s\n", yylineno, yytext);
-							
-							
-							
-							
+								printf("lvalue: LOCAL ID at line %d --> %s\n", yylineno, yytext);
+
+								if( scopeLookUp(yytext, currscope) == 1)
+									printf("Local var found\n");
+								else{
+									if(scopeLookUp(yytext, 0) == 2){
+										if(currscope == 0)
+											printf("Ok, found locally\n");
+										else
+											printf("Error, collision with library function\n");
+										break;
+									}
+
+									if(currscope == 0)
+										hashInsert(yytext, yylineno, Global, currscope);
+									else
+										hashInsert(yytext, yylineno, Local, currscope);
+								}							
 							}
+
 			|DCOLON ID		{
-							printf("KANW LOOKUP STO GLOBAL KAI EPISTREFEI %d",scopeLookUp(yytext, 0) );
-							if(scopeLookUp(yytext, 0) == 1) printf("Global var %s found in line %d",yytext,yylineno); 
-							else {
-								addError("Global variable not found", yytext, yylineno);
-							}
+								if(scopeLookUp(yytext, 0) == 1) 
+									printf("Global var %s found in line %d",yytext,yylineno); 
+								else
+									addError("Global variable not found", yytext, yylineno);
 							}
 			|member		{printf("lvalue: member at line %d --> %s\n", yylineno, yytext);}
 			;
