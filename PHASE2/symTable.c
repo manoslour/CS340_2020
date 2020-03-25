@@ -1,9 +1,46 @@
 #include "symTable.h"
 
-struct ScopeListEntry *scope_head = NULL; //Global pointer to the scope list's head
-struct SymbolTableEntry *HashTable[Buckets];
+ScopeListEntry *scope_head = NULL; //Global pointer to the scope list's head
+SymbolTableEntry *HashTable[Buckets];
+struct errorToken *ERROR_HEAD = NULL; // GLobal pointer to the start of error_tokkens list
 
+void addError(char *output, char *content, unsigned int numLine){
+    struct errorToken *last;
+    struct errorToken *newNode = (struct errorToken *)malloc(sizeof(struct errorToken));
+    char *tmpOutput = strdup(output);
+    char *tmpContent = strdup(content);
 
+    newNode->output = tmpOutput;
+    newNode->content = tmpContent;
+    newNode->numLine = numLine;
+    newNode->next = NULL;
+
+    last = ERROR_HEAD;
+
+    if(ERROR_HEAD == NULL){
+        ERROR_HEAD = newNode;
+    }else{
+        while(last->next != NULL){
+            last = last->next;
+        }
+        last->next = newNode;
+    }
+}
+
+void printErrorList(){
+
+    struct errorToken *tmp = ERROR_HEAD;
+    printf("\n------------------\tERRORS - WARNINGS\t------------------\n\n");
+
+    while(tmp != NULL){
+        printf("%d:\t", tmp->numLine);
+        printf("%s\t", tmp->output);
+        printf("%s\n", tmp->content);
+
+        tmp = tmp->next;
+    }
+    printf("\n");
+}
 
 bool insertFormal(struct SymbolTableEntry *funcname, struct SymbolTableEntry *formalEntry){
 
@@ -29,7 +66,6 @@ void printFormals(){
 	struct SymbolTableEntry *tmp, *parse;
 	struct ScopeListEntry *temp = scope_head;
 
-
 	while (temp != NULL){
 
 		tmp = temp->symbols;
@@ -39,10 +75,9 @@ void printFormals(){
 				parse = tmp;
 				printf("Function \"%s\" has formals : ", tmp->value.funcVal->name);
 				while (parse->formal_next != NULL) {
-					printf("\"%s\"  [Formal]  (line %d)   (scope %d)", 
-						parse->value.varVal->name, parse->value.varVal->line, parse->value.varVal->scope);
-
+					printf("\"%s\"  [Formal]  (line %d)   (scope %d)", parse->formal_next->value.varVal->name, parse->formal_next->value.varVal->line, parse->formal_next->value.varVal->scope);
 					parse = parse->formal_next;
+					if(parse->formal_next != NULL) printf(" || ");
 				}
 				printf("\n");
 			}
@@ -51,7 +86,6 @@ void printFormals(){
 		temp = temp->next;
 	}
 }
-
 
 void activateScope(unsigned int scope){
 
@@ -113,14 +147,13 @@ bool scopeLookUp(char *name, unsigned int scope){
 	return 0;
 }
 
-
-// return 1 if a symbol exists in all the scopes and symbols that we have 0 elsewere
+// Performs lookup from current 
 int generalLookUp(char *name, unsigned int scope){
 	
-	ScopeListEntry *temp = scope_head;
-	SymbolTableEntry *tmp;
 	int flag = 0;
-	int found = 0;
+	SymbolTableEntry *tmp;
+	ScopeListEntry *temp = scope_head;
+
 	while (temp != NULL){
 		
 		if (temp->scope == scope) {
@@ -135,7 +168,6 @@ int generalLookUp(char *name, unsigned int scope){
 				
 				tmp = tmp->scope_next;
 			}
-
 		}
 
 		if (flag == 1){
@@ -144,7 +176,6 @@ int generalLookUp(char *name, unsigned int scope){
 		}
 		else temp = temp->next;
 	}
-	
 	return -1;
 }
 
@@ -213,7 +244,6 @@ bool scopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope) {
 			new_scope->next = tmp;
 			tmp->prev = new_scope;
 		}
-
 	}
 	return 0;
 }
@@ -296,11 +326,11 @@ void printHash(){
 				,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
 			else if (tmp->type == Local) printf("\"%s\"\t [Local Variable]\t (line %d)\t (scope %d)"
 				,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
-			else if (tmp->type == Formal) printf("\"%s\"\t [Formal Variable]\t (line %d)\t (scope %d)"
-				,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
+			//else if (tmp->type == FORMAL) printf("\"%s\"\t [Formal Variable]\t (line %d)\t (scope %d)"
+				//,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
 
 			if (tmp ->next != NULL)printf("  ||  ");
-			tmp = tmp->next; 
+			tmp = tmp->scope_next; 
 		}
 	}
 }
@@ -324,8 +354,8 @@ void printScopeList(){
 				,tmp->value.varVal->name,tmp->value.varVal->line,tmp->value.varVal->scope);
 			else if (tmp->type == Local) printf("\"%s\"\t [Local Variable]\t (line %d)\t (scope %d)"
 				,tmp->value.varVal->name,tmp->value.varVal->line,tmp->value.varVal->scope);
-			else if (tmp->type == Formal) printf("\"%s\"\t [Formal Variable]\t (line %d)\t (scope %d)"
-				,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
+			//else if (tmp->type == FORMAL) printf("\"%s\"\t [Formal Variable]\t (line %d)\t (scope %d)"
+				//,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
 
 			printf("\n");
 			tmp = tmp->scope_next; 
@@ -334,22 +364,16 @@ void printScopeList(){
 	}
 }
 
-
 int main(){
 
+	SymbolTableEntry *func1, *formal1, *formal2;
 
+	func1 = hashInsert("doSomething", 0, Userfunc, 2);
+	formal1 = hashInsert("x", 0, Formal, 3);
+	formal2 = hashInsert("y", 0, Formal, 3);
 
-
-	struct SymbolTableEntry *name1 , *name2,*name3;
-	hashInsert("print", 0, Libfunc, 0);
-	name2 = hashInsert("input", 0, Userfunc, 1);
-	name1 = hashInsert("objectmemberkeys", 0, Formal, 2);
-	name3 = hashInsert("objecttotalmembers", 0, Formal, 3);
-	hashInsert("objectcopy", 0, Libfunc, 4);
-	//printScopeList();
-	//printHash();
-	printf("\n");
-	insertFormal(name2, name1);
-	insertFormal(name2, name3);
+	insertFormal(func1, formal1);
+	insertFormal(func1, formal2);
+	
 	printFormals();
 }
