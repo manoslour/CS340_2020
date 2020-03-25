@@ -26,7 +26,7 @@ typedef struct Function{
 	const char *name; 
 	unsigned int scope ;
 	unsigned int line;
-	struct SymbolTableEntry *next;
+	struct SymbolTableEntry *next; // Formal arguments list
 }Function;
 
 typedef struct SymbolTableEntry{
