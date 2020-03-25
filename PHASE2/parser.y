@@ -220,6 +220,6 @@ int main(int argc, char** argv){
     yyparse();
     printScopeList();
 	printErrorList();
-	
+
     return 0;
 }

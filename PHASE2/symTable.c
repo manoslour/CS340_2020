@@ -199,7 +199,6 @@ bool scopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope) {
 			new_scope->next = tmp;
 			tmp->prev = new_scope;
 		}
-
 	}
 	return 0;
 }
