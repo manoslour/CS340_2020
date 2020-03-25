@@ -116,14 +116,18 @@ lvalue:		ID				{
 								}
 							}
 			|LOCAL ID		{
-							printf("lvalue: LOCAL ID at line %d --> %s\n", yylineno, yytext);
+							
+							if (scopeLookUp(yytext,currscope) == 0 ){
+								if (currscope == 0) hashInsert(yytext, yylineno, Global, currscope);
+								else hashInsert(yytext, yylineno, Global, currscope);
+							}
+							else printf("Variable \"%s\" allready exists in scope %d", yytext,yylineno);
 							
 							
 							
 							
 							}
 			|DCOLON ID		{
-							printf("KANW LOOKUP STO GLOBAL KAI EPISTREFEI %d",scopeLookUp(yytext, 0) );
 							if(scopeLookUp(yytext, 0) == 1) printf("Global var %s found in line %d",yytext,yylineno); 
 							else {
 								addError("Global variable not found", yytext, yylineno);
