@@ -117,21 +117,17 @@ lvalue:		ID				{
 							}
 			|LOCAL ID		{
 							
-							if (scopeLookUp(yytext,currscope) == 0 ){
-								if (currscope == 0) hashInsert(yytext, yylineno, Global, currscope);
-								else hashInsert(yytext, yylineno, Global, currscope);
-							}
-							else printf("Variable \"%s\" allready exists in scope %d", yytext,yylineno);
-							
-							
-							
-							
+								if (scopeLookUp(yytext,currscope) == 0 ){
+									if (currscope == 0) hashInsert(yytext, yylineno, Global, currscope);
+									else hashInsert(yytext, yylineno, Local, currscope);
+								}
+								else printf("Variable \"%s\" allready exists in scope %d", yytext,yylineno);
 							}
 			|DCOLON ID		{
-							if(scopeLookUp(yytext, 0) == 1) printf("Global var %s found in line %d",yytext,yylineno); 
-							else {
-								addError("Global variable not found", yytext, yylineno);
-							}
+								if(scopeLookUp(yytext, 0) == 1) printf("Global var %s found in line %d",yytext,yylineno); 
+								else {
+									addError("Global variable not found", yytext, yylineno);
+								}
 							}
 			|member		{printf("lvalue: member at line %d --> %s\n", yylineno, yytext);}
 			;
