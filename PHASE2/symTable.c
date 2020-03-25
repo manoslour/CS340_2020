@@ -42,6 +42,50 @@ void printErrorList(){
     printf("\n");
 }
 
+bool insertFormal(struct SymbolTableEntry *funcname, struct SymbolTableEntry *formalEntry){
+
+	struct SymbolTableEntry *tmp, *parse;
+
+	//an pas na valeis var se function h formal se var h var anti gia formal efuges kai den kaneis tpt 
+	if ((funcname->type != Libfunc && funcname->type != Userfunc) || formalEntry->type != Formal ) {
+		printf("you are trying to add formals to a variable , not a function"); 
+		return 0;
+	}
+	
+	parse = funcname;
+	if (parse->formal_next == NULL) parse->formal_next = formalEntry;
+	else {
+		while (parse->formal_next != NULL) parse = parse->formal_next;
+		parse->formal_next = formalEntry; 
+	}
+	return 1;
+}
+
+void printFormals(){
+
+	struct SymbolTableEntry *tmp, *parse;
+	struct ScopeListEntry *temp = scope_head;
+
+	while (temp != NULL){
+
+		tmp = temp->symbols;
+		while (tmp != NULL){
+
+			if (tmp->type == Libfunc || tmp->type == Userfunc){
+				parse = tmp;
+				printf("Function \"%s\" has formals : ", tmp->value.funcVal->name);
+				while (parse->formal_next != NULL) {
+					printf("\"%s\"  [Formal]  (line %d)   (scope %d)", parse->value.varVal->name, parse->value.varVal->line, parse->value.varVal->scope);
+					parse = parse->formal_next;
+				}
+				printf("\n");
+			}
+			tmp = tmp->scope_next;
+		}
+		temp = temp->next;
+	}
+}
+
 void activateScope(unsigned int scope){
 
 	ScopeListEntry *temp = scope_head;
@@ -321,12 +365,17 @@ void printScopeList(){
 /*
 int main(){
 
+	struct SymbolTableEntry *name1 , *name2,*name3;
 	hashInsert("print", 0, Libfunc, 0);
-	hashInsert("input", 0, Libfunc, 1);
-	hashInsert("objectmemberkeys", 0, Libfunc, 2);
-	hashInsert("objecttotalmembers", 0, Libfunc, 3);
+	name2 = hashInsert("input", 0, Userfunc, 1);
+	name1 = hashInsert("objectmemberkeys", 0, Formal, 2);
+	name3 = hashInsert("objecttotalmembers", 0, Formal, 3);
 	hashInsert("objectcopy", 0, Libfunc, 4);
-	printf("vrika %d",generalLookUp("objecttotalmembers" , 4) );
-	
+	//printScopeList();
+	//printHash();
+	printf("\n");
+	insertFormal(name2, name1);
+	insertFormal(name2, name3);
+	printFormals();
 }
 */
