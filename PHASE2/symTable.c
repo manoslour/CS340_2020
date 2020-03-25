@@ -2,16 +2,45 @@
 
 ScopeListEntry *scope_head = NULL; //Global pointer to the scope list's head
 SymbolTableEntry *HashTable[Buckets];
+struct errorToken *ERROR_HEAD = NULL; // GLobal pointer to the start of error_tokkens list
 
+void addError(char *output, char *content, unsigned int numLine){
+    struct errorToken *last;
+    struct errorToken *newNode = (struct errorToken *)malloc(sizeof(struct errorToken));
+    char *tmpOutput = strdup(output);
+    char *tmpContent = strdup(content);
 
-bool prevScopeLookUp(char *name, unsigned int scope){
+    newNode->output = tmpOutput;
+    newNode->content = tmpContent;
+    newNode->numLine = numLine;
+    newNode->next = NULL;
 
+    last = ERROR_HEAD;
 
-
+    if(ERROR_HEAD == NULL){
+        ERROR_HEAD = newNode;
+    }else{
+        while(last->next != NULL){
+            last = last->next;
+        }
+        last->next = newNode;
+    }
 }
 
+void printErrorList(){
 
+    struct errorToken *tmp = ERROR_HEAD;
+    printf("\n------------------\tERRORS - WARNINGS\t------------------\n\n");
 
+    while(tmp != NULL){
+        printf("%d:\t", tmp->numLine);
+        printf("%s\t", tmp->output);
+        printf("%s\n", tmp->content);
+
+        tmp = tmp->next;
+    }
+    printf("\n");
+}
 
 void activateScope(unsigned int scope){
 
@@ -73,14 +102,13 @@ bool scopeLookUp(char *name, unsigned int scope){
 	return 0;
 }
 
-
-// return 1 if a symbol exists in all the scopes and symbols that we have 0 elsewere
+// Performs lookup from current 
 int generalLookUp(char *name, unsigned int scope){
 	
-	ScopeListEntry *temp = scope_head;
-	SymbolTableEntry *tmp;
 	int flag = 0;
-	int found = 0;
+	SymbolTableEntry *tmp;
+	ScopeListEntry *temp = scope_head;
+
 	while (temp != NULL){
 		
 		if (temp->scope == scope) {
@@ -95,7 +123,6 @@ int generalLookUp(char *name, unsigned int scope){
 				
 				tmp = tmp->scope_next;
 			}
-
 		}
 
 		if (flag == 1){
@@ -104,7 +131,6 @@ int generalLookUp(char *name, unsigned int scope){
 		}
 		else temp = temp->next;
 	}
-	
 	return -1;
 }
 
@@ -303,4 +329,5 @@ int main(){
 	hashInsert("objectcopy", 0, Libfunc, 4);
 	printf("vrika %d",generalLookUp("objecttotalmembers" , 4) );
 	
-}*/
+}
+*/

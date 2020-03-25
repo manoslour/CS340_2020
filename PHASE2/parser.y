@@ -104,17 +104,16 @@ primary:	lvalue		{printf("primary: lvalue at line %d --> %s\n", yylineno, yytext
 			;
 
 lvalue:		ID				{
-							printf("lvalue: ID at line %d --> %s\n", yylineno, yytext);
-							enum SymbolType type ;
-							char *tmp
-							if(generalLookUp(yytext, currscope) == -1  ) {
-								if(currscope == 0) type = Global;
-								else type = Local;
-								hashInsert(yytext, yylineno, type, currscope );
-							}
-
-
-
+								printf("lvalue: ID at line %d --> %s\n", yylineno, yytext);
+								char *tmp;
+								enum SymbolType type;
+								if(generalLookUp(yytext, currscope) == -1) {
+									if(currscope == 0) 
+										type = Global;
+									else
+										type = Local;
+									hashInsert(yytext, yylineno, type, currscope);
+								}
 							}
 			|LOCAL ID		{printf("lvalue: LOCAL ID at line %d --> %s\n", yylineno, yytext);}
 			|DCOLON ID		{printf("lvalue: DCOLON ID at line %d --> %s\n", yylineno, yytext);}
@@ -220,5 +219,7 @@ int main(int argc, char** argv){
 
     yyparse();
     printScopeList();
+	printErrorList();
+	
     return 0;
 }

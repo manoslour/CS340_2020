@@ -1,27 +1,12 @@
 %{
     #include "parser.h"
+    #include "symTable.h"
     #include <stdlib.h>
     #include <string.h>
 
     #define BUFFERSIZE 256
 
-    #define RED   "\x1B[31m"
-    #define GRN   "\x1B[32m"
-    #define YEL   "\x1B[33m"
-    #define RESET "\x1B[0m"
-
     extern YYSTYPE yylval;
-
-    struct errorToken {
-        char *output;
-        char* content;
-        unsigned int numLine;
-        struct errorToken *next;
-    };
-
-    struct errorToken *ERROR_HEAD = NULL; // GLobal pointer to the start of error_tokkens list
-    void addError(char *output, char *content, unsigned int numLine);
-    void printErrorList();
 
     char *buffer;
     int flag = 0;
@@ -263,41 +248,3 @@ LINE_COMMENT "//".*
 .                       {   addError(YEL"Warning\x1B[0m \tUndefined character", yytext, yylineno);}
 
 %%
-
-void addError(char *output, char *content, unsigned int numLine){
-    struct errorToken *last;
-    struct errorToken *newNode = (struct errorToken *)malloc(sizeof(struct errorToken));
-    char *tmpOutput = strdup(output);
-    char *tmpContent = strdup(content);
-
-    newNode->output = tmpOutput;
-    newNode->content = tmpContent;
-    newNode->numLine = numLine;
-    newNode->next = NULL;
-
-    last = ERROR_HEAD;
-
-    if(ERROR_HEAD == NULL){
-        ERROR_HEAD = newNode;
-    }else{
-        while(last->next != NULL){
-            last = last->next;
-        }
-        last->next = newNode;
-    }
-}
-
-void printErrorList(){
-
-    struct errorToken *tmp = ERROR_HEAD;
-    printf("\n------------------\tERRORS - WARNINGS\t------------------\n\n");
-
-    while(tmp != NULL){
-        printf("%d:\t", tmp->numLine);
-        printf("%s\t", tmp->output);
-        printf("%s\n", tmp->content);
-
-        tmp = tmp->next;
-    }
-    printf("\n");
-}

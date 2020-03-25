@@ -46,6 +46,13 @@ typedef struct ScopeListEntry{
 	struct ScopeListEntry *next, *prev;
 }ScopeListEntry;
 
+struct errorToken {
+    char *output;
+    char* content;
+    unsigned int numLine;
+    struct errorToken *next;
+};
+
 void printHash();
 
 void printScopeList();
@@ -67,5 +74,9 @@ int generalLookUp(char *name, unsigned int scope);
 void hideScope(unsigned int scope);
 
 void activateScope(unsigned int scope);
+
+void addError(char *output, char *content, unsigned int numLine);
+
+void printErrorList();
 
 #endif
