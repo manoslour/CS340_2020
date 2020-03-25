@@ -247,8 +247,8 @@ bool scopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope) {
 	return 0;
 }
 
-bool hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope){
-
+struct SymbolTableEntry *hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope){
+	
 	int pos = (int)*name % Buckets;
 	
 	ScopeListEntry *tmp = scope_head, *new_scope;
@@ -258,7 +258,9 @@ bool hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned in
 
 	//create the node
 	new_sym = (struct SymbolTableEntry*)malloc(sizeof(struct SymbolTableEntry));
-	new_sym->next = new_sym->scope_next = new_sym->formal_next = NULL;
+	new_sym->next =  NULL; 
+	new_sym->scope_next =  NULL; 
+	new_sym->formal_next = NULL;
 	new_sym->isActive = true ;
 	new_sym->type = type ;
 
@@ -268,7 +270,6 @@ bool hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned in
 		strcpy((char*)new_func->name, name);
 		new_func->scope = scope; 
 		new_func->line=line;
-		new_func->next = NULL;
 		new_sym->value.funcVal = new_func;
 	}
 	else if (type == Formal){
@@ -292,16 +293,16 @@ bool hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned in
 	//if its the first
 	if (HashTable[pos] == NULL){
 		HashTable[pos] = new_sym;
-		return 1; 
+		return new_sym; 
 	}
 	else {
 		parse = HashTable[pos];
 		while (parse->next != NULL) parse = parse->next;
 
 		parse->next = new_sym;
-		return 1;
+		return new_sym;
 	}
-	return 0;
+	return NULL;
 
 }
 
