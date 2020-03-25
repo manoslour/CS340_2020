@@ -1,30 +1,20 @@
 #ifndef _SYMTABLE_H_
 #define _SYMTABLE_H_
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 
-#define Buckets 256
-//stuff for collor
 #define RED   "\x1B[31m"
 #define GRN   "\x1B[32m"
 #define YEL   "\x1B[33m"
 #define BLU   "\x1B[34m"
-#define MAG   "\x1B[35m"
-#define CYN   "\x1B[36m"
-#define WHT   "\x1B[37m"
 #define RESET "\x1B[0m"
 
+#define Buckets 256
 
-/**
-enumetate for the type of the symbol 
-*/
-
-enum SymbolType {GLOBAL, LOCAL, FORMAL, USERFUNC, LIBFUNC}; 
-
+enum SymbolType {Global, Local, Formal, Userfunc, Libfunc}; 
 
 typedef struct Variable{
 	const char *name;
@@ -32,18 +22,12 @@ typedef struct Variable{
 	unsigned int line ;
 }Variable;
 
-
 typedef struct Function{
 	const char *name; 
 	unsigned int scope ;
 	unsigned int line;
-	struct SymbolTableEntry *next;
 }Function;
 
-
-/**
-struct for symbols
-*/
 typedef struct SymbolTableEntry{
 	bool isActive;
 	union {
@@ -51,33 +35,24 @@ typedef struct SymbolTableEntry{
 		Function *funcVal;
 	} value;
 	enum SymbolType type;
-	struct SymbolTableEntry *next,*scope_next, *formal_next; // next shows the next symbol in the hash list, the scope_next shows the next symbol in scope_list gege?
+	struct SymbolTableEntry *next, *scope_next, *formal_next; 
 }SymbolTableEntry;
 
-
-/**
-struct for scopes
-*/
 typedef struct ScopeListEntry{
 	unsigned int scope;
 	struct SymbolTableEntry *symbols;
 	struct ScopeListEntry *next, *prev;
 }ScopeListEntry;
 
-
-/*Global pointer to the scope list's head*/
-struct ScopeListEntry *scope_head = NULL;
-struct SymbolTableEntry *HashTable[Buckets];
-
 void printHash();
 
-void scopePrint();
+void printScopeList();
  
 bool hide (int scope );
 
 bool enable (int scope );
 
-bool hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope);
+struct SymbolTableEntry  *hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope);
 
 bool scopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope);
 
@@ -85,10 +60,13 @@ void initialize();
 
 bool scopeLookUp(char *name, unsigned int scope);
 
-bool generalLookUp(char *name);
+int generalLookUp(char *name, unsigned int scope);
 
 void hideScope(unsigned int scope);
 
 void activateScope(unsigned int scope);
 
+bool insertFormal(struct SymbolTableEntry *funcname, struct SymbolTableEntry *formalEntry);
+
+void printFormals();
 #endif

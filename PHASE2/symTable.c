@@ -1,13 +1,62 @@
 #include "symTable.h"
 
+struct ScopeListEntry *scope_head = NULL; //Global pointer to the scope list's head
+struct SymbolTableEntry *HashTable[Buckets];
 
 
+
+bool insertFormal(struct SymbolTableEntry *funcname, struct SymbolTableEntry *formalEntry){
+
+	struct SymbolTableEntry *tmp, *parse;
+
+	//an pas na valeis var se function h formal se var h var anti gia formal efuges kai den kaneis tpt 
+	if ((funcname->type != Libfunc && funcname->type != Userfunc) || formalEntry->type != Formal ) {
+		printf("you are trying to add formals to a variable , not a function"); 
+		return 0;
+	}
+	
+	parse = funcname;
+	if (parse->formal_next == NULL) parse->formal_next = formalEntry;
+	else {
+		while (parse->formal_next != NULL) parse = parse->formal_next;
+		parse->formal_next = formalEntry; 
+	}
+	return 1;
+}
+
+void printFormals(){
+
+	struct SymbolTableEntry *tmp, *parse;
+	struct ScopeListEntry *temp = scope_head;
+
+
+	while (temp != NULL){
+
+		tmp = temp->symbols;
+		while (tmp != NULL){
+
+			if (tmp->type == Libfunc || tmp->type == Userfunc){
+				parse = tmp;
+				printf("Function \"%s\" has formals : ", tmp->value.funcVal->name);
+				while (parse->formal_next != NULL) {
+					printf("\"%s\"  [Formal]  (line %d)   (scope %d)", 
+						parse->value.varVal->name, parse->value.varVal->line, parse->value.varVal->scope);
+
+					parse = parse->formal_next;
+				}
+				printf("\n");
+			}
+			tmp = tmp->scope_next;
+		}
+		temp = temp->next;
+	}
+}
 
 
 void activateScope(unsigned int scope){
 
-	struct ScopeListEntry *temp = scope_head;
-	struct SymbolTableEntry *tmp;
+	ScopeListEntry *temp = scope_head;
+	SymbolTableEntry *tmp;
 	
 	while (temp != NULL){
 		if (temp->scope == scope ){
@@ -19,13 +68,12 @@ void activateScope(unsigned int scope){
 		}
 		temp = temp->next;
 	}
-
 }
 
 void hideScope(unsigned int scope){
 	
-	struct ScopeListEntry *temp = scope_head;
-	struct SymbolTableEntry *tmp;
+	ScopeListEntry *temp = scope_head;
+	SymbolTableEntry *tmp;
 	
 	while (temp != NULL){
 		if (temp->scope == scope ){
@@ -37,27 +85,22 @@ void hideScope(unsigned int scope){
 		}
 		temp = temp->next;
 	}
-
 }
-
 
 /*
 Return 1 if a symbol exists in a given scope 0 elsewere
 */
 bool scopeLookUp(char *name, unsigned int scope){
 	
-
-	struct ScopeListEntry *temp = scope_head;
-	struct SymbolTableEntry *tmp;
-
+	ScopeListEntry *temp = scope_head;
+	SymbolTableEntry *tmp;
 
 	while (temp != NULL){
-
 		if(scope == temp->scope){
 			tmp = temp->symbols;
 			while (tmp != NULL) {
 				
-				if (tmp->type == LIBFUNC || tmp->type == USERFUNC)
+				if (tmp->type == Libfunc || tmp->type == Userfunc)
 					if (!strcmp(tmp->value.funcVal->name, name)) return 1; // symbol find in a current scope return true
 				else 
 					if (!strcmp(tmp->value.varVal->name, name)) return 1; // symbol find in a current scope return true
@@ -71,57 +114,60 @@ bool scopeLookUp(char *name, unsigned int scope){
 }
 
 
-/*
-return 1 if a symbol exists in all the scopes and symbols that we have 0 elsewere
-*/
-bool generalLookUp(char *name){
+// return 1 if a symbol exists in all the scopes and symbols that we have 0 elsewere
+int generalLookUp(char *name, unsigned int scope){
 	
-	struct ScopeListEntry *temp = scope_head;
-	struct SymbolTableEntry *tmp;
-
+	ScopeListEntry *temp = scope_head;
+	SymbolTableEntry *tmp;
+	int flag = 0;
+	int found = 0;
 	while (temp != NULL){
 		
-		tmp = temp->symbols;
-		while (tmp != NULL){
-			
-			if (tmp->type == LIBFUNC || tmp->type == USERFUNC)
-				if (!strcmp(tmp->value.funcVal->name, name)) return 1; // symbol find return true
-			else 
-				if (!strcmp(tmp->value.varVal->name, name)) return 1; // symbol find return true
-			
-			tmp = tmp->scope_next;
+		if (temp->scope == scope) {
+			tmp = temp->symbols;
+			flag = 1;
+			while (tmp != NULL) {
+				
+				if (tmp->type == Libfunc || tmp->type == Userfunc)
+					if (!strcmp(tmp->value.funcVal->name, name)) return scope;// symbol find in a current scope return true
+				else 
+					if (!strcmp(tmp->value.varVal->name, name)) return scope; // symbol find in a current scope return true
+				
+				tmp = tmp->scope_next;
+			}
+
 		}
-		temp = temp->next;
+
+		if (flag == 1){
+			temp = temp->prev;
+			scope--;
+		}
+		else temp = temp->next;
 	}
-	return 0;
+	
+	return -1;
 }
-
-
 
 void initialize(){
 
-	hashInsert("print", 0, LIBFUNC, 0);
-	hashInsert("input", 0, LIBFUNC, 0);
-	hashInsert("objectmemberkeys", 0, LIBFUNC, 0);
-	hashInsert("objecttotalmembers", 0, LIBFUNC, 0);
-	hashInsert("objectcopy", 0, LIBFUNC, 0);
-	hashInsert("tootalarguments", 0, LIBFUNC, 0);
-	hashInsert("argument", 0, LIBFUNC, 0);
-	hashInsert("typeof", 0, LIBFUNC, 0);
-	hashInsert("strtonum", 0, LIBFUNC, 0);
-	hashInsert("sqrt", 0, LIBFUNC, 0);
-	hashInsert("cos", 0, LIBFUNC, 0);
-	hashInsert("sin", 0, LIBFUNC, 0);
-
-
+	hashInsert("print", 0, Libfunc, 0);
+	hashInsert("input", 0, Libfunc, 0);
+	hashInsert("objectmemberkeys", 0, Libfunc, 0);
+	hashInsert("objecttotalmembers", 0, Libfunc, 0);
+	hashInsert("objectcopy", 0, Libfunc, 0);
+	hashInsert("tootalarguments", 0, Libfunc, 0);
+	hashInsert("argument", 0, Libfunc, 0);
+	hashInsert("typeof", 0, Libfunc, 0);
+	hashInsert("strtonum", 0, Libfunc, 0);
+	hashInsert("sqrt", 0, Libfunc, 0);
+	hashInsert("cos", 0, Libfunc, 0);
+	hashInsert("sin", 0, Libfunc, 0);
 }
-
-
 
 bool scopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope) {
 
-	struct ScopeListEntry *tmp = scope_head , *new_scope, *prev = NULL;
-	struct SymbolTableEntry *parse;
+	ScopeListEntry *tmp = scope_head , *new_scope, *prev = NULL;
+	SymbolTableEntry *parse;
 	
 	if(tmp == NULL){ // an einai to prwto
 		new_scope = (struct ScopeListEntry*)malloc(sizeof(struct ScopeListEntry));
@@ -172,11 +218,8 @@ bool scopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope) {
 	return 0;
 }
 
-
-
-
-bool hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope){
-
+struct SymbolTableEntry *hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope){
+	
 	int pos = (int)*name % Buckets;
 	
 	ScopeListEntry *tmp = scope_head, *new_scope;
@@ -186,56 +229,58 @@ bool hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned in
 
 	//create the node
 	new_sym = (struct SymbolTableEntry*)malloc(sizeof(struct SymbolTableEntry));
-	new_sym->next = new_sym->scope_next = new_sym->formal_next = NULL;
+	new_sym->next =  NULL; 
+	new_sym->scope_next =  NULL; 
+	new_sym->formal_next = NULL;
 	new_sym->isActive = true ;
 	new_sym->type = type ;
 
-	if(type == USERFUNC || type == LIBFUNC ) {
+	if(type == Userfunc || type == Libfunc ) {
 		new_func = (struct Function*)malloc(sizeof(struct Function));
-		new_func->name = name; 
+		new_func->name = (char*)malloc(strlen(name+1));
+		strcpy((char*)new_func->name, name);
 		new_func->scope = scope; 
 		new_func->line=line;
-		new_func->next = NULL;
 		new_sym->value.funcVal = new_func;
 	}
-	else if (type == FORMAL){
+	else if (type == Formal){
 		new_var = (struct Variable*)malloc(sizeof(struct Variable));
-		new_var->name = name ;
+		new_var->name = (char*)malloc(strlen(name+1));
+		strcpy((char*)new_var->name, name);
 		new_var->scope = scope;
-
+		new_var->line = line;
+		new_sym->value.varVal = new_var;
 	}
 	else {
 		new_var = (struct Variable*)malloc(sizeof(struct Variable));
-		new_var->name = name;
+		new_var->name = (char*)malloc(strlen(name+1));
+		strcpy((char*)new_var->name, name);
 		new_var->scope = scope;
 		new_var->line = line;
 		new_sym->value.varVal = new_var;
 	}
 	
-	
 	scopeListInsert(new_sym,scope);
 	//if its the first
 	if (HashTable[pos] == NULL){
 		HashTable[pos] = new_sym;
-		return 1; 
+		return new_sym; 
 	}
 	else {
 		parse = HashTable[pos];
 		while (parse->next != NULL) parse = parse->next;
 
 		parse->next = new_sym;
-		return 1;
+		return new_sym;
 	}
-	return 0;
+	return NULL;
 
 }
-
 
 void printHash(){
 
 	int i;
-	struct SymbolTableEntry *tmp;
-
+	SymbolTableEntry *tmp;
 
 	for (i=0; i<Buckets; i++){
 		if(HashTable[i] == NULL) continue;
@@ -243,29 +288,27 @@ void printHash(){
 		printf("\nHASH NUM %d :",i );
 		while (tmp != NULL){
 			
-			if (tmp->type == LIBFUNC) printf("\"%s\"\t [Library Function]\t (line %d)\t (scope %d)"
+			if (tmp->type == Libfunc) printf("\"%s\"\t [Library Function]\t (line %d)\t (scope %d)"
 				,tmp->value.funcVal->name,tmp->value.funcVal->scope,tmp->value.funcVal->line);
-			else if (tmp->type == USERFUNC) printf("\"%s\"\t [User Function]\t (line %d)\t (scope %d)"
+			else if (tmp->type == Userfunc) printf("\"%s\"\t [User Function]\t (line %d)\t (scope %d)"
 				,tmp->value.funcVal->name,tmp->value.funcVal->scope,tmp->value.funcVal->line);
-			else if (tmp->type == GLOBAL) printf("\"%s\"\t [Global Variable]\t (line %d)\t (scope %d)"
+			else if (tmp->type == Global) printf("\"%s\"\t [Global Variable]\t (line %d)\t (scope %d)"
 				,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
-			else if (tmp->type == LOCAL) printf("\"%s\"\t [Local Variable]\t (line %d)\t (scope %d)"
+			else if (tmp->type == Local) printf("\"%s\"\t [Local Variable]\t (line %d)\t (scope %d)"
 				,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
-			//else if (tmp->type == FORMAL) printf("\"%s\"\t [Formal Variable]\t (line %d)\t (scope %d)"
-				//,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
+			else if (tmp->type == Formal) printf("\"%s\"\t [Formal Variable]\t (line %d)\t (scope %d)"
+				,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
 
 			if (tmp ->next != NULL)printf("  ||  ");
-			tmp = tmp->scope_next; 
+			tmp = tmp->next; 
 		}
 	}
 }
 
-
-
 void printScopeList(){
 
-	struct ScopeListEntry *temp = scope_head;
-	struct SymbolTableEntry *tmp ;
+	ScopeListEntry *temp = scope_head;
+	SymbolTableEntry *tmp ;
 
 	while (temp != NULL){
 
@@ -273,16 +316,16 @@ void printScopeList(){
 		tmp = temp->symbols;
 		while (tmp != NULL){
 
-			if (tmp->type == LIBFUNC) printf("\"%s\"\t [Library Function]\t (line %d)\t (scope %d)"
+			if (tmp->type == Libfunc) printf("\"%s\"\t [Library Function]\t (line %d)\t (scope %d)"
 				,tmp->value.funcVal->name,tmp->value.funcVal->line,tmp->value.funcVal->scope);
-			else if (tmp->type == USERFUNC) printf("\"%s\"\t [User Function]\t (line %d)\t (scope %d)"
+			else if (tmp->type == Userfunc) printf("\"%s\"\t [User Function]\t (line %d)\t (scope %d)"
 				,tmp->value.funcVal->name,tmp->value.funcVal->line,tmp->value.funcVal->scope);
-			else if (tmp->type == GLOBAL) printf("\"%s\"\t [Global Variable]\t (line %d)\t (scope %d)"
+			else if (tmp->type == Global) printf("\"%s\"\t [Global Variable]\t (line %d)\t (scope %d)"
 				,tmp->value.varVal->name,tmp->value.varVal->line,tmp->value.varVal->scope);
-			else if (tmp->type == LOCAL) printf("\"%s\"\t [Local Variable]\t (line %d)\t (scope %d)"
+			else if (tmp->type == Local) printf("\"%s\"\t [Local Variable]\t (line %d)\t (scope %d)"
 				,tmp->value.varVal->name,tmp->value.varVal->line,tmp->value.varVal->scope);
-			//else if (tmp->type == FORMAL) printf("\"%s\"\t [Formal Variable]\t (line %d)\t (scope %d)"
-				//,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
+			else if (tmp->type == Formal) printf("\"%s\"\t [Formal Variable]\t (line %d)\t (scope %d)"
+				,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
 
 			printf("\n");
 			tmp = tmp->scope_next; 
@@ -290,30 +333,23 @@ void printScopeList(){
 		temp = temp->next;
 	}
 }
-/*
-
-int main (){
 
 
-	initialize();
-
-	hashInsert("Lome",3,LIBFUNC,0);
-	hashInsert("LOUKAS",1,LIBFUNC,1);
-	hashInsert("maria",2,GLOBAL,9);
-	hashInsert("manos",3,LIBFUNC,1);
-	hashInsert("sakis",3,LOCAL,3);
-	hashInsert("gus",3,USERFUNC,4);
-	hashInsert("liokis",3,USERFUNC,1); // -1 den emfanizei giati to scope to exw kanei unsigned 
-	hashInsert("mastoras",3,LOCAL,2);
-	hideScope(1);
-	printScopeList();
-//	PrintHash();
-
-	if (generalLookUp("prigisnt")) printf("YES\n");
-	else printf("NO\n");
-	printf("DONE\n");
-
-	return 0;
+int main(){
 
 
-}*/
+
+
+	struct SymbolTableEntry *name1 , *name2,*name3;
+	hashInsert("print", 0, Libfunc, 0);
+	name2 = hashInsert("input", 0, Userfunc, 1);
+	name1 = hashInsert("objectmemberkeys", 0, Formal, 2);
+	name3 = hashInsert("objecttotalmembers", 0, Formal, 3);
+	hashInsert("objectcopy", 0, Libfunc, 4);
+	//printScopeList();
+	//printHash();
+	printf("\n");
+	insertFormal(name2, name1);
+	insertFormal(name2, name3);
+	printFormals();
+}
