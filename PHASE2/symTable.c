@@ -11,6 +11,7 @@ char* generateName(int nameCount){
 	return name;
 }
 
+
 void addError(char *output, char *content, unsigned int numLine){
     struct errorToken *last;
     struct errorToken *newNode = (struct errorToken *)malloc(sizeof(struct errorToken));
@@ -291,7 +292,6 @@ struct SymbolTableEntry *hashInsert(char *name, unsigned int line, enum SymbolTy
 		new_var->scope = scope;
 		new_var->line = line;
 		new_sym->value.varVal = new_var;
-		printf("\n\n TO POS STO HASH EINAI %d",pos);
 	}
 	else {
 		new_var = (struct Variable*)malloc(sizeof(struct Variable));

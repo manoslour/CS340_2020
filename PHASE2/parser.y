@@ -220,9 +220,7 @@ funcdef:	FUNCTION
 								currscope++;
 								inFunc = 1;
 							}
-				 idlist {
-					 		//to do 
-				 		}
+				 idlist 
 				 R_PAR block  		{printf("funcdef: FUNCTION L_PAR idlist R_PAR block at line %d --> %s\n", yylineno, yytext);}
 			|FUNCTION ID 	{
 							int found = scopeLookUp(yytext,currscope);
