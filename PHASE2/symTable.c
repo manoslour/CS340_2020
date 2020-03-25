@@ -73,9 +73,9 @@ void printFormals(){
 
 			if (tmp->type == Libfunc || tmp->type == Userfunc){
 				parse = tmp;
-				printf("Function \"%s\" has formals : ", tmp->value.funcVal->name);
+				printf("Function \"%s\" has formals:\n", tmp->value.funcVal->name);
 				while (parse->formal_next != NULL) {
-					printf("\"%s\"  [Formal]  (line %d)   (scope %d)", parse->value.varVal->name, parse->value.varVal->line, parse->value.varVal->scope);
+					printf("\t\"%s\" [Formal] (line %d) (scope %d)\n", parse->value.varVal->name, parse->value.varVal->line, parse->value.varVal->scope);
 					parse = parse->formal_next;
 				}
 				printf("\n");
@@ -363,20 +363,17 @@ void printScopeList(){
 	}
 }
 
-/*
+
 int main(){
 
-	struct SymbolTableEntry *name1 , *name2,*name3;
-	hashInsert("print", 0, Libfunc, 0);
-	name2 = hashInsert("input", 0, Userfunc, 1);
-	name1 = hashInsert("objectmemberkeys", 0, Formal, 2);
-	name3 = hashInsert("objecttotalmembers", 0, Formal, 3);
-	hashInsert("objectcopy", 0, Libfunc, 4);
-	//printScopeList();
-	//printHash();
-	printf("\n");
-	insertFormal(name2, name1);
-	insertFormal(name2, name3);
+	SymbolTableEntry *func1, *formal1, *formal2;
+
+	func1 = hashInsert("doSomething", 0, Userfunc, 2);
+	formal1 = hashInsert("x", 0, Formal, 3);
+	formal2 = hashInsert("y", 0, Formal, 3);
+
+	insertFormal(func1, formal1);
+	insertFormal(func1, formal2);
+	
 	printFormals();
 }
-*/
