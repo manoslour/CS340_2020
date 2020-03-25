@@ -11,6 +11,7 @@
     unsigned int currscope = 0;
 	unsigned int inFunc = 0;
 	struct SymbolTableEntry *tmp;
+	unsigned int funcPrefix = 0;
 %}
 
 %defines
@@ -212,8 +213,8 @@ block:		LCURLY_BR	{
 
 funcdef:	FUNCTION
 					{	
-
-						printf("\n\nto function einai : %s\n\n", yytext);
+						tmp = hashInsert(generateName(funcPrefix),yylineno,Userfunc,currscope);
+						funcPrefix++;
 					}
 			L_PAR 	{
 								currscope++;
@@ -224,10 +225,7 @@ funcdef:	FUNCTION
 				 		}
 				 R_PAR block  		{printf("funcdef: FUNCTION L_PAR idlist R_PAR block at line %d --> %s\n", yylineno, yytext);}
 			|FUNCTION ID 	{
-							
 							int found = scopeLookUp(yytext,currscope);
-							
-							
 
 							if(found == 1){
 								addError("Error variable already exists",yytext,yylineno);
@@ -242,9 +240,11 @@ funcdef:	FUNCTION
 								tmp = hashInsert(yytext, yylineno, Userfunc, currscope);
 							}
 						} 
-			L_PAR		{currscope++; inFunc = 1;}
+			L_PAR		{	
+							currscope++; inFunc = 1;
+						}
 
-			idlist 
+			idlist 	
 			R_PAR	
 			block 	{printf("funcdef: FUNCTION ID L_PAR idlist R_PAR block  at line %d --> %s\n", yylineno, yytext);}
 			;
@@ -257,8 +257,41 @@ const:		REAL 		{printf("const: REAL at line %d --> %s\n", yylineno, yytext);}
 			|FALSE 		{printf("const: FALSE at line %d --> %s\n", yylineno, yytext);}
 			;
 
-idlist:		ID 					{printf("idlist: ID at line %d --> %s\n", yylineno, yytext);}
-			|ID COMMA idlist 	{printf("idlist: COMMA ID at line %d --> %s\n", yylineno, yytext);}
+idlist:		ID			
+			{	
+				SymbolTableEntry *formal;
+				
+				int found = scopeLookUp(yytext, currscope);
+
+				if (found == 3 ) {
+					addError("Error , collision with library function", yytext, yylineno);
+				}
+				else if (found != 0){
+					addError("Error , symbol already exists", yytext, yylineno);
+				}
+				else {
+					formal = hashInsert(yytext,yylineno,Formal,currscope);
+					insertFormal(tmp, formal);
+				}
+			}
+
+
+			|idlist COMMA ID 	{														
+									SymbolTableEntry *formal;
+									
+									int found = scopeLookUp(yytext, currscope);
+
+									if (found == 3 ) {
+										addError("Error , collision with library function", yytext, yylineno);
+									}
+									else if (found != 0){
+										addError("Error , symbol already exists", yytext, yylineno);
+									}
+									else {
+										formal = hashInsert(yytext,yylineno,Formal,currscope);
+										insertFormal(tmp, formal);
+									}
+								}
 			|
 			;
 
