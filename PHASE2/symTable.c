@@ -4,6 +4,13 @@ ScopeListEntry *scope_head = NULL; //Global pointer to the scope list's head
 SymbolTableEntry *HashTable[Buckets];
 struct errorToken *ERROR_HEAD = NULL; // GLobal pointer to the start of error_tokkens list
 
+char* generateName(int nameCount){
+	char *name = malloc(100 * sizeof(char));
+	sprintf(name, "$f%d", nameCount);
+	
+	return name;
+}
+
 void addError(char *output, char *content, unsigned int numLine){
     struct errorToken *last;
     struct errorToken *newNode = (struct errorToken *)malloc(sizeof(struct errorToken));

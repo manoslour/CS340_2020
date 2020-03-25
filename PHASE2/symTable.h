@@ -69,6 +69,8 @@ bool hide (int scope);
 
 bool enable (int scope );
 
+char* generateName(int nameCount);
+
 void hideScope(unsigned int scope);
 
 void activateScope(unsigned int scope);
