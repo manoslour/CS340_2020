@@ -1,3 +1,5 @@
-x;
-y;
-z;
+man || a;
+x = 5;
+x();
+if(x = 4){break;}
+w = [z];
