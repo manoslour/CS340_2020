@@ -85,7 +85,6 @@ void printFormals(){
 		temp = temp->next;
 	}
 }
-
 void activateScope(unsigned int scope){
 
 	ScopeListEntry *temp = scope_head;
@@ -133,10 +132,13 @@ bool scopeLookUp(char *name, unsigned int scope){
 			tmp = temp->symbols;
 			while (tmp != NULL) {
 				
-				if (tmp->type == Libfunc || tmp->type == Userfunc)
+				if (tmp->type == Libfunc || tmp->type == Userfunc){
 					if (!strcmp(tmp->value.funcVal->name, name)) return 1; // symbol find in a current scope return true
-				else 
+				} 
+				
+				else if(tmp->type == Global || tmp->type == Local || tmp->type == Formal ){
 					if (!strcmp(tmp->value.varVal->name, name)) return 1; // symbol find in a current scope return true
+				}
 				
 				tmp = tmp->scope_next;
 			}
@@ -279,6 +281,7 @@ struct SymbolTableEntry *hashInsert(char *name, unsigned int line, enum SymbolTy
 		new_var->scope = scope;
 		new_var->line = line;
 		new_sym->value.varVal = new_var;
+		printf("\n\n TO POS STO HASH EINAI %d",pos);
 	}
 	else {
 		new_var = (struct Variable*)malloc(sizeof(struct Variable));
@@ -325,8 +328,8 @@ void printHash(){
 				,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
 			else if (tmp->type == Local) printf("\"%s\"\t [Local Variable]\t (line %d)\t (scope %d)"
 				,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
-			//else if (tmp->type == FORMAL) printf("\"%s\"\t [Formal Variable]\t (line %d)\t (scope %d)"
-				//,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
+			else if (tmp->type == Formal) printf("\"%s\"\t [Formal Variable]\t (line %d)\t (scope %d)"
+				,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
 
 			if (tmp ->next != NULL)printf("  ||  ");
 			tmp = tmp->scope_next; 
@@ -353,8 +356,8 @@ void printScopeList(){
 				,tmp->value.varVal->name,tmp->value.varVal->line,tmp->value.varVal->scope);
 			else if (tmp->type == Local) printf("\"%s\"\t [Local Variable]\t (line %d)\t (scope %d)"
 				,tmp->value.varVal->name,tmp->value.varVal->line,tmp->value.varVal->scope);
-			//else if (tmp->type == FORMAL) printf("\"%s\"\t [Formal Variable]\t (line %d)\t (scope %d)"
-				//,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
+			else if (tmp->type == Formal) printf("\"%s\"\t [Formal Variable]\t (line %d)\t (scope %d)"
+				,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
 
 			printf("\n");
 			tmp = tmp->scope_next; 
@@ -362,18 +365,18 @@ void printScopeList(){
 		temp = temp->next;
 	}
 }
-
-
+/*
 int main(){
 
 	SymbolTableEntry *func1, *formal1, *formal2;
-
+	initialize();
 	func1 = hashInsert("doSomething", 0, Userfunc, 2);
 	formal1 = hashInsert("x", 0, Formal, 3);
 	formal2 = hashInsert("y", 0, Formal, 3);
-
-	insertFormal(func1, formal1);
-	insertFormal(func1, formal2);
-
-	printFormals();
-}
+	printScopeList();
+	//insertFormal(func1, formal1);
+	//insertFormal(func1, formal2);
+	printf("H LOUKUP DINEI %d\n",scopeLookUp("x",3));
+	
+	//printFormals();
+}*/

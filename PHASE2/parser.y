@@ -115,8 +115,20 @@ lvalue:		ID				{
 									hashInsert(yytext, yylineno, type, currscope);
 								}
 							}
-			|LOCAL ID		{printf("lvalue: LOCAL ID at line %d --> %s\n", yylineno, yytext);}
-			|DCOLON ID		{printf("lvalue: DCOLON ID at line %d --> %s\n", yylineno, yytext);}
+			|LOCAL ID		{
+							printf("lvalue: LOCAL ID at line %d --> %s\n", yylineno, yytext);
+							
+							
+							
+							
+							}
+			|DCOLON ID		{
+							printf("KANW LOOKUP STO GLOBAL KAI EPISTREFEI %d",scopeLookUp(yytext, 0) );
+							if(scopeLookUp(yytext, 0) == 1) printf("Global var %s found in line %d",yytext,yylineno); 
+							else {
+								addError("Global variable not found", yytext, yylineno);
+							}
+							}
 			|member		{printf("lvalue: member at line %d --> %s\n", yylineno, yytext);}
 			;
 
