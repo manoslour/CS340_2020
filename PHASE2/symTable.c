@@ -172,12 +172,14 @@ int generalLookUp(char *name, unsigned int scope){
 			tmp = temp->symbols;
 			flag = 1;
 			while (tmp != NULL) {
-				
-				if (tmp->type == Libfunc || tmp->type == Userfunc)
-					if (!strcmp(tmp->value.funcVal->name, name)) return scope;// symbol find in a current scope return true
-				else 
-					if (!strcmp(tmp->value.varVal->name, name)) return scope; // symbol find in a current scope return true
-				
+				if (tmp->type == Libfunc || tmp->type == Userfunc){
+					if (!strcmp(tmp->value.funcVal->name, name)) 
+						return scope;// symbol find in a current scope return true
+				}
+				else{
+					if (!strcmp(tmp->value.varVal->name, name)) 
+						return scope; // symbol find in a current scope return true
+				}
 				tmp = tmp->scope_next;
 			}
 		}

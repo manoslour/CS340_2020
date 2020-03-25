@@ -110,6 +110,7 @@ lvalue:		ID				{
 								printf("lvalue: ID at line %d --> %s\n", yylineno, yytext);
 								char *tmp;
 								enum SymbolType type;
+								
 								if(generalLookUp(yytext, currscope) == -1) {
 									if(currscope == 0) 
 										type = Global;
