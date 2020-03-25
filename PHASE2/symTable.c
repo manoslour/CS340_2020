@@ -133,10 +133,12 @@ int scopeLookUp(char *name, unsigned int scope){
 			tmp = temp->symbols;
 			while (tmp != NULL) {
 				
-				if (tmp->type == Libfunc || tmp->type == Userfunc){
-					if (!strcmp(tmp->value.funcVal->name, name)) return 2; // symbol find in a current scope return true
+				if (tmp->type == Libfunc ){
+					if (!strcmp(tmp->value.funcVal->name, name)) return 3; // symbol find in a current scope return true
 				} 
-				
+				else if (tmp->type == Userfunc){
+					if (!strcmp(tmp->value.funcVal->name, name)) return 2; 
+				}
 				else if(tmp->type == Global || tmp->type == Local || tmp->type == Formal ){
 					if (!strcmp(tmp->value.varVal->name, name)) return 1; // symbol find in a current scope return true
 				}
