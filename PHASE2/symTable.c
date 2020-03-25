@@ -2,6 +2,45 @@
 
 ScopeListEntry *scope_head = NULL; //Global pointer to the scope list's head
 SymbolTableEntry *HashTable[Buckets];
+struct errorToken *ERROR_HEAD = NULL; // GLobal pointer to the start of error_tokkens list
+
+void addError(char *output, char *content, unsigned int numLine){
+    struct errorToken *last;
+    struct errorToken *newNode = (struct errorToken *)malloc(sizeof(struct errorToken));
+    char *tmpOutput = strdup(output);
+    char *tmpContent = strdup(content);
+
+    newNode->output = tmpOutput;
+    newNode->content = tmpContent;
+    newNode->numLine = numLine;
+    newNode->next = NULL;
+
+    last = ERROR_HEAD;
+
+    if(ERROR_HEAD == NULL){
+        ERROR_HEAD = newNode;
+    }else{
+        while(last->next != NULL){
+            last = last->next;
+        }
+        last->next = newNode;
+    }
+}
+
+void printErrorList(){
+
+    struct errorToken *tmp = ERROR_HEAD;
+    printf("\n------------------\tERRORS - WARNINGS\t------------------\n\n");
+
+    while(tmp != NULL){
+        printf("%d:\t", tmp->numLine);
+        printf("%s\t", tmp->output);
+        printf("%s\n", tmp->content);
+
+        tmp = tmp->next;
+    }
+    printf("\n");
+}
 
 void activateScope(unsigned int scope){
 
@@ -63,28 +102,36 @@ bool scopeLookUp(char *name, unsigned int scope){
 	return 0;
 }
 
-
-// return 1 if a symbol exists in all the scopes and symbols that we have 0 elsewere
-bool generalLookUp(char *name){
+// Performs lookup from current 
+int generalLookUp(char *name, unsigned int scope){
 	
-	ScopeListEntry *temp = scope_head;
+	int flag = 0;
 	SymbolTableEntry *tmp;
+	ScopeListEntry *temp = scope_head;
 
 	while (temp != NULL){
 		
-		tmp = temp->symbols;
-		while (tmp != NULL){
-			
-			if (tmp->type == Libfunc || tmp->type == Userfunc)
-				if (!strcmp(tmp->value.funcVal->name, name)) return 1; // symbol find return true
-			else 
-				if (!strcmp(tmp->value.varVal->name, name)) return 1; // symbol find return true
-			
-			tmp = tmp->scope_next;
+		if (temp->scope == scope) {
+			tmp = temp->symbols;
+			flag = 1;
+			while (tmp != NULL) {
+				
+				if (tmp->type == Libfunc || tmp->type == Userfunc)
+					if (!strcmp(tmp->value.funcVal->name, name)) return scope;// symbol find in a current scope return true
+				else 
+					if (!strcmp(tmp->value.varVal->name, name)) return scope; // symbol find in a current scope return true
+				
+				tmp = tmp->scope_next;
+			}
 		}
-		temp = temp->next;
+
+		if (flag == 1){
+			temp = temp->prev;
+			scope--;
+		}
+		else temp = temp->next;
 	}
-	return 0;
+	return -1;
 }
 
 void initialize(){
@@ -173,7 +220,8 @@ bool hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned in
 
 	if(type == Userfunc || type == Libfunc ) {
 		new_func = (struct Function*)malloc(sizeof(struct Function));
-		new_func->name = name; 
+		new_func->name = (char*)malloc(strlen(name+1));
+		strcpy((char*)new_func->name, name);
 		new_func->scope = scope; 
 		new_func->line=line;
 		new_func->next = NULL;
@@ -181,13 +229,16 @@ bool hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned in
 	}
 	else if (type == Formal){
 		new_var = (struct Variable*)malloc(sizeof(struct Variable));
-		new_var->name = name ;
+		new_var->name = (char*)malloc(strlen(name+1));
+		strcpy((char*)new_var->name, name);
 		new_var->scope = scope;
-
+		new_var->line = line;
+		new_sym->value.varVal = new_var;
 	}
 	else {
 		new_var = (struct Variable*)malloc(sizeof(struct Variable));
-		new_var->name = name;
+		new_var->name = (char*)malloc(strlen(name+1));
+		strcpy((char*)new_var->name, name);
 		new_var->scope = scope;
 		new_var->line = line;
 		new_sym->value.varVal = new_var;
@@ -268,21 +319,14 @@ void printScopeList(){
 }
 
 /*
-int main (){
-	initialize();
-	hashInsert("Lome",3,LIBFUNC,0);
-	hashInsert("LOUKAS",1,LIBFUNC,1);
-	hashInsert("maria",2,GLOBAL,9);
-	hashInsert("manos",3,LIBFUNC,1);
-	hashInsert("sakis",3,LOCAL,3);
-	hashInsert("gus",3,USERFUNC,4);
-	hashInsert("liokis",3,USERFUNC,1); // -1 den emfanizei giati to scope to exw kanei unsigned 
-	hashInsert("mastoras",3,LOCAL,2);
-	hideScope(1);
-	printScopeList();
-//	PrintHash();
-	if (generalLookUp("prigisnt")) printf("YES\n");
-	else printf("NO\n");
-	printf("DONE\n");
-	return 0;
-}*/
+int main(){
+
+	hashInsert("print", 0, Libfunc, 0);
+	hashInsert("input", 0, Libfunc, 1);
+	hashInsert("objectmemberkeys", 0, Libfunc, 2);
+	hashInsert("objecttotalmembers", 0, Libfunc, 3);
+	hashInsert("objectcopy", 0, Libfunc, 4);
+	printf("vrika %d",generalLookUp("objecttotalmembers" , 4) );
+	
+}
+*/

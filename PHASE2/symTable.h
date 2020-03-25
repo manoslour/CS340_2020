@@ -26,7 +26,7 @@ typedef struct Function{
 	const char *name; 
 	unsigned int scope ;
 	unsigned int line;
-	struct SymbolTableEntry *next;
+	struct SymbolTableEntry *next; // Formal arguments list
 }Function;
 
 typedef struct SymbolTableEntry{
@@ -46,6 +46,13 @@ typedef struct ScopeListEntry{
 	struct ScopeListEntry *next, *prev;
 }ScopeListEntry;
 
+struct errorToken {
+    char *output;
+    char* content;
+    unsigned int numLine;
+    struct errorToken *next;
+};
+
 void printHash();
 
 void printScopeList();
@@ -62,10 +69,14 @@ void initialize();
 
 bool scopeLookUp(char *name, unsigned int scope);
 
-bool generalLookUp(char *name);
+int generalLookUp(char *name, unsigned int scope);
 
 void hideScope(unsigned int scope);
 
 void activateScope(unsigned int scope);
+
+void addError(char *output, char *content, unsigned int numLine);
+
+void printErrorList();
 
 #endif
