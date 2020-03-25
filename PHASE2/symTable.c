@@ -4,6 +4,14 @@ ScopeListEntry *scope_head = NULL; //Global pointer to the scope list's head
 SymbolTableEntry *HashTable[Buckets];
 struct errorToken *ERROR_HEAD = NULL; // GLobal pointer to the start of error_tokkens list
 
+char* generateName(int nameCount){
+	char *name = "$";
+	char buffer[100];
+	char number = itoa(nameCount, buffer, 10);
+	strcat(name, number);
+	return name;
+}
+
 void addError(char *output, char *content, unsigned int numLine){
     struct errorToken *last;
     struct errorToken *newNode = (struct errorToken *)malloc(sizeof(struct errorToken));
@@ -366,9 +374,10 @@ void printScopeList(){
 		temp = temp->next;
 	}
 }
-/*
-int main(){
 
+
+int main(){
+	/*
 	SymbolTableEntry *func1, *formal1, *formal2;
 	initialize();
 	func1 = hashInsert("doSomething", 0, Userfunc, 2);
@@ -380,4 +389,7 @@ int main(){
 	printf("H LOUKUP DINEI %d\n",scopeLookUp("x",3));
 	
 	//printFormals();
-}*/
+	*/
+
+	printf("FUNCTION NAME = %s", generateName(3));
+}
