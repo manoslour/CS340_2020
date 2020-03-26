@@ -175,6 +175,7 @@ int generalLookUp(char *name, unsigned int scope){
 		tmpScope = tmpScope->next;
 	}
 
+	// If tmpScope->scope < scope, given scope doesnt exist yet. Works as expected.
 	printf("Arrived at given scope[%d|%d]\n", tmpScope->scope, scope);
 	result = scopeLookUp(name, tmpScope->scope);
 
