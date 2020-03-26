@@ -46,12 +46,12 @@
 
 %%
 
-program:	stmts	{printf("promgram: stmts at line %d --> %s\n", yylineno, yytext);}
+program:	stmtlist	{printf("promgram: stmtlist at line %d --> %s\n", yylineno, yytext);}
 			|
 			;
 
-stmts:		stmt	{printf("stmts: stmt at line %d --> %s\n", yylineno, yytext);}
-			|stmts stmt		{printf("stmts: stmts stmt at line %d --> %s\n", yylineno, yytext);}	
+stmtlist:		stmt	{printf("stmtlist: stmt at line %d --> %s\n", yylineno, yytext);}
+			|stmtlist stmt		{printf("stmtlist: stmtlist stmt at line %d --> %s\n", yylineno, yytext);}	
 			;
 
 stmt:		expr SEMICOLON		{printf("stmt: expr SEMICOLON at line %d --> %s\n", yylineno, yytext);}
@@ -111,6 +111,8 @@ lvalue:		ID				{
 								char *tmp;
 								enum SymbolType type;
 								
+								//printf("----YYSTRINGVAL: %s----\n", yylval.stringValue);
+
 								if(generalLookUp(yytext, currscope) == -1) {
 									if(currscope == 0) 
 										type = Global;
@@ -145,12 +147,14 @@ lvalue:		ID				{
 							}
 
 			|DCOLON ID		{
-								if(scopeLookUp(yytext, 0) == 1) printf("Global var %s found in line %d",yytext,yylineno); 
-								else {
-									addError("Global variable not found", yytext, yylineno);
-								}
+								if(scopeLookUp(yytext, 0) == 1) 
+									printf("Global var %s found in line %d\n", yytext, yylineno); 
+								else if(scopeLookUp(yytext, 0) == 3)
+									printf("Libfunc %s found in line %d", yytext, yylineno);
+								else
+									addError("Global variable not found\n", yytext, yylineno);
 							}
-			|member		{printf("lvalue: member at line %d --> %s\n", yylineno, yytext);}
+			|member			{printf("lvalue: member at line %d --> %s\n", yylineno, yytext);}
 			;
 
 member:		lvalue DOT ID 							{printf("member: lvalue.ID at line %d --> %s\n", yylineno, yytext);}
@@ -192,19 +196,14 @@ indexed:	indexedelem					{printf("indexed: indexelem at line %d --> %s\n", yylin
 indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR	{printf("indexelem: {expr:expr} at line %d --> %s\n", yylineno, yytext);}
 			;
 
-block:		LCURLY_BR	{
-							printf("\n\nTO IN FUNCC EINAI %d\n\n" , inFunc);
-							if (inFunc == 0) currscope++;
-							
-						} 
+block:		LCURLY_BR	{if (inFunc == 0) currscope++;} 
 			RCURLY_BR 	{	
 							hideScope(currscope);
 							if(inFunc == 1) inFunc = 0;
 							currscope--;
-					
 						}		
-			|LCURLY_BR {if (inFunc == 0) currscope++;} 
-			stmts  
+			|LCURLY_BR	{if (inFunc == 0) currscope++;} 
+			stmtlist  
 			RCURLY_BR	{
 							hideScope(currscope);
 							if(inFunc == 1) inFunc = 0;
@@ -218,31 +217,28 @@ funcdef:	FUNCTION
 						funcPrefix++;
 					}
 			L_PAR 	{
-								currscope++;
-								inFunc = 1;
-							}
-				 idlist 
-				 R_PAR block  		{printf("funcdef: FUNCTION L_PAR idlist R_PAR block at line %d --> %s\n", yylineno, yytext);}
+						currscope++;
+						inFunc = 1;
+					}
+			idlist 
+			R_PAR block  	{printf("funcdef: FUNCTION L_PAR idlist R_PAR block at line %d --> %s\n", yylineno, yytext);}
 			|FUNCTION ID 	{
-							int found = scopeLookUp(yytext,currscope);
+								int found = scopeLookUp(yytext,currscope);
 
-							if(found == 1){
-								addError("Error variable already exists",yytext,yylineno);
-							}
-							else if(found == 2){
-								addError("Error function already exists in this scope ",yytext,yylineno);
-							}
-							else if (scopeLookUp(yytext,0) == 3){
-								addError("Error collision with library function",yytext,yylineno);
-							}
-							else {
-								tmp = hashInsert(yytext, yylineno, Userfunc, currscope);
-							}
-						} 
-			L_PAR		{	
-							currscope++; inFunc = 1;
-						}
-
+								if(found == 1){
+									addError("Error variable already exists",yytext,yylineno);
+								}
+								else if(found == 2){
+									addError("Error function already exists in this scope ",yytext,yylineno);
+								}
+								else if (scopeLookUp(yytext,0) == 3){
+									addError("Error collision with library function",yytext,yylineno);
+								}
+								else {
+									tmp = hashInsert(yytext, yylineno, Userfunc, currscope);
+								}
+							} 
+			L_PAR	{currscope++; inFunc = 1;}
 			idlist 	
 			R_PAR	
 			block 	{printf("funcdef: FUNCTION ID L_PAR idlist R_PAR block  at line %d --> %s\n", yylineno, yytext);}
@@ -273,18 +269,16 @@ idlist:		ID
 					insertFormal(tmp, formal);
 				}
 			}
-
-
 			|idlist COMMA ID 	{														
 									SymbolTableEntry *formal;
 									
 									int found = scopeLookUp(yytext, currscope);
 
 									if (found == 3 ) {
-										addError("Error , collision with library function", yytext, yylineno);
+										addError("Error, collision with library function", yytext, yylineno);
 									}
 									else if (found != 0){
-										addError("Error , symbol already exists", yytext, yylineno);
+										addError("Error, symbol already exists", yytext, yylineno);
 									}
 									else {
 										formal = hashInsert(yytext,yylineno,Formal,currscope);
