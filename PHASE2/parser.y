@@ -109,35 +109,59 @@ primary:	lvalue		{printf("primary: lvalue at line %d --> %s\n", yylineno, yytext
 lvalue:		ID				{
 								printf("lvalue: ID at line %d --> %s\n", yylineno, yytext);
 
-								char *tmp;
-								int result;
+								int result, varScope;
 								enum SymbolType type;
 								
 								result = generalLookUp(yylval.stringValue, currscope);
+								varScope = findVarScope(yylval.stringValue, currscope);
 
-								if(result == 1)
-									printf("Variable found\n");
-								else if(result == 2)
-									printf("Userfunc found\n");
-								else if(result == 3)
-									printf("Libfunc found\n");
-								else{
-									if(currscope == 0)
-										type = Global;
-									else
-										type = Local;
-									printf("Put %s to SymbolTable\n", yylval.stringValue);
-									hashInsert(yylval.stringValue, yylineno, type, currscope);
+								switch (result){
+									case 1:
+										printf("Libfunc found\n");
+										break;
+									case 2:
+										printf("Userfunc found\n");
+										break;
+									case 3:
+										printf("Global var found\n");
+										break;
+									case 4:
+										printf("Local var found\n");
+										if(inFunc){
+											if(currscope == varScope)
+												printf("Mesolavei func. Omws var & local sto idio scope\n");
+											else
+												addError("Error, cannot access local var", yylval.stringValue, yylineno);
+										}
+										break;
+									case 5:
+										printf("Formal var found\n");
+										if(inFunc){
+											if(currscope == varScope)
+												printf("Mesolavei func. Omws var & local sto idio scope\n");
+											else
+												addError("Error, cannot access formal argument", yylval.stringValue, yylineno);
+										}
+										break;
+									default:
+										if(currscope == 0)
+											type = Global;
+										else
+											type = Local;
+										printf("Put %s to SymbolTable\n", yylval.stringValue);
+										hashInsert(yylval.stringValue, yylineno, type, currscope);
 								}
 							}
 
 			|LOCAL ID		{
 								printf("lvalue: LOCAL ID at line %d --> %s\n", yylineno, yytext);
 
-								if( scopeLookUp(yytext, currscope) == 1){
+								int found = scopeLookUp(yytext, currscope);
+								//!!!MADE CHANGES HERE!!!!
+								if( found == 2 || found == 3 || found == 4 || found == 5){
 									printf("Ok, found locally\n");
 								}
-								else if(scopeLookUp(yytext, 0) == 2 || scopeLookUp(yytext, 0) == 3){
+								else if(scopeLookUp(yytext, 0) == 1){
 									if(currscope == 0)
 										printf("Ok, found in scope 0\n");
 									else
@@ -156,10 +180,17 @@ lvalue:		ID				{
 							}
 
 			|DCOLON ID		{
-								if(scopeLookUp(yytext, 0) == 1) 
-									printf("Global var %s found in line %d\n", yytext, yylineno); 
-								else if(scopeLookUp(yytext, 0) == 3)
+								printf("lvalue: DCOLON ID at line %d --> %s\n", yylineno, yytext);
+
+								int found = scopeLookUp(yytext, 0);
+
+								if(found == 1)
 									printf("Libfunc %s found in line %d", yytext, yylineno);
+								else if(found == 2)
+									printf("Global userFunc %s found in line %d\n", yytext, yylineno);
+									//NOMIZW TO ==4 EINAI PERITTO GIATI FORMALS EINAI PANTA SE SCOPE+
+								else if(found == 3 || found == 4 || found == 5) 
+									printf("Global var %s found in line %d\n", yytext, yylineno); 
 								else
 									addError("Error, Global variable not found", yytext, yylineno);
 							}
@@ -205,15 +236,22 @@ indexed:	indexedelem					{printf("indexed: indexelem at line %d --> %s\n", yylin
 indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR	{printf("indexelem: {expr:expr} at line %d --> %s\n", yylineno, yytext);}
 			;
 
-block:		LCURLY_BR	{if (inFunc == 0) currscope++;} 
+block:		LCURLY_BR	{
+							printf("block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
+							if (inFunc == 0) currscope++;} 
 			RCURLY_BR 	{	
+							printf("block: LCURLY_BR RCURLY_BR at line %d --> %s\n", yylineno, yytext);
 							hideScope(currscope);
 							if(inFunc == 1) inFunc = 0;
 							currscope--;
 						}		
-			|LCURLY_BR	{if (inFunc == 0) currscope++;} 
-			stmtlist  
+			|LCURLY_BR	{
+							printf("block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
+							if (inFunc == 0) currscope++;
+						}
+			stmtlist  	{	printf("block: LCURLY_BR  stmtlist at line %d --> %s\n", yylineno, yytext);}
 			RCURLY_BR	{
+							printf("block: LCURLY_BR stmtlist RCURLY_BR at line %d --> %s\n", yylineno, yytext);
 							hideScope(currscope);
 							if(inFunc == 1) inFunc = 0;
 							currscope--;
@@ -237,14 +275,14 @@ funcdef:	FUNCTION
 								printf("funcdef: FUNCTION ID at line %d --> %s\n", yylineno, yytext);
 								int found = scopeLookUp(yytext,currscope);
 
-								if(found == 1){
-									addError("Error, variable already exists",yytext,yylineno);
-								}
-								else if(found == 2){
+								if(found == 2){
 									addError("Error, function already exists in this scope ",yytext,yylineno);
 								}
-								else if (scopeLookUp(yytext,0) == 3){
+								else if (scopeLookUp(yytext, 0) == 1){
 									addError("Error, collision with library function",yytext,yylineno);
+								}
+								else if(found == 3 || found == 4 || found == 5){
+									addError("Error, variable already exists",yytext,yylineno);
 								}
 								else {
 									tmp = hashInsert(yytext, yylineno, Userfunc, currscope);
@@ -273,7 +311,7 @@ idlist:		ID
 				
 				int found = scopeLookUp(yytext, currscope);
 
-				if (found == 3 ) {
+				if (found == 1 ) {
 					addError("Error, collision with library function", yytext, yylineno);
 				}
 				else if (found != 0){
@@ -289,7 +327,7 @@ idlist:		ID
 									
 									int found = scopeLookUp(yytext, currscope);
 
-									if (found == 3 ) {
+									if (found == 1 ) {
 										addError("Error, collision with library function", yytext, yylineno);
 									}
 									else if (found != 0){
