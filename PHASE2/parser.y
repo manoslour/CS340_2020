@@ -238,16 +238,22 @@ indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR	{printf("indexelem: {expr:expr}
 
 block:		LCURLY_BR	{
 							printf("block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
-							if (inFunc == 0) currscope++;} 
+							if (inFunc == 0) 
+								currscope++;
+							printf("====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
+							} 
 			RCURLY_BR 	{	
 							printf("block: LCURLY_BR RCURLY_BR at line %d --> %s\n", yylineno, yytext);
 							hideScope(currscope);
 							if(inFunc == 1) inFunc = 0;
 							currscope--;
+							printf("====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 						}		
 			|LCURLY_BR	{
 							printf("block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
-							if (inFunc == 0) currscope++;
+							if (inFunc == 0) 
+								currscope++;
+							printf("====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 						}
 			stmtlist  	{	printf("block: LCURLY_BR  stmtlist at line %d --> %s\n", yylineno, yytext);}
 			RCURLY_BR	{
@@ -255,6 +261,7 @@ block:		LCURLY_BR	{
 							hideScope(currscope);
 							if(inFunc == 1) inFunc = 0;
 							currscope--;
+							printf("====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 						}
 			;
 
@@ -267,6 +274,7 @@ funcdef:	FUNCTION
 			L_PAR 	{
 						printf("funcdef: FUNCTION L_PAR at line %d --> %s\n", yylineno, yytext);
 						currscope++;
+						printf("====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 						inFunc = 1;
 					}
 			idlist 	{printf("funcdef: FUNCTION L_PAR idlist at line %d --> %s\n", yylineno, yytext);}
@@ -291,6 +299,7 @@ funcdef:	FUNCTION
 			L_PAR	{
 						printf("funcdef: FUNCTION ID L_PAR at line %d --> %s\n", yylineno, yytext);
 						currscope++; inFunc = 1;
+						printf("====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 					}
 			idlist 	{printf("funcdef: FUNCTION ID L_PAR idlist at line %d --> %s\n", yylineno, yytext);}
 			R_PAR	{printf("funcdef: FUNCTION ID L_PAR idlist R_PAR at line %d --> %s\n", yylineno, yytext);}
