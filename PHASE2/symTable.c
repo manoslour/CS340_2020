@@ -94,6 +94,7 @@ void printFormals(){
 	}
 }
 
+/*
 void activateScope(unsigned int scope){
 
 	ScopeListEntry *temp = scope_head;
@@ -110,6 +111,7 @@ void activateScope(unsigned int scope){
 		temp = temp->next;
 	}
 }
+*/
 
 void hideScope(unsigned int scope){
 	
@@ -130,67 +132,69 @@ void hideScope(unsigned int scope){
 
 int scopeLookUp(char *name, unsigned int scope){
 	
-	ScopeListEntry *temp = scope_head;
-	SymbolTableEntry *tmp;
+	SymbolTableEntry *tmpSymbol;
+	ScopeListEntry *tmpScope = scope_head;
 
-	while (temp != NULL){
-		if(scope == temp->scope){
-			tmp = temp->symbols;
-			while (tmp != NULL) {
+	while (tmpScope != NULL){
+
+		if(tmpScope->scope == scope){
+
+			tmpSymbol = tmpScope->symbols;
+			
+			while (tmpSymbol != NULL) {
 				
-				if (tmp->type == Libfunc ){
-					if (!strcmp(tmp->value.funcVal->name, name)) 
+				if (tmpSymbol->type == Libfunc ){
+					if (!strcmp(tmpSymbol->value.funcVal->name, name)) 
 						return 3; // Libfunc found
 				} 
-				else if (tmp->type == Userfunc){
-					if (!strcmp(tmp->value.funcVal->name, name)) 
+				else if (tmpSymbol->type == Userfunc){
+					if (!strcmp(tmpSymbol->value.funcVal->name, name)) 
 						return 2; // Userfunc found
 				}
-				else if(tmp->type == Global || tmp->type == Local || tmp->type == Formal ){
-					if (!strcmp(tmp->value.varVal->name, name)) 
+				else if(tmpSymbol->type == Global || tmpSymbol->type == Local || tmpSymbol->type == Formal ){
+					if (!strcmp(tmpSymbol->value.varVal->name, name)) 
 						return 1; // Variable found
 				}
 				
-				tmp = tmp->scope_next;
+				tmpSymbol = tmpSymbol->scope_next;
 			}
 		} 
-		temp = temp->next;
+		tmpScope = tmpScope->next;
 	} 
 	return 0;
 }
 
-// Performs lookup from current 
 int generalLookUp(char *name, unsigned int scope){
-	
-	int flag = 0;
-	SymbolTableEntry *tmp;
-	ScopeListEntry *temp = scope_head;
 
-	while (temp != NULL){
-		
-		if (temp->scope == scope) {
-			tmp = temp->symbols;
-			flag = 1;
-			while (tmp != NULL) {
-				if (tmp->type == Libfunc || tmp->type == Userfunc){
-					if (!strcmp(tmp->value.funcVal->name, name)) 
-						return scope;// symbol find in a current scope return true
-				}
-				else{
-					if (!strcmp(tmp->value.varVal->name, name)) 
-						return scope; // symbol find in a current scope return true
-				}
-				tmp = tmp->scope_next;
-			}
-		}
+	int result = 0;
+	SymbolTableEntry *tmpSymbol;
+	ScopeListEntry *tmpScope = scope_head; 
 
-		if (flag == 1){
-			temp = temp->prev;
-			scope--;
-		}
-		else temp = temp->next;
+	while (tmpScope->next != NULL && tmpScope->scope != scope){
+		printf("Currently at scope %d\n", tmpScope->scope);
+		tmpScope = tmpScope->next;
 	}
-	return -1;
+
+	printf("Arrived at given scope[%d|%d]\n", tmpScope->scope, scope);
+	result = scopeLookUp(name, tmpScope->scope);
+
+	if(result != 0){
+		printf("Found in scope %d, result = %d\n", tmpScope->scope, result);
+		return result;
+	}
+	else{
+		while (tmpScope != NULL){
+			result = scopeLookUp(name, tmpScope->scope);
+			if(result != 0){
+				printf("Found in scope %d, result = %d\n", tmpScope->scope, result);
+				break;
+			}
+			printf("Not found in scope %d, result = %d\n", tmpScope->scope, result);
+			tmpScope = tmpScope->prev;
+		}
+	}
+
+	return result;
 }
 
 void initialize(){
@@ -214,7 +218,8 @@ bool scopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope) {
 	ScopeListEntry *tmp = scope_head , *new_scope, *prev = NULL;
 	SymbolTableEntry *parse;
 	
-	if(tmp == NULL){ // an einai to prwto
+	//CHANGED TMP == NULL to SCOPE_HEAD == NULL
+	if(scope_head == NULL){ // an einai to prwto
 		new_scope = (struct ScopeListEntry*)malloc(sizeof(struct ScopeListEntry));
 		new_scope->scope = scope ;
 		new_scope->next = new_scope->prev = NULL;
@@ -356,7 +361,7 @@ void printScopeList(){
 
 	while (temp != NULL){
 
-		printf("\n-----------------------------"YEL " SCOPE %d "RESET"----------------------------- \n",temp->scope );
+		printf("\n-----------------------------"YEL " SCOPE %d "RESET"----------------------------- \n\n",temp->scope );
 		tmp = temp->symbols;
 		while (tmp != NULL){
 
@@ -375,19 +380,25 @@ void printScopeList(){
 		}
 		temp = temp->next;
 	}
+	printf("\n");
 }
+
 /*
 int main(){
 
-	SymbolTableEntry *func1, *formal1, *formal2;
 	initialize();
-	func1 = hashInsert("doSomething", 0, Userfunc, 2);
-	formal1 = hashInsert("x", 0, Formal, 3);
-	formal2 = hashInsert("y", 0, Formal, 3);
-	printScopeList();
-	//insertFormal(func1, formal1);
-	//insertFormal(func1, formal2);
-	printf("H LOUKUP DINEI %d\n",scopeLookUp("x",3));
-	
-	//printFormals();
-}*/
+
+	hashInsert("manos", 5, Local, 5);
+	hashInsert("loukas", 4, Local, 4);
+	hashInsert("maria", 3, Local, 3);
+	hashInsert("dionisis", 2, Local, 2);
+	hashInsert("vasilis", 1, Userfunc, 1);
+	hashInsert("andro", 0, Global, 0);
+
+	generalLookUp("vasilis", 3);
+
+	//printScopeList();
+
+	return 0;
+}
+*/

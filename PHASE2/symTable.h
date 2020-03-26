@@ -73,7 +73,7 @@ char* generateName(int nameCount);
 
 void hideScope(unsigned int scope);
 
-void activateScope(unsigned int scope);
+// void activateScope(unsigned int scope);
 
 int scopeLookUp(char *name, unsigned int scope);
 
