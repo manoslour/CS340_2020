@@ -130,6 +130,37 @@ void hideScope(unsigned int scope){
 	}
 }
 
+int findVarScope(char *name, unsigned int scope){
+	int result = 0;
+	SymbolTableEntry *tmpSymbol;
+	ScopeListEntry *tmpScope = scope_head; 
+
+	while (tmpScope->next != NULL && tmpScope->scope != scope){
+		tmpScope = tmpScope->next;
+	}
+
+	result = scopeLookUp(name, tmpScope->scope);
+
+	if(result != 0){
+		printf("Found in scope %d, result = %d\n", tmpScope->scope, result);
+		if(result == 4 || result == 5)
+			return tmpScope->scope;
+	}
+	else{
+		while (tmpScope != NULL){
+			result = scopeLookUp(name, tmpScope->scope);
+			if(result != 0){
+				printf("Found in scope %d, result = %d\n", tmpScope->scope, result);
+				if(result == 4 || result == 5)
+					return tmpScope->scope;
+			}
+			printf("Not found in scope %d, result = %d\n", tmpScope->scope, result);
+			tmpScope = tmpScope->prev;
+		}
+	}
+	return -1;
+}
+
 int scopeLookUp(char *name, unsigned int scope){
 	
 	SymbolTableEntry *tmpSymbol;
@@ -145,17 +176,25 @@ int scopeLookUp(char *name, unsigned int scope){
 				
 				if (tmpSymbol->type == Libfunc ){
 					if (!strcmp(tmpSymbol->value.funcVal->name, name)) 
-						return 3; // Libfunc found
+						return 1; // Libfunc found
 				} 
-				else if (tmpSymbol->type == Userfunc){
+				if (tmpSymbol->type == Userfunc){
 					if (!strcmp(tmpSymbol->value.funcVal->name, name)) 
 						return 2; // Userfunc found
 				}
-				else if(tmpSymbol->type == Global || tmpSymbol->type == Local || tmpSymbol->type == Formal ){
+				if(tmpSymbol->type == Global){
 					if (!strcmp(tmpSymbol->value.varVal->name, name)) 
-						return 1; // Variable found
+						return 3; // Global Variable found
 				}
-				
+				if(tmpSymbol->type == Local){
+					if (!strcmp(tmpSymbol->value.varVal->name, name)) 
+						return 4; // Local Variable found
+				}
+				if(tmpSymbol->type == Formal){
+					if (!strcmp(tmpSymbol->value.varVal->name, name))
+						return 5; // Formal Variable found
+				}
+
 				tmpSymbol = tmpSymbol->scope_next;
 			}
 		} 
@@ -386,10 +425,12 @@ void printScopeList(){
 
 /*
 int main(){
-
+	
 	initialize();
-
-	hashInsert("manos", 5, Local, 5);
+	hashInsert("manos", 3, Userfunc, 3);
+	int found = findVarScope("manos", 5);
+	printf("found = %d\n", found);
+	
 	hashInsert("loukas", 4, Local, 4);
 	hashInsert("maria", 3, Local, 3);
 	hashInsert("dionisis", 2, Local, 2);
@@ -397,7 +438,6 @@ int main(){
 	hashInsert("andro", 0, Global, 0);
 
 	generalLookUp("vasilis", 3);
-
 	//printScopeList();
 
 	return 0;

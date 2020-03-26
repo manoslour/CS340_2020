@@ -75,6 +75,8 @@ void hideScope(unsigned int scope);
 
 // void activateScope(unsigned int scope);
 
+int findVarScope(char *name, unsigned int scope);
+
 int scopeLookUp(char *name, unsigned int scope);
 
 int generalLookUp(char *name, unsigned int scope);
