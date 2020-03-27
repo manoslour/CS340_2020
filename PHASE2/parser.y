@@ -12,6 +12,7 @@
 	unsigned int inFunc = 0;
 	struct SymbolTableEntry *tmp;
 	unsigned int funcPrefix = 0;
+	unsigned int betweenFunc = 0;
 %}
 
 %defines
@@ -42,6 +43,8 @@
 %left L_BR R_BR
 %left L_PAR R_PAR
 
+
+
 %start program
 
 %%
@@ -50,63 +53,63 @@ program:	stmtlist	{printf("promgram: stmtlist at line %d --> %s\n", yylineno, yy
 			|
 			;
 
-stmtlist:		stmt	{printf("stmtlist: stmt at line %d --> %s\n", yylineno, yytext);}
+stmtlist:	stmt				{printf("stmtlist: stmt at line %d --> %s\n", yylineno, yytext);}
 			|stmtlist stmt		{printf("stmtlist: stmtlist stmt at line %d --> %s\n", yylineno, yytext);}	
 			;
 
-stmt:		expr SEMICOLON		{printf("stmt: expr SEMICOLON at line %d --> %s\n", yylineno, yytext);}
-			|ifstmt		 {printf("stmt: ifstmt at line %d --> %s\n", yylineno, yytext);}
-			|whilestmt		{printf("stmt: whilestmt at line %d --> %s\n", yylineno, yytext);}
-			|forstmt		{printf("stmt: forstmt at line %d --> %s\n", yylineno, yytext);}
-			|returnstmt		{printf("stmt: returnstmt at line %d --> %s\n", yylineno, yytext);}
+stmt:		expr SEMICOLON			{printf("stmt: expr SEMICOLON at line %d --> %s\n", yylineno, yytext);}
+			|ifstmt					{printf("stmt: ifstmt at line %d --> %s\n", yylineno, yytext);}
+			|whilestmt				{printf("stmt: whilestmt at line %d --> %s\n", yylineno, yytext);}
+			|forstmt				{printf("stmt: forstmt at line %d --> %s\n", yylineno, yytext);}
+			|returnstmt				{printf("stmt: returnstmt at line %d --> %s\n", yylineno, yytext);}
 			|BREAK SEMICOLON		{printf("stmt: BREAK SEMICOLON at line %d --> %s\n", yylineno, yytext);}
 			|CONTINUE SEMICOLON		{printf("stmt: CONTINUE SEMICOLON at line %d --> %s\n", yylineno, yytext);}
-			|block		{printf("stmt: block at line %d --> %s\n", yylineno, yytext);}
-			|funcdef		{printf("stmt: funcdef at line %d --> %s\n", yylineno, yytext);}
-			|SEMICOLON		{printf("stmt: SEMICOLON at line %d --> %s\n", yylineno, yytext);}
+			|block					{printf("stmt: block at line %d --> %s\n", yylineno, yytext);}
+			|funcdef				{printf("stmt: funcdef at line %d --> %s\n", yylineno, yytext);}
+			|SEMICOLON				{printf("stmt: SEMICOLON at line %d --> %s\n", yylineno, yytext);}
 			;
 
-expr:		assignexpr	{printf("expr: assignexpr at line %d --> %s\n", yylineno, yytext);}
-			|expr PLUS expr		{printf("expr: expr op expr at line %d --> %s\n", yylineno, yytext);}
-			|expr MINUS expr
-			|expr MULT expr
-			|expr DIV expr
-			|expr MOD expr
-			|expr GREATER expr
-			|expr GREATER_EQ expr
-			|expr LESS expr
-			|expr LESS_EQ expr
-			|expr EQUAL expr
-			|expr NOT_EQUAL expr
-			|expr AND expr
-			|expr OR expr
-			|term		{printf("expr: term at line %d --> %s\n", yylineno, yytext);}
+expr:		assignexpr				{printf("expr: assignexpr at line %d --> %s\n", yylineno, yytext);}
+			|expr PLUS expr			{printf("expr: expr PLUS expr at line %d --> %s\n", yylineno, yytext);}
+			|expr MINUS expr		{printf("expr: MINUS op expr at line %d --> %s\n", yylineno, yytext);}
+			|expr MULT expr			{printf("expr: expr MULT expr at line %d --> %s\n", yylineno, yytext);}
+			|expr DIV expr			{printf("expr: expr DIV expr at line %d --> %s\n", yylineno, yytext);}
+			|expr MOD expr			{printf("expr: expr MOD expr at line %d --> %s\n", yylineno, yytext);}
+			|expr GREATER expr		{printf("expr: expr GREATER expr at line %d --> %s\n", yylineno, yytext);}
+			|expr GREATER_EQ expr	{printf("expr: expr GREATER_EQ expr at line %d --> %s\n", yylineno, yytext);}
+			|expr LESS expr			{printf("expr: expr LESS expr at line %d --> %s\n", yylineno, yytext);}
+			|expr LESS_EQ expr		{printf("expr: expr LESS_EQ expr at line %d --> %s\n", yylineno, yytext);}
+			|expr EQUAL expr		{printf("expr: expr EQUAL expr at line %d --> %s\n", yylineno, yytext);}
+			|expr NOT_EQUAL expr	{printf("expr: expr NOT_EQUAL expr at line %d --> %s\n", yylineno, yytext);}
+			|expr AND expr			{printf("expr: expr AND expr at line %d --> %s\n", yylineno, yytext);}
+			|expr OR expr			{printf("expr: expr OR expr at line %d --> %s\n", yylineno, yytext);}
+			|term					{printf("expr: term at line %d --> %s\n", yylineno, yytext);}
 			;
 
-
-
-term:		L_PAR expr R_PAR		{printf("term: L_PAR expr R_PAR at line %d --> %s\n", yylineno, yytext);}
-			|MINUS expr %prec UMINUS		{printf("term: MINUS expr at line %d --> %s\n", yylineno, yytext);}
-			|NOT expr		{printf("term: NOT expr at line %d --> %s\n", yylineno, yytext);}
-			|INCR lvalue		{printf("term: INCR lvalue at line %d --> %s\n", yylineno, yytext);}
-			|lvalue INCR		{printf("term: lvalue INCR at line %d --> %s\n", yylineno, yytext);}
-			|DECR lvalue		{printf("term: DECR lvalue at line %d --> %s\n", yylineno, yytext);}
-			|lvalue DECR		{printf("term: lvalue DECR at line %d --> %s\n", yylineno, yytext);}
-			|primary		{printf("term: primary at line %d --> %s\n", yylineno, yytext);}
+term:		L_PAR 						{printf("term: L_PAR at line %d --> %s\n", yylineno, yytext);}
+			expr 						{printf("term: L_PAR expr at line %d --> %s\n", yylineno, yytext);}
+			R_PAR						{printf("term: L_PAR expr R_PAR at line %d --> %s\n", yylineno, yytext);}
+			|MINUS expr %prec UMINUS	{printf("term: MINUS expr at line %d --> %s\n", yylineno, yytext);}
+			|NOT expr					{printf("term: NOT expr at line %d --> %s\n", yylineno, yytext);}
+			|INCR lvalue				{printf("term: INCR lvalue at line %d --> %s\n", yylineno, yytext);}
+			|lvalue INCR				{printf("term: lvalue INCR at line %d --> %s\n", yylineno, yytext);}
+			|DECR lvalue				{printf("term: DECR lvalue at line %d --> %s\n", yylineno, yytext);}
+			|lvalue DECR				{printf("term: lvalue DECR at line %d --> %s\n", yylineno, yytext);}
+			|primary					{printf("term: primary at line %d --> %s\n", yylineno, yytext);}
 			;
 
 assignexpr:	lvalue ASSIGN expr		{printf("assignexpr: lvalue ASSIGN expr at line %d --> %s\n", yylineno, yytext);}
 			;
 
-primary:	lvalue		{printf("primary: lvalue at line %d --> %s\n", yylineno, yytext);}
-			|call		{printf("primary: call at line %d --> %s\n", yylineno, yytext);}
-			|objectdef		{printf("primary: objectdef at line %d --> %s\n", yylineno, yytext);}
-			|L_PAR funcdef R_PAR		{printf("primary: L_PAR funcdef R_PAR at line %d --> %s\n", yylineno, yytext);}
-			|const		{printf("primary: const at line %d --> %s\n", yylineno, yytext);}
+primary:	lvalue					{printf("primary: lvalue at line %d --> %s\n", yylineno, yytext);}
+			|call					{printf("primary: call at line %d --> %s\n", yylineno, yytext);}
+			|objectdef				{printf("primary: objectdef at line %d --> %s\n", yylineno, yytext);}
+			|L_PAR funcdef R_PAR	{printf("primary: L_PAR funcdef R_PAR at line %d --> %s\n", yylineno, yytext);}
+			|const					{printf("primary: const at line %d --> %s\n", yylineno, yytext);}
 			;
 
 lvalue:		ID				{
-								printf("lvalue: ID at line %d --> %s\n", yylineno, yytext);
+								printf("lvalue: ID at line %d --> %s\n", yylineno, yylval.stringValue);
 
 								int result, varScope;
 								enum SymbolType type;
@@ -126,18 +129,22 @@ lvalue:		ID				{
 										break;
 									case 4:
 										printf("Local var found\n");
-										if(inFunc){
-											if(currscope == varScope)
-												printf("Mesolavei func. Omws var & local sto idio scope\n");
+										if(!betweenFunc){
+											printf("\n\n\nELA KAI POU EISAI \n\n\n");
+											if(currscope == varScope  || result == 3 || result == 5 || result == 4  )
+												printf("betweenFunc func. Omws var & local sto idio scope\n");
 											else
 												addError("Error, cannot access local var", yylval.stringValue, yylineno);
+										}
+										else{
+											printf("\n\n eisai boba\n\n");
 										}
 										break;
 									case 5:
 										printf("Formal var found\n");
-										if(inFunc){
+										if(!betweenFunc){
 											if(currscope == varScope)
-												printf("Mesolavei func. Omws var & local sto idio scope\n");
+												printf("betweenFunc func. Omws var & local sto idio scope\n");
 											else
 												addError("Error, cannot access formal argument", yylval.stringValue, yylineno);
 										}
@@ -222,8 +229,7 @@ elist:		expr						{printf("elist: expr at line %d --> %s\n", yylineno, yytext);}
 			|
 			;
 
-objectdef:	L_BR R_BR 					{printf("objectdef: [] at line %d --> %s\n", yylineno, yytext);}
-			|L_BR elist R_BR 			{printf("objectdef: [elist] at line %d --> %s\n", yylineno, yytext);}
+objectdef:	L_BR elist R_BR 			{printf("objectdef: [elist] at line %d --> %s\n", yylineno, yytext);}
 			|L_BR indexed R_BR 			{printf("objectdef: [indexed] at line %d --> %s\n", yylineno, yytext);}
 			;
 
@@ -237,8 +243,8 @@ indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR	{printf("indexelem: {expr:expr}
 
 block:		LCURLY_BR	{
 							printf("block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
-							if (inFunc == 0) 
-								currscope++;
+							currscope++;
+							
 							printf("====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 							} 
 			RCURLY_BR 	{	
@@ -249,18 +255,17 @@ block:		LCURLY_BR	{
 							printf("====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 						}		
 			|LCURLY_BR	{
-							printf("block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
-							if (inFunc == 0) 
-								currscope++;
+							printf("block: LCURLY_BR at line %d --> %s\n", yylineno, yytext); 
+							currscope++;
 							printf("====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 						}
 			stmtlist  	{	printf("block: LCURLY_BR  stmtlist at line %d --> %s\n", yylineno, yytext);}
 			RCURLY_BR	{
 							printf("block: LCURLY_BR stmtlist RCURLY_BR at line %d --> %s\n", yylineno, yytext);
 							hideScope(currscope);
-							if(inFunc == 1) inFunc = 0;
 							currscope--;
 							printf("====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
+
 						}
 			;
 
@@ -270,14 +275,20 @@ funcdef:	FUNCTION
 						tmp = hashInsert(generateName(funcPrefix),yylineno,Userfunc,currscope);
 						funcPrefix++;
 					}
-			L_PAR 	{
+			L_PAR 	{	
+						if (inFunc == 1) betweenFunc++;
 						printf("funcdef: FUNCTION L_PAR at line %d --> %s\n", yylineno, yytext);
 						currscope++;
 						printf("====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 						inFunc = 1;
 					}
 			idlist 	{printf("funcdef: FUNCTION L_PAR idlist at line %d --> %s\n", yylineno, yytext);}
-			R_PAR block  	{printf("funcdef: FUNCTION L_PAR idlist R_PAR block at line %d --> %s\n", yylineno, yytext);}
+			R_PAR{currscope--;}
+			block  	{	
+						printf("funcdef: FUNCTION L_PAR idlist R_PAR block at line %d --> %s\n", yylineno, yytext);
+						if(inFunc == 1) inFunc = 0;
+						betweenFunc--;
+					}
 			|FUNCTION ID 	{
 								printf("funcdef: FUNCTION ID at line %d --> %s\n", yylineno, yytext);
 								int found = scopeLookUp(yytext,currscope);
@@ -296,13 +307,20 @@ funcdef:	FUNCTION
 								}
 							} 
 			L_PAR	{
+
+						if (inFunc == 1) betweenFunc++;
 						printf("funcdef: FUNCTION ID L_PAR at line %d --> %s\n", yylineno, yytext);
-						currscope++; inFunc = 1;
+						currscope++; 
+						inFunc = 1;
 						printf("====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 					}
 			idlist 	{printf("funcdef: FUNCTION ID L_PAR idlist at line %d --> %s\n", yylineno, yytext);}
-			R_PAR	{printf("funcdef: FUNCTION ID L_PAR idlist R_PAR at line %d --> %s\n", yylineno, yytext);}
-			block 	{printf("funcdef: FUNCTION ID L_PAR idlist R_PAR block  at line %d --> %s\n", yylineno, yytext);}
+			R_PAR	{currscope--; printf("funcdef: FUNCTION ID L_PAR idlist R_PAR at line %d --> %s\n", yylineno, yytext);}
+			block 	{
+						printf("funcdef: FUNCTION ID L_PAR idlist R_PAR block  at line %d --> %s\n", yylineno, yytext);
+						if(inFunc == 1) inFunc = 0;
+						betweenFunc--;
+					}
 			;
 
 const:		REAL 		{printf("const: REAL at line %d --> %s\n", yylineno, yytext);}
@@ -313,13 +331,13 @@ const:		REAL 		{printf("const: REAL at line %d --> %s\n", yylineno, yytext);}
 			|FALSE 		{printf("const: FALSE at line %d --> %s\n", yylineno, yytext);}
 			;
 
-idlist:		ID			
+idlist:		ID	{printf("idlist: ID at line %d --> %s\n", yylineno, yytext);}			
 			{	
 				SymbolTableEntry *formal;
 				
 				int found = scopeLookUp(yytext, currscope);
 
-				if (found == 1 ) {
+				if (scopeLookUp(yytext, 0) == 1 ) {
 					addError("Error, collision with library function", yytext, yylineno);
 				}
 				else if (found != 0){
@@ -330,12 +348,13 @@ idlist:		ID
 					insertFormal(tmp, formal);
 				}
 			}
-			|idlist COMMA ID 	{														
+			|idlist COMMA ID 	{	
+									printf("idlist: idlist COMMA ID at line %d --> %s\n", yylineno, yytext);													
 									SymbolTableEntry *formal;
 									
 									int found = scopeLookUp(yytext, currscope);
 
-									if (found == 1 ) {
+									if (scopeLookUp(yytext, 0) == 1 ) {
 										addError("Error, collision with library function", yytext, yylineno);
 									}
 									else if (found != 0){
