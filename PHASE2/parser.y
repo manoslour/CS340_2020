@@ -1,3 +1,4 @@
+ 
 %{
     #include <stdio.h>
 	#include "symTable.h"
@@ -107,7 +108,7 @@ primary:	lvalue					{printf("primary: lvalue at line %d --> %s\n", yylineno, yyt
 			;
 
 lvalue:		ID				{
-								printf("lvalue: ID at line %d --> %s\n", yylineno, yytext);
+								printf("lvalue: ID at line %d --> %s\n", yylineno, yylval.stringValue);
 
 								int result, varScope;
 								enum SymbolType type;
@@ -128,15 +129,19 @@ lvalue:		ID				{
 									case 4:
 										printf("Local var found\n");
 										if(!betweenFunc){
-											if(currscope == varScope)
+											printf("\n\n\nELA KAI POU EISAI \n\n\n");
+											if(currscope == varScope  || result == 3 || result == 5 || result == 4  )
 												printf("betweenFunc func. Omws var & local sto idio scope\n");
 											else
 												addError("Error, cannot access local var", yylval.stringValue, yylineno);
 										}
+										else{
+											printf("\n\n eisai boba\n\n");
+										}
 										break;
 									case 5:
 										printf("Formal var found\n");
-										if(inFunc){
+										if(!betweenFunc){
 											if(currscope == varScope)
 												printf("betweenFunc func. Omws var & local sto idio scope\n");
 											else
@@ -258,9 +263,9 @@ block:		LCURLY_BR	{
 			RCURLY_BR	{
 							printf("block: LCURLY_BR stmtlist RCURLY_BR at line %d --> %s\n", yylineno, yytext);
 							hideScope(currscope);
-							
 							currscope--;
 							printf("====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
+
 						}
 			;
 
@@ -271,7 +276,7 @@ funcdef:	FUNCTION
 						funcPrefix++;
 					}
 			L_PAR 	{	
-						if (inFunc == 1) betweenFunc = 1;
+						if (inFunc == 1) betweenFunc++;
 						printf("funcdef: FUNCTION L_PAR at line %d --> %s\n", yylineno, yytext);
 						currscope++;
 						printf("====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
@@ -279,9 +284,10 @@ funcdef:	FUNCTION
 					}
 			idlist 	{printf("funcdef: FUNCTION L_PAR idlist at line %d --> %s\n", yylineno, yytext);}
 			R_PAR{currscope--;}
-			block  	{
-						if(inFunc == 1) inFunc = 0;
+			block  	{	
 						printf("funcdef: FUNCTION L_PAR idlist R_PAR block at line %d --> %s\n", yylineno, yytext);
+						if(inFunc == 1) inFunc = 0;
+						betweenFunc--;
 					}
 			|FUNCTION ID 	{
 								printf("funcdef: FUNCTION ID at line %d --> %s\n", yylineno, yytext);
@@ -301,16 +307,19 @@ funcdef:	FUNCTION
 								}
 							} 
 			L_PAR	{
-						if (inFunc == 1) betweenFunc = 1;
+
+						if (inFunc == 1) betweenFunc++;
 						printf("funcdef: FUNCTION ID L_PAR at line %d --> %s\n", yylineno, yytext);
-						currscope++; inFunc = 1;
+						currscope++; 
+						inFunc = 1;
 						printf("====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 					}
 			idlist 	{printf("funcdef: FUNCTION ID L_PAR idlist at line %d --> %s\n", yylineno, yytext);}
 			R_PAR	{currscope--; printf("funcdef: FUNCTION ID L_PAR idlist R_PAR at line %d --> %s\n", yylineno, yytext);}
 			block 	{
-						if(inFunc == 1) inFunc = 0;
 						printf("funcdef: FUNCTION ID L_PAR idlist R_PAR block  at line %d --> %s\n", yylineno, yytext);
+						if(inFunc == 1) inFunc = 0;
+						betweenFunc--;
 					}
 			;
 
