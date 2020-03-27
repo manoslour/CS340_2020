@@ -238,8 +238,8 @@ indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR	{printf("indexelem: {expr:expr}
 
 block:		LCURLY_BR	{
 							printf("block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
-							if (inFunc == 0) 
-								currscope++;
+							currscope++;
+							
 							printf("====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 							} 
 			RCURLY_BR 	{	
@@ -250,16 +250,15 @@ block:		LCURLY_BR	{
 							printf("====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 						}		
 			|LCURLY_BR	{
-							printf("block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
-							if (inFunc == 0) 
-								currscope++;
+							printf("block: LCURLY_BR at line %d --> %s\n", yylineno, yytext); 
+							currscope++;
 							printf("====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 						}
 			stmtlist  	{	printf("block: LCURLY_BR  stmtlist at line %d --> %s\n", yylineno, yytext);}
 			RCURLY_BR	{
 							printf("block: LCURLY_BR stmtlist RCURLY_BR at line %d --> %s\n", yylineno, yytext);
 							hideScope(currscope);
-							if(inFunc == 1) inFunc = 0;
+							
 							currscope--;
 							printf("====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 						}
@@ -278,7 +277,11 @@ funcdef:	FUNCTION
 						inFunc = 1;
 					}
 			idlist 	{printf("funcdef: FUNCTION L_PAR idlist at line %d --> %s\n", yylineno, yytext);}
-			R_PAR block  	{printf("funcdef: FUNCTION L_PAR idlist R_PAR block at line %d --> %s\n", yylineno, yytext);}
+			R_PAR{currscope--;}
+			block  	{
+						if(inFunc == 1) inFunc = 0;
+						printf("funcdef: FUNCTION L_PAR idlist R_PAR block at line %d --> %s\n", yylineno, yytext);
+					}
 			|FUNCTION ID 	{
 								printf("funcdef: FUNCTION ID at line %d --> %s\n", yylineno, yytext);
 								int found = scopeLookUp(yytext,currscope);
@@ -302,8 +305,11 @@ funcdef:	FUNCTION
 						printf("====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 					}
 			idlist 	{printf("funcdef: FUNCTION ID L_PAR idlist at line %d --> %s\n", yylineno, yytext);}
-			R_PAR	{printf("funcdef: FUNCTION ID L_PAR idlist R_PAR at line %d --> %s\n", yylineno, yytext);}
-			block 	{printf("funcdef: FUNCTION ID L_PAR idlist R_PAR block  at line %d --> %s\n", yylineno, yytext);}
+			R_PAR	{currscope--; printf("funcdef: FUNCTION ID L_PAR idlist R_PAR at line %d --> %s\n", yylineno, yytext);}
+			block 	{
+						if(inFunc == 1) inFunc = 0;
+						printf("funcdef: FUNCTION ID L_PAR idlist R_PAR block  at line %d --> %s\n", yylineno, yytext);
+					}
 			;
 
 const:		REAL 		{printf("const: REAL at line %d --> %s\n", yylineno, yytext);}
