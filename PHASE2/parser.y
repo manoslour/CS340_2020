@@ -23,8 +23,10 @@
     int intValue;
     double realValue;
     char* stringValue;
+	struct SymbolTableEntry* exprNode;
 }
 
+%type <exprNode> lvalue
 %token <intValue> INTEGER
 %token <realValue> REAL
 %token <stringValue> ID
@@ -154,6 +156,9 @@ lvalue:		ID				{
 												fprintf(fp, "betweenFunc func. Omws var & local sto idio scope\n");
 											else
 												addError("Error, cannot access formal argument", yylval.stringValue, yylineno);
+										}else{
+											if (result > 3 && betweenFunc == 0) printf("\n\n\nCOOL\n\n\n");
+											else addError("Error, cannot access local var", yylval.stringValue, yylineno);
 										}
 										break;
 									default:
@@ -216,29 +221,31 @@ member:		lvalue DOT ID 							{fprintf(fp, "member: lvalue.ID at line %d --> %s\
 			|call L_BR expr R_BR 					{fprintf(fp, "member: lvalue[expr] at line %d --> %s\n", yylineno, yytext);}
 			;
 
-call:		call L_PAR object R_PAR					{fprintf(fp, "call: (object) at line %d --> %s\n", yylineno, yytext);}
+call:		call L_PAR objectlist R_PAR					{fprintf(fp, "call: (objectlist) at line %d --> %s\n", yylineno, yytext);}
 			|lvalue callsuffix						{fprintf(fp, "call: lvalue callsuffix at line %d --> %s\n", yylineno, yytext);}
-			|L_PAR funcdef R_PAR L_PAR object R_PAR	{fprintf(fp, "call: (funcdef) (object) at line %d --> %s\n", yylineno, yytext);}
+			|L_PAR funcdef R_PAR L_PAR objectlist R_PAR	{fprintf(fp, "call: (funcdef) (objectlist) at line %d --> %s\n", yylineno, yytext);}
 			;
 
 callsuffix:	normcall 						{fprintf(fp, "callsuffix: normcall at line %d --> %s\n", yylineno, yytext);}
 			|methodcall						{fprintf(fp, "callsuffix: methodcall at line %d --> %s\n", yylineno, yytext);}
 			;
 
-normcall:	L_PAR object R_PAR 				{fprintf(fp, "normcall: (object) at line %d --> %s\n", yylineno, yytext);}
+normcall:	L_PAR objectlist R_PAR 				{fprintf(fp, "normcall: (objectlist) at line %d --> %s\n", yylineno, yytext);}
 			;
 
-methodcall:		DDOT ID L_PAR object R_PAR 	{fprintf(fp, "methodcall: ..ID (object) at line %d --> %s\n", yylineno, yytext);}
+methodcall:		DDOT ID L_PAR objectlist R_PAR 	{fprintf(fp, "methodcall: ..ID (objectlist) at line %d --> %s\n", yylineno, yytext);}
 				;
 
-object:		expr
+objectlist:		expr
 			|LCURLY_BR expr COLON expr RCURLY_BR
-			|LCURLY_BR expr COLON expr RCURLY_BR COMMA object
-			|expr COMMA object
+			|LCURLY_BR expr COLON expr RCURLY_BR COMMA objectlist
+			|expr COMMA objectlist
+			|
 			;
 
 
-objectdef:	L_BR object R_BR 			{fprintf(fp, "objectdef: [object] at line %d --> %s\n", yylineno, yytext);}
+
+objectdef:	L_BR objectlist R_BR 			{fprintf(fp, "objectdef: [objectlist] at line %d --> %s\n", yylineno, yytext);}
 			;
 
 
@@ -285,10 +292,11 @@ funcdef:	FUNCTION
 						inFunc = 1;
 					}
 			idlist 	{fprintf(fp, "funcdef: FUNCTION L_PAR idlist at line %d --> %s\n", yylineno, yytext);}
-			R_PAR{currscope--;}
+			R_PAR	{currscope--;}
 			block  	{	
 						fprintf(fp, "funcdef: FUNCTION L_PAR idlist R_PAR block at line %d --> %s\n", yylineno, yytext);
-						if(inFunc == 1) inFunc = 0;
+						if(inFunc == 1) 
+							inFunc = 0;
 						betweenFunc--;
 					}
 			|FUNCTION ID 	{
@@ -309,7 +317,6 @@ funcdef:	FUNCTION
 								}
 							} 
 			L_PAR	{
-
 						betweenFunc++;
 						fprintf(fp, "funcdef: FUNCTION ID L_PAR at line %d --> %s\n", yylineno, yytext);
 						currscope++; 
@@ -333,23 +340,23 @@ const:		REAL 		{fprintf(fp, "const: REAL at line %d --> %s\n", yylineno, yytext)
 			|FALSE 		{fprintf(fp, "const: FALSE at line %d --> %s\n", yylineno, yytext);}
 			;
 
-idlist:		ID	{fprintf(fp, "idlist: ID at line %d --> %s\n", yylineno, yytext);		
-				
-				SymbolTableEntry *formal;
-				
-				int found = scopeLookUp(yytext, currscope);
+idlist:		ID	{
+					fprintf(fp, "idlist: ID at line %d --> %s\n", yylineno, yytext);	
 
-				if (scopeLookUp(yytext, 0) == 1 ) {
-					addError("Error, collision with library function", yytext, yylineno);
+					SymbolTableEntry *formal;
+					int found = scopeLookUp(yytext, currscope);
+
+					if (scopeLookUp(yytext, 0) == 1 ){
+						addError("Error, collision with library function", yytext, yylineno);
+					}
+					else if (found != 0){
+						addError("Error, symbol already exists", yytext, yylineno);
+					}
+					else {
+						tmp = hashInsert(yytext,yylineno,Formal,currscope);
+						insertFormal(tmp, formal);
+					}
 				}
-				else if (found != 0){
-					addError("Error, symbol already exists", yytext, yylineno);
-				}
-				else {
-					tmp = hashInsert(yytext,yylineno,Formal,currscope);
-					insertFormal(tmp, formal);
-				}
-			}
 			|idlist COMMA ID 	{	
 									fprintf(fp, "idlist: idlist COMMA ID at line %d --> %s\n", yylineno, yytext);													
 									SymbolTableEntry *formal;
@@ -381,10 +388,10 @@ whilestmt:	WHILE L_PAR expr R_PAR	{
 			stmt 	{fprintf(fp, "whilestmt: WHILE L_PAR expr R_PAR stmt at line %d --> %s\n", yylineno, yytext);}
 			;
 
-forstmt:  	FOR L_PAR object SEMICOLON expr SEMICOLON object R_PAR 	{
+forstmt:  	FOR L_PAR objectlist SEMICOLON expr SEMICOLON objectlist R_PAR 	{
 																		inLoop = 1;
 																	}
-			stmt {fprintf(fp, "forstm: FOR L_PAR object SEMICOLON expr SEMICOLON object R_PAR stmt at line %d --> %s\n", yylineno, yytext);}
+			stmt {fprintf(fp, "forstm: FOR L_PAR objectlist SEMICOLON expr SEMICOLON objectlist R_PAR stmt at line %d --> %s\n", yylineno, yytext);}
 			;
 
 returnstmt:	RETURN  SEMICOLON
