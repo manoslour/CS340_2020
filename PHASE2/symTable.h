@@ -81,6 +81,6 @@ bool scopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope);
 
 bool insertFormal(struct SymbolTableEntry *funcname, struct SymbolTableEntry *formalEntry);
 
-struct SymbolTableEntry  *hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope);
+struct SymbolTableEntry* hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope);
 
 #endif

@@ -56,12 +56,14 @@ bool insertFormal(struct SymbolTableEntry *funcname, struct SymbolTableEntry *fo
 
 	//an pas na valeis var se function h formal se var h var anti gia formal efuges kai den kaneis tpt 
 	if ((funcname->type != Libfunc && funcname->type != Userfunc) || formalEntry->type != Formal ) {
-		printf("you are trying to add formals to a variable , not a function"); 
+		//printf("you are trying to add formals to a variable , not a function"); 
 		return 0;
 	}
 	
 	parse = funcname;
-	if (parse->formal_next == NULL) parse->formal_next = formalEntry;
+	if (parse->formal_next == NULL){
+		parse->formal_next = formalEntry;
+	}
 	else {
 		while (parse->formal_next != NULL) parse = parse->formal_next;
 		parse->formal_next = formalEntry; 

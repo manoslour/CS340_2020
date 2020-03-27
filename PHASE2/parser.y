@@ -24,8 +24,10 @@
     int intValue;
     double realValue;
     char* stringValue;
+	struct SymbolTableEntry* exprNode;
 }
 
+%type <exprNode> lvalue
 %token <intValue> INTEGER
 %token <realValue> REAL
 %token <stringValue> ID
@@ -237,8 +239,7 @@ elist:		expr						{fprintf(fp, "elist: expr at line %d --> %s\n", yylineno, yyte
 			|
 			;
 
-objectdef:	L_BR R_BR 					{fprintf(fp, "objectdef: [] at line %d --> %s\n", yylineno, yytext);}
-			|L_BR elist R_BR 			{fprintf(fp, "objectdef: [elist] at line %d --> %s\n", yylineno, yytext);}
+objectdef:	|L_BR elist R_BR 			{fprintf(fp, "objectdef: [elist] at line %d --> %s\n", yylineno, yytext);}
 			|L_BR indexed R_BR 			{fprintf(fp, "objectdef: [indexed] at line %d --> %s\n", yylineno, yytext);}
 			;
 
@@ -292,10 +293,11 @@ funcdef:	FUNCTION
 						inFunc = 1;
 					}
 			idlist 	{fprintf(fp, "funcdef: FUNCTION L_PAR idlist at line %d --> %s\n", yylineno, yytext);}
-			R_PAR{currscope--;}
+			R_PAR	{currscope--;}
 			block  	{	
 						fprintf(fp, "funcdef: FUNCTION L_PAR idlist R_PAR block at line %d --> %s\n", yylineno, yytext);
-						if(inFunc == 1) inFunc = 0;
+						if(inFunc == 1) 
+							inFunc = 0;
 						betweenFunc--;
 					}
 			|FUNCTION ID 	{
@@ -316,7 +318,6 @@ funcdef:	FUNCTION
 								}
 							} 
 			L_PAR	{
-
 						betweenFunc++;
 						fprintf(fp, "funcdef: FUNCTION ID L_PAR at line %d --> %s\n", yylineno, yytext);
 						currscope++; 
@@ -340,23 +341,23 @@ const:		REAL 		{fprintf(fp, "const: REAL at line %d --> %s\n", yylineno, yytext)
 			|FALSE 		{fprintf(fp, "const: FALSE at line %d --> %s\n", yylineno, yytext);}
 			;
 
-idlist:		ID	{fprintf(fp, "idlist: ID at line %d --> %s\n", yylineno, yytext);}			
-			{	
-				SymbolTableEntry *formal;
-				
-				int found = scopeLookUp(yytext, currscope);
+idlist:		ID	{
+					fprintf(fp, "idlist: ID at line %d --> %s\n", yylineno, yytext);	
 
-				if (scopeLookUp(yytext, 0) == 1 ) {
-					addError("Error, collision with library function", yytext, yylineno);
+					SymbolTableEntry *formal;
+					int found = scopeLookUp(yytext, currscope);
+
+					if (scopeLookUp(yytext, 0) == 1 ){
+						addError("Error, collision with library function", yytext, yylineno);
+					}
+					else if (found != 0){
+						addError("Error, symbol already exists", yytext, yylineno);
+					}
+					else {
+						tmp = hashInsert(yytext,yylineno,Formal,currscope);
+						insertFormal(tmp, formal);
+					}
 				}
-				else if (found != 0){
-					addError("Error, symbol already exists", yytext, yylineno);
-				}
-				else {
-					formal = hashInsert(yytext,yylineno,Formal,currscope);
-					insertFormal(tmp, formal);
-				}
-			}
 			|idlist COMMA ID 	{	
 									fprintf(fp, "idlist: idlist COMMA ID at line %d --> %s\n", yylineno, yytext);													
 									SymbolTableEntry *formal;
