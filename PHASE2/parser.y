@@ -260,7 +260,7 @@ block:		LCURLY_BR	{
 			RCURLY_BR 	{	
 							fprintf(fp, "block: LCURLY_BR RCURLY_BR at line %d --> %s\n", yylineno, yytext);
 							hideScope(currscope);
-							if(inFunc == 1) inFunc = 0;
+							inFunc--;
 							currscope--;
 							fprintf(fp, "====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 						}		
@@ -287,17 +287,15 @@ funcdef:	FUNCTION
 					}
 			L_PAR 	{	
 						betweenFunc++;
-						fprintf(fp, "funcdef: FUNCTION L_PAR at line %d --> %s\n", yylineno, yytext);
+						inFunc++;
 						currscope++;
-						fprintf(fp, "====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
-						inFunc = 1;
+						fprintf(fp, "funcdef: FUNCTION L_PAR at line %d --> %s\n", yylineno, yytext);
 					}
 			idlist 	{fprintf(fp, "funcdef: FUNCTION L_PAR idlist at line %d --> %s\n", yylineno, yytext);}
 			R_PAR	{currscope--;}
 			block  	{	
 						fprintf(fp, "funcdef: FUNCTION L_PAR idlist R_PAR block at line %d --> %s\n", yylineno, yytext);
-						if(inFunc == 1) 
-							inFunc = 0;
+						inFunc--;
 						betweenFunc--;
 					}
 			|FUNCTION ID 	{
@@ -319,16 +317,15 @@ funcdef:	FUNCTION
 							} 
 			L_PAR	{
 						betweenFunc++;
-						fprintf(fp, "funcdef: FUNCTION ID L_PAR at line %d --> %s\n", yylineno, yytext);
+						inFunc--;
 						currscope++; 
-						inFunc = 1;
-						fprintf(fp, "====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
+						fprintf(fp, "funcdef: FUNCTION ID L_PAR at line %d --> %s\n", yylineno, yytext);
 					}
 			idlist 	{fprintf(fp, "funcdef: FUNCTION ID L_PAR idlist at line %d --> %s\n", yylineno, yytext);}
 			R_PAR	{currscope--; fprintf(fp, "funcdef: FUNCTION ID L_PAR idlist R_PAR at line %d --> %s\n", yylineno, yytext);}
 			block 	{
 						fprintf(fp, "funcdef: FUNCTION ID L_PAR idlist R_PAR block  at line %d --> %s\n", yylineno, yytext);
-						if(inFunc == 1) inFunc = 0;
+						inFunc--;
 						betweenFunc--;
 					}
 			;
