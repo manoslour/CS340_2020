@@ -14,4 +14,4 @@ symTable.o: symTable.c
 
 clean:
 	rm *o
-	rm parser.c parser.h scanner.c calc
+	rm parser.c parser.h scanner.c calc grammarOutput parser.output
