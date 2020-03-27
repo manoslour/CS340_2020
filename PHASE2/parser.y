@@ -156,9 +156,6 @@ lvalue:		ID				{
 												fprintf(fp, "betweenFunc func. Omws var & local sto idio scope\n");
 											else
 												addError("Error, cannot access formal argument", yylval.stringValue, yylineno);
-										}else{
-											if (result > 3 && betweenFunc == 0) printf("\n\n\nCOOL\n\n\n");
-											else addError("Error, cannot access local var", yylval.stringValue, yylineno);
 										}
 										break;
 									default:
@@ -236,14 +233,14 @@ normcall:	L_PAR objectlist R_PAR 				{fprintf(fp, "normcall: (objectlist) at lin
 methodcall:		DDOT ID L_PAR objectlist R_PAR 	{fprintf(fp, "methodcall: ..ID (objectlist) at line %d --> %s\n", yylineno, yytext);}
 				;
 
+
+
 objectlist:		expr
 			|LCURLY_BR expr COLON expr RCURLY_BR
 			|LCURLY_BR expr COLON expr RCURLY_BR COMMA objectlist
 			|expr COMMA objectlist
 			|
 			;
-
-
 
 objectdef:	L_BR objectlist R_BR 			{fprintf(fp, "objectdef: [objectlist] at line %d --> %s\n", yylineno, yytext);}
 			;
@@ -259,7 +256,7 @@ block:		LCURLY_BR	{
 			RCURLY_BR 	{	
 							fprintf(fp, "block: LCURLY_BR RCURLY_BR at line %d --> %s\n", yylineno, yytext);
 							hideScope(currscope);
-							if(inFunc == 1) inFunc = 0;
+							inFunc--;
 							currscope--;
 							fprintf(fp, "====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 						}		
@@ -286,17 +283,15 @@ funcdef:	FUNCTION
 					}
 			L_PAR 	{	
 						betweenFunc++;
-						fprintf(fp, "funcdef: FUNCTION L_PAR at line %d --> %s\n", yylineno, yytext);
+						inFunc++;
 						currscope++;
-						fprintf(fp, "====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
-						inFunc = 1;
+						fprintf(fp, "funcdef: FUNCTION L_PAR at line %d --> %s\n", yylineno, yytext);
 					}
 			idlist 	{fprintf(fp, "funcdef: FUNCTION L_PAR idlist at line %d --> %s\n", yylineno, yytext);}
 			R_PAR	{currscope--;}
 			block  	{	
 						fprintf(fp, "funcdef: FUNCTION L_PAR idlist R_PAR block at line %d --> %s\n", yylineno, yytext);
-						if(inFunc == 1) 
-							inFunc = 0;
+						inFunc--;
 						betweenFunc--;
 					}
 			|FUNCTION ID 	{
@@ -318,16 +313,15 @@ funcdef:	FUNCTION
 							} 
 			L_PAR	{
 						betweenFunc++;
-						fprintf(fp, "funcdef: FUNCTION ID L_PAR at line %d --> %s\n", yylineno, yytext);
+						inFunc--;
 						currscope++; 
-						inFunc = 1;
-						fprintf(fp, "====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
+						fprintf(fp, "funcdef: FUNCTION ID L_PAR at line %d --> %s\n", yylineno, yytext);
 					}
 			idlist 	{fprintf(fp, "funcdef: FUNCTION ID L_PAR idlist at line %d --> %s\n", yylineno, yytext);}
 			R_PAR	{currscope--; fprintf(fp, "funcdef: FUNCTION ID L_PAR idlist R_PAR at line %d --> %s\n", yylineno, yytext);}
 			block 	{
 						fprintf(fp, "funcdef: FUNCTION ID L_PAR idlist R_PAR block  at line %d --> %s\n", yylineno, yytext);
-						if(inFunc == 1) inFunc = 0;
+						inFunc--;
 						betweenFunc--;
 					}
 			;
