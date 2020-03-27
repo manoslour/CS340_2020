@@ -157,9 +157,6 @@ lvalue:		ID				{
 												fprintf(fp, "betweenFunc func. Omws var & local sto idio scope\n");
 											else
 												addError("Error, cannot access formal argument", yylval.stringValue, yylineno);
-										}else{
-											if (result > 3 && betweenFunc == 0) printf("\n\n\nCOOL\n\n\n");
-											else addError("Error, cannot access local var", yylval.stringValue, yylineno);
 										}
 										break;
 									default:
