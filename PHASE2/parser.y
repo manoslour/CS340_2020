@@ -12,6 +12,7 @@
 	unsigned int inFunc = 0;
 	struct SymbolTableEntry *tmp;
 	unsigned int funcPrefix = 0;
+	unsigned int betweenFunc = 0;
 %}
 
 %defines
@@ -127,9 +128,9 @@ lvalue:		ID				{
 										break;
 									case 4:
 										printf("Local var found\n");
-										if(inFunc){
+										if(!betweenFunc){
 											if(currscope == varScope)
-												printf("Mesolavei func. Omws var & local sto idio scope\n");
+												printf("betweenFunc func. Omws var & local sto idio scope\n");
 											else
 												addError("Error, cannot access local var", yylval.stringValue, yylineno);
 										}
@@ -138,7 +139,7 @@ lvalue:		ID				{
 										printf("Formal var found\n");
 										if(inFunc){
 											if(currscope == varScope)
-												printf("Mesolavei func. Omws var & local sto idio scope\n");
+												printf("betweenFunc func. Omws var & local sto idio scope\n");
 											else
 												addError("Error, cannot access formal argument", yylval.stringValue, yylineno);
 										}
@@ -270,7 +271,8 @@ funcdef:	FUNCTION
 						tmp = hashInsert(generateName(funcPrefix),yylineno,Userfunc,currscope);
 						funcPrefix++;
 					}
-			L_PAR 	{
+			L_PAR 	{	
+						if (inFunc == 1) betweenFunc = 1;
 						printf("funcdef: FUNCTION L_PAR at line %d --> %s\n", yylineno, yytext);
 						currscope++;
 						printf("====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
@@ -300,6 +302,7 @@ funcdef:	FUNCTION
 								}
 							} 
 			L_PAR	{
+						if (inFunc == 1) betweenFunc = 1;
 						printf("funcdef: FUNCTION ID L_PAR at line %d --> %s\n", yylineno, yytext);
 						currscope++; inFunc = 1;
 						printf("====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
