@@ -320,7 +320,7 @@ idlist:		ID	{printf("idlist: ID at line %d --> %s\n", yylineno, yytext);}
 				
 				int found = scopeLookUp(yytext, currscope);
 
-				if (found == 1 ) {
+				if (scopeLookUp(yytext, 0) == 1 ) {
 					addError("Error, collision with library function", yytext, yylineno);
 				}
 				else if (found != 0){
@@ -337,7 +337,7 @@ idlist:		ID	{printf("idlist: ID at line %d --> %s\n", yylineno, yytext);}
 									
 									int found = scopeLookUp(yytext, currscope);
 
-									if (found == 1 ) {
+									if (scopeLookUp(yytext, 0) == 1 ) {
 										addError("Error, collision with library function", yytext, yylineno);
 									}
 									else if (found != 0){
