@@ -96,7 +96,7 @@ term:		L_PAR 	{printf("term: L_PAR at line %d --> %s\n", yylineno, yytext);}
 			;
 
 assignexpr:	lvalue ASSIGN expr		{printf("assignexpr: lvalue ASSIGN expr at line %d --> %s\n", yylineno, yytext);}
-			|expr ASSIGN expr		{printf("assignexpr: lvalue ASSIGN expr at line %d --> %s\n", yylineno, yytext);}
+			|expr ASSIGN expr		{printf("assignexpr: expr ASSIGN expr at line %d --> %s\n", yylineno, yytext);}
 			;
 
 primary:	lvalue		{printf("primary: lvalue at line %d --> %s\n", yylineno, yytext);}
