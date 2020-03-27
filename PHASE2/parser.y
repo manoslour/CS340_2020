@@ -239,7 +239,7 @@ elist:		expr						{fprintf(fp, "elist: expr at line %d --> %s\n", yylineno, yyte
 			|
 			;
 
-objectdef:	|L_BR elist R_BR 			{fprintf(fp, "objectdef: [elist] at line %d --> %s\n", yylineno, yytext);}
+objectdef:	L_BR elist R_BR 			{fprintf(fp, "objectdef: [elist] at line %d --> %s\n", yylineno, yytext);}
 			|L_BR indexed R_BR 			{fprintf(fp, "objectdef: [indexed] at line %d --> %s\n", yylineno, yytext);}
 			;
 
