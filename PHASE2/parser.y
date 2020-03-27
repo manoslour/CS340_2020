@@ -14,6 +14,7 @@
 	struct SymbolTableEntry *tmp;
 	unsigned int funcPrefix = 0;
 	unsigned int betweenFunc = 0;
+	unsigned int inLoop = 0;
 %}
 
 %defines
@@ -61,8 +62,14 @@ stmt:		expr SEMICOLON			{printf("stmt: expr SEMICOLON at line %d --> %s\n", yyli
 			|whilestmt				{printf("stmt: whilestmt at line %d --> %s\n", yylineno, yytext);}
 			|forstmt				{printf("stmt: forstmt at line %d --> %s\n", yylineno, yytext);}
 			|returnstmt				{printf("stmt: returnstmt at line %d --> %s\n", yylineno, yytext);}
-			|BREAK SEMICOLON		{printf("stmt: BREAK SEMICOLON at line %d --> %s\n", yylineno, yytext);}
-			|CONTINUE SEMICOLON		{printf("stmt: CONTINUE SEMICOLON at line %d --> %s\n", yylineno, yytext);}
+			|BREAK SEMICOLON		{
+										printf("stmt: BREAK SEMICOLON at line %d --> %s\n", yylineno, yytext);
+										if (inLoop == 0) addError("BREAK use while not in loop", yytext, yylineno);
+									}
+			|CONTINUE SEMICOLON		{	
+										printf("stmt: CONTINUE SEMICOLON at line %d --> %s\n", yylineno, yytext);
+										if (inLoop == 0) addError("CONTINUE use while not in loop", yytext, yylineno);
+									}
 			|block					{printf("stmt: block at line %d --> %s\n", yylineno, yytext);}
 			|funcdef				{printf("stmt: funcdef at line %d --> %s\n", yylineno, yytext);}
 			|SEMICOLON				{printf("stmt: SEMICOLON at line %d --> %s\n", yylineno, yytext);}
@@ -128,15 +135,16 @@ lvalue:		ID				{
 										break;
 									case 4:
 										printf("Local var found\n");
-										if(!betweenFunc){
+										if(betweenFunc){
 											printf("\n\n\nELA KAI POU EISAI \n\n\n");
-											if(currscope == varScope  || result == 3 || result == 5 || result == 4  )
+											if(currscope == varScope  || result == 5)
 												printf("betweenFunc func. Omws var & local sto idio scope\n");
 											else
 												addError("Error, cannot access local var", yylval.stringValue, yylineno);
 										}
 										else{
-											printf("\n\n eisai boba\n\n");
+											if (result > 3 && betweenFunc == 0) printf("\n\n\nCOOL\n\n\n");
+											else addError("Error, cannot access local var", yylval.stringValue, yylineno);
 										}
 										break;
 									case 5:
@@ -276,7 +284,7 @@ funcdef:	FUNCTION
 						funcPrefix++;
 					}
 			L_PAR 	{	
-						if (inFunc == 1) betweenFunc++;
+						betweenFunc++;
 						printf("funcdef: FUNCTION L_PAR at line %d --> %s\n", yylineno, yytext);
 						currscope++;
 						printf("====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
@@ -308,7 +316,7 @@ funcdef:	FUNCTION
 							} 
 			L_PAR	{
 
-						if (inFunc == 1) betweenFunc++;
+						betweenFunc++;
 						printf("funcdef: FUNCTION ID L_PAR at line %d --> %s\n", yylineno, yytext);
 						currscope++; 
 						inFunc = 1;
@@ -373,14 +381,27 @@ ifstmt:		IF L_PAR expr R_PAR stmt 		{printf("ifstmt: IF L_PAR expr R_PAR stmt at
 			;
 
 
-whilestmt:	WHILE L_PAR expr R_PAR stmt 	{printf("whilestmt: WHILE L_PAR expr R_PAR stmt at line %d --> %s\n", yylineno, yytext);}
+whilestmt:	WHILE L_PAR expr R_PAR	{
+										inLoop = 1;
+									}
+			stmt 	{printf("whilestmt: WHILE L_PAR expr R_PAR stmt at line %d --> %s\n", yylineno, yytext);}
 			;
 
-forstmt:  	FOR L_PAR elist SEMICOLON expr SEMICOLON elist R_PAR stmt {printf("forstm: FOR L_PAR elist SEMICOLON expr SEMICOLON elist R_PAR stmt at line %d --> %s\n", yylineno, yytext);}
+forstmt:  	FOR L_PAR elist SEMICOLON expr SEMICOLON elist R_PAR 	{
+																		inLoop = 1;
+																	}
+			stmt {printf("forstm: FOR L_PAR elist SEMICOLON expr SEMICOLON elist R_PAR stmt at line %d --> %s\n", yylineno, yytext);}
 			;
 
-returnstmt:	RETURN SEMICOLON		{printf("returnstmt: RETURN SEMICOLON at line %d --> %s\n", yylineno, yytext);}
-			|RETURN expr SEMICOLON	{printf("returnstmt: RETURN expr SEMICOLON at line %d --> %s\n", yylineno, yytext);}
+returnstmt:	RETURN  SEMICOLON
+					{
+						printf("returnstmt: RETURN SEMICOLON at line %d --> %s\n", yylineno, yytext);
+						if (inFunc == 0) addError("Return state not in function",yytext,yylineno);
+					} 
+			|RETURN expr SEMICOLON	{
+										printf("returnstmt: RETURN expr SEMICOLON at line %d --> %s\n", yylineno, yytext);
+										if (inFunc == 0) addError("Return state not in function",yytext,yylineno);
+									}
 			;
 
 
