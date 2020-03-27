@@ -174,23 +174,23 @@ int scopeLookUp(char *name, unsigned int scope){
 			
 			while (tmpSymbol != NULL) {
 				
-				if (tmpSymbol->type == Libfunc ){
-					if (!strcmp(tmpSymbol->value.funcVal->name, name)) 
+				if (tmpSymbol->type == Libfunc && tmpSymbol->isActive == 1){
+					if (!strcmp(tmpSymbol->value.funcVal->name, name))
 						return 1; // Libfunc found
 				} 
-				if (tmpSymbol->type == Userfunc){
+				if (tmpSymbol->type == Userfunc && tmpSymbol->isActive == 1){
 					if (!strcmp(tmpSymbol->value.funcVal->name, name)) 
 						return 2; // Userfunc found
 				}
-				if(tmpSymbol->type == Global){
+				if(tmpSymbol->type == Global && tmpSymbol->isActive == 1){
 					if (!strcmp(tmpSymbol->value.varVal->name, name)) 
 						return 3; // Global Variable found
 				}
-				if(tmpSymbol->type == Local){
+				if(tmpSymbol->type == Local && tmpSymbol->isActive == 1){
 					if (!strcmp(tmpSymbol->value.varVal->name, name)) 
 						return 4; // Local Variable found
 				}
-				if(tmpSymbol->type == Formal){
+				if(tmpSymbol->type == Formal && tmpSymbol->isActive == 1){
 					if (!strcmp(tmpSymbol->value.varVal->name, name))
 						return 5; // Formal Variable found
 				}
