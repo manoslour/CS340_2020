@@ -94,25 +94,6 @@ void printFormals(){
 	}
 }
 
-/*
-void activateScope(unsigned int scope){
-
-	ScopeListEntry *temp = scope_head;
-	SymbolTableEntry *tmp;
-	
-	while (temp != NULL){
-		if (temp->scope == scope ){
-			tmp = temp->symbols; 
-			while (tmp != NULL) {
-				tmp->isActive = 1;
-				tmp = tmp->scope_next;
-			}
-		}
-		temp = temp->next;
-	}
-}
-*/
-
 void hideScope(unsigned int scope){
 	
 	ScopeListEntry *temp = scope_head;
@@ -142,7 +123,7 @@ int findVarScope(char *name, unsigned int scope){
 	result = scopeLookUp(name, tmpScope->scope);
 
 	if(result != 0){
-		printf("Found in scope %d, result = %d\n", tmpScope->scope, result);
+		//printf("Found in scope %d, result = %d\n", tmpScope->scope, result);
 		if(result == 4 || result == 5)
 			return tmpScope->scope;
 	}
@@ -150,11 +131,11 @@ int findVarScope(char *name, unsigned int scope){
 		while (tmpScope != NULL){
 			result = scopeLookUp(name, tmpScope->scope);
 			if(result != 0){
-				printf("Found in scope %d, result = %d\n", tmpScope->scope, result);
+				//printf("Found in scope %d, result = %d\n", tmpScope->scope, result);
 				if(result == 4 || result == 5)
 					return tmpScope->scope;
 			}
-			printf("Not found in scope %d, result = %d\n", tmpScope->scope, result);
+			//printf("Not found in scope %d, result = %d\n", tmpScope->scope, result);
 			tmpScope = tmpScope->prev;
 		}
 	}
@@ -210,26 +191,26 @@ int generalLookUp(char *name, unsigned int scope){
 	ScopeListEntry *tmpScope = scope_head; 
 
 	while (tmpScope->next != NULL && tmpScope->scope != scope){
-		printf("Currently at scope %d\n", tmpScope->scope);
+		//printf("Currently at scope %d\n", tmpScope->scope);
 		tmpScope = tmpScope->next;
 	}
 
 	// If tmpScope->scope < scope, given scope doesnt exist yet. Works as expected.
-	printf("Arrived at given scope[%d|%d]\n", tmpScope->scope, scope);
+	//printf("Arrived at given scope[%d|%d]\n", tmpScope->scope, scope);
 	result = scopeLookUp(name, tmpScope->scope);
 
 	if(result != 0){
-		printf("Found in scope %d, result = %d\n", tmpScope->scope, result);
+		//printf("Found in scope %d, result = %d\n", tmpScope->scope, result);
 		return result;
 	}
 	else{
 		while (tmpScope != NULL){
 			result = scopeLookUp(name, tmpScope->scope);
 			if(result != 0){
-				printf("Found in scope %d, result = %d\n", tmpScope->scope, result);
+				//printf("Found in scope %d, result = %d\n", tmpScope->scope, result);
 				break;
 			}
-			printf("Not found in scope %d, result = %d\n", tmpScope->scope, result);
+			//printf("Not found in scope %d, result = %d\n", tmpScope->scope, result);
 			tmpScope = tmpScope->prev;
 		}
 	}
@@ -365,35 +346,6 @@ struct SymbolTableEntry *hashInsert(char *name, unsigned int line, enum SymbolTy
 	return NULL;
 
 }
-/*
-void printHash(){
-
-	int i;
-	SymbolTableEntry *tmp;
-
-	for (i=0; i<Buckets; i++){
-		if(HashTable[i] == NULL) continue;
-		tmp = HashTable[i];
-		printf("\nHASH NUM %d :",i );
-		while (tmp != NULL){
-			
-			if (tmp->type == Libfunc) printf("\"%s\"\t [Library Function]\t (line %d)\t (scope %d)"
-				,tmp->value.funcVal->name,tmp->value.funcVal->scope,tmp->value.funcVal->line);
-			else if (tmp->type == Userfunc) printf("\"%s\"\t [User Function]\t (line %d)\t (scope %d)"
-				,tmp->value.funcVal->name,tmp->value.funcVal->scope,tmp->value.funcVal->line);
-			else if (tmp->type == Global) printf("\"%s\"\t [Global Variable]\t (line %d)\t (scope %d)"
-				,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
-			else if (tmp->type == Local) printf("\"%s\"\t [Local Variable]\t (line %d)\t (scope %d)"
-				,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
-			else if (tmp->type == Formal) printf("\"%s\"\t [Formal Variable]\t (line %d)\t (scope %d)"
-				,tmp->value.varVal->name,tmp->value.varVal->scope,tmp->value.varVal->line);
-
-			if (tmp ->next != NULL)printf("  ||  ");
-			tmp = tmp->scope_next; 
-		}
-	}
-}
-*/
 
 void printScopeList(){
 
@@ -423,24 +375,3 @@ void printScopeList(){
 	}
 	printf("\n");
 }
-
-/*
-int main(){
-	
-	initialize();
-	hashInsert("manos", 3, Userfunc, 3);
-	int found = findVarScope("manos", 5);
-	printf("found = %d\n", found);
-	
-	hashInsert("loukas", 4, Local, 4);
-	hashInsert("maria", 3, Local, 3);
-	hashInsert("dionisis", 2, Local, 2);
-	hashInsert("vasilis", 1, Userfunc, 1);
-	hashInsert("andro", 0, Global, 0);
-
-	generalLookUp("vasilis", 3);
-	//printScopeList();
-
-	return 0;
-}
-*/

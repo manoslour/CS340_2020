@@ -83,5 +83,4 @@ bool insertFormal(struct SymbolTableEntry *funcname, struct SymbolTableEntry *fo
 
 struct SymbolTableEntry  *hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope);
 
-
 #endif
