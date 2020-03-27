@@ -38,7 +38,7 @@ void addError(char *output, char *content, unsigned int numLine){
 void printErrorList(){
 
     struct errorToken *tmp = ERROR_HEAD;
-    printf("\n------------------\tERRORS - WARNINGS\t------------------\n\n");
+    printf("\n-----------------------------  "RED"ERRORS"RESET"   ------------------------------\n\n");
 
     while(tmp != NULL){
         printf("%d:\t", tmp->numLine);
@@ -365,7 +365,7 @@ struct SymbolTableEntry *hashInsert(char *name, unsigned int line, enum SymbolTy
 	return NULL;
 
 }
-
+/*
 void printHash(){
 
 	int i;
@@ -393,6 +393,7 @@ void printHash(){
 		}
 	}
 }
+*/
 
 void printScopeList(){
 
@@ -401,7 +402,7 @@ void printScopeList(){
 
 	while (temp != NULL){
 
-		printf("\n-----------------------------"YEL " SCOPE %d "RESET"----------------------------- \n\n",temp->scope );
+		printf("\n-----------------------------  "YEL"SCOPE #%d"RESET"  ----------------------------- \n\n",temp->scope );
 		tmp = temp->symbols;
 		while (tmp != NULL){
 

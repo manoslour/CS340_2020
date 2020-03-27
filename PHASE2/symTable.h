@@ -7,9 +7,7 @@
 #include <string.h>
 
 #define RED   "\x1B[31m"
-#define GRN   "\x1B[32m"
 #define YEL   "\x1B[33m"
-#define BLU   "\x1B[34m"
 #define RESET "\x1B[0m"
 
 #define Buckets 256
@@ -57,8 +55,6 @@ struct errorToken {
     struct errorToken *next;
 };
 
-void printHash();
-
 void initialize();
 
 void printScopeList();
@@ -72,8 +68,6 @@ bool enable (int scope );
 char* generateName(int nameCount);
 
 void hideScope(unsigned int scope);
-
-// void activateScope(unsigned int scope);
 
 int findVarScope(char *name, unsigned int scope);
 
