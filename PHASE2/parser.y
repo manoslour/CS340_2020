@@ -50,60 +50,60 @@ program:	stmtlist	{printf("promgram: stmtlist at line %d --> %s\n", yylineno, yy
 			|
 			;
 
-stmtlist:	stmt	{printf("stmtlist: stmt at line %d --> %s\n", yylineno, yytext);}
+stmtlist:	stmt				{printf("stmtlist: stmt at line %d --> %s\n", yylineno, yytext);}
 			|stmtlist stmt		{printf("stmtlist: stmtlist stmt at line %d --> %s\n", yylineno, yytext);}	
 			;
 
-stmt:		expr SEMICOLON		{printf("stmt: expr SEMICOLON at line %d --> %s\n", yylineno, yytext);}
-			|ifstmt		 {printf("stmt: ifstmt at line %d --> %s\n", yylineno, yytext);}
-			|whilestmt		{printf("stmt: whilestmt at line %d --> %s\n", yylineno, yytext);}
-			|forstmt		{printf("stmt: forstmt at line %d --> %s\n", yylineno, yytext);}
-			|returnstmt		{printf("stmt: returnstmt at line %d --> %s\n", yylineno, yytext);}
+stmt:		expr SEMICOLON			{printf("stmt: expr SEMICOLON at line %d --> %s\n", yylineno, yytext);}
+			|ifstmt					{printf("stmt: ifstmt at line %d --> %s\n", yylineno, yytext);}
+			|whilestmt				{printf("stmt: whilestmt at line %d --> %s\n", yylineno, yytext);}
+			|forstmt				{printf("stmt: forstmt at line %d --> %s\n", yylineno, yytext);}
+			|returnstmt				{printf("stmt: returnstmt at line %d --> %s\n", yylineno, yytext);}
 			|BREAK SEMICOLON		{printf("stmt: BREAK SEMICOLON at line %d --> %s\n", yylineno, yytext);}
 			|CONTINUE SEMICOLON		{printf("stmt: CONTINUE SEMICOLON at line %d --> %s\n", yylineno, yytext);}
-			|block		{printf("stmt: block at line %d --> %s\n", yylineno, yytext);}
-			|funcdef		{printf("stmt: funcdef at line %d --> %s\n", yylineno, yytext);}
-			|SEMICOLON		{printf("stmt: SEMICOLON at line %d --> %s\n", yylineno, yytext);}
+			|block					{printf("stmt: block at line %d --> %s\n", yylineno, yytext);}
+			|funcdef				{printf("stmt: funcdef at line %d --> %s\n", yylineno, yytext);}
+			|SEMICOLON				{printf("stmt: SEMICOLON at line %d --> %s\n", yylineno, yytext);}
 			;
 
-expr:		assignexpr	{printf("expr: assignexpr at line %d --> %s\n", yylineno, yytext);}
-			|expr PLUS expr		{printf("expr: expr PLUS expr at line %d --> %s\n", yylineno, yytext);}
+expr:		assignexpr				{printf("expr: assignexpr at line %d --> %s\n", yylineno, yytext);}
+			|expr PLUS expr			{printf("expr: expr PLUS expr at line %d --> %s\n", yylineno, yytext);}
 			|expr MINUS expr		{printf("expr: MINUS op expr at line %d --> %s\n", yylineno, yytext);}
-			|expr MULT expr		{printf("expr: expr MULT expr at line %d --> %s\n", yylineno, yytext);}
-			|expr DIV expr		{printf("expr: expr DIV expr at line %d --> %s\n", yylineno, yytext);}
-			|expr MOD expr		{printf("expr: expr MOD expr at line %d --> %s\n", yylineno, yytext);}
+			|expr MULT expr			{printf("expr: expr MULT expr at line %d --> %s\n", yylineno, yytext);}
+			|expr DIV expr			{printf("expr: expr DIV expr at line %d --> %s\n", yylineno, yytext);}
+			|expr MOD expr			{printf("expr: expr MOD expr at line %d --> %s\n", yylineno, yytext);}
 			|expr GREATER expr		{printf("expr: expr GREATER expr at line %d --> %s\n", yylineno, yytext);}
-			|expr GREATER_EQ expr		{printf("expr: expr GREATER_EQ expr at line %d --> %s\n", yylineno, yytext);}
-			|expr LESS expr		{printf("expr: expr LESS expr at line %d --> %s\n", yylineno, yytext);}
+			|expr GREATER_EQ expr	{printf("expr: expr GREATER_EQ expr at line %d --> %s\n", yylineno, yytext);}
+			|expr LESS expr			{printf("expr: expr LESS expr at line %d --> %s\n", yylineno, yytext);}
 			|expr LESS_EQ expr		{printf("expr: expr LESS_EQ expr at line %d --> %s\n", yylineno, yytext);}
 			|expr EQUAL expr		{printf("expr: expr EQUAL expr at line %d --> %s\n", yylineno, yytext);}
-			|expr NOT_EQUAL expr		{printf("expr: expr NOT_EQUAL expr at line %d --> %s\n", yylineno, yytext);}
-			|expr AND expr		{printf("expr: expr AND expr at line %d --> %s\n", yylineno, yytext);}
-			|expr OR expr		{printf("expr: expr OR expr at line %d --> %s\n", yylineno, yytext);}
-			|term		{printf("expr: term at line %d --> %s\n", yylineno, yytext);}
+			|expr NOT_EQUAL expr	{printf("expr: expr NOT_EQUAL expr at line %d --> %s\n", yylineno, yytext);}
+			|expr AND expr			{printf("expr: expr AND expr at line %d --> %s\n", yylineno, yytext);}
+			|expr OR expr			{printf("expr: expr OR expr at line %d --> %s\n", yylineno, yytext);}
+			|term					{printf("expr: term at line %d --> %s\n", yylineno, yytext);}
 			;
 
-term:		L_PAR 	{printf("term: L_PAR at line %d --> %s\n", yylineno, yytext);}
-			expr 	{printf("term: L_PAR expr at line %d --> %s\n", yylineno, yytext);}
-			R_PAR		{printf("term: L_PAR expr R_PAR at line %d --> %s\n", yylineno, yytext);}
-			|MINUS expr %prec UMINUS		{printf("term: MINUS expr at line %d --> %s\n", yylineno, yytext);}
-			|NOT expr		{printf("term: NOT expr at line %d --> %s\n", yylineno, yytext);}
-			|INCR lvalue		{printf("term: INCR lvalue at line %d --> %s\n", yylineno, yytext);}
-			|lvalue INCR		{printf("term: lvalue INCR at line %d --> %s\n", yylineno, yytext);}
-			|DECR lvalue		{printf("term: DECR lvalue at line %d --> %s\n", yylineno, yytext);}
-			|lvalue DECR		{printf("term: lvalue DECR at line %d --> %s\n", yylineno, yytext);}
-			|primary		{printf("term: primary at line %d --> %s\n", yylineno, yytext);}
+term:		L_PAR 						{printf("term: L_PAR at line %d --> %s\n", yylineno, yytext);}
+			expr 						{printf("term: L_PAR expr at line %d --> %s\n", yylineno, yytext);}
+			R_PAR						{printf("term: L_PAR expr R_PAR at line %d --> %s\n", yylineno, yytext);}
+			|MINUS expr %prec UMINUS	{printf("term: MINUS expr at line %d --> %s\n", yylineno, yytext);}
+			|NOT expr					{printf("term: NOT expr at line %d --> %s\n", yylineno, yytext);}
+			|INCR lvalue				{printf("term: INCR lvalue at line %d --> %s\n", yylineno, yytext);}
+			|lvalue INCR				{printf("term: lvalue INCR at line %d --> %s\n", yylineno, yytext);}
+			|DECR lvalue				{printf("term: DECR lvalue at line %d --> %s\n", yylineno, yytext);}
+			|lvalue DECR				{printf("term: lvalue DECR at line %d --> %s\n", yylineno, yytext);}
+			|primary					{printf("term: primary at line %d --> %s\n", yylineno, yytext);}
 			;
 
 assignexpr:	lvalue ASSIGN expr		{printf("assignexpr: lvalue ASSIGN expr at line %d --> %s\n", yylineno, yytext);}
 			|expr ASSIGN expr		{printf("assignexpr: expr ASSIGN expr at line %d --> %s\n", yylineno, yytext);}
 			;
 
-primary:	lvalue		{printf("primary: lvalue at line %d --> %s\n", yylineno, yytext);}
-			|call		{printf("primary: call at line %d --> %s\n", yylineno, yytext);}
-			|objectdef		{printf("primary: objectdef at line %d --> %s\n", yylineno, yytext);}
-			|L_PAR funcdef R_PAR		{printf("primary: L_PAR funcdef R_PAR at line %d --> %s\n", yylineno, yytext);}
-			|const		{printf("primary: const at line %d --> %s\n", yylineno, yytext);}
+primary:	lvalue					{printf("primary: lvalue at line %d --> %s\n", yylineno, yytext);}
+			|call					{printf("primary: call at line %d --> %s\n", yylineno, yytext);}
+			|objectdef				{printf("primary: objectdef at line %d --> %s\n", yylineno, yytext);}
+			|L_PAR funcdef R_PAR	{printf("primary: L_PAR funcdef R_PAR at line %d --> %s\n", yylineno, yytext);}
+			|const					{printf("primary: const at line %d --> %s\n", yylineno, yytext);}
 			;
 
 lvalue:		ID				{
