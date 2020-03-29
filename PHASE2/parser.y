@@ -106,16 +106,20 @@ term:		L_PAR 						{fprintf(fp, "term: L_PAR at line %d --> %s\n", yylineno, yyt
 										}
 			|lvalue INCR				{
 											fprintf(fp, "term: lvalue INCR at line %d --> %s\n", yylineno, yytext);
+											/*
 											enum SymbolType type = $1->type;
 											if(type != Global || type != Local || type != Formal){
 												addError("Error, cant increment function", yytext, yylineno);
 											}
+											*/
 										}
 			|DECR lvalue				{fprintf(fp, "term: DECR lvalue at line %d --> %s\n", yylineno, yytext);
+											/*
 											enum SymbolType type = $2->type;
 											if(type != Global || type != Local || type != Formal){
 												addError("Error, cant decr function", yytext, yylineno);
 											}
+											*/
 										}
 			|lvalue DECR				{fprintf(fp, "term: lvalue DECR at line %d --> %s\n", yylineno, yytext);}
 			|primary					{fprintf(fp, "term: primary at line %d --> %s\n", yylineno, yytext);}
@@ -133,6 +137,7 @@ primary:	lvalue					{fprintf(fp, "primary: lvalue at line %d --> %s\n", yylineno
 
 lvalue:		ID				{
 								fprintf(fp, "lvalue: ID at line %d --> %s\n", yylineno, yylval.stringValue);
+
 								int result, varScope;
 								enum SymbolType type;
 								
@@ -152,15 +157,17 @@ lvalue:		ID				{
 									case 4:
 										fprintf(fp, "Local var found\n");
 										if(betweenFunc){
-											fprintf(fp, "\n\n\nELA KAI POU EISAI \n\n\n");
+											//fprintf(fp, "\n\n\nELA KAI POU EISAI \n\n\n");
 											if(currscope == varScope  || result == 5)
 												fprintf(fp, "betweenFunc func. Omws var & local sto idio scope\n");
 											else
 												addError("Error, cannot access local var", yylval.stringValue, yylineno);
 										}
 										else{
-											if (result > 3 && betweenFunc == 0) fprintf(fp, "\n\n\nCOOL\n\n\n");
-											else addError("Error, cannot access local var", yylval.stringValue, yylineno);
+											if (result > 3 && betweenFunc == 0) 
+												fprintf(fp, "\nCOOL\n");
+											else 
+												addError("Error, cannot access local var", yylval.stringValue, yylineno);
 										}
 										break;
 									case 5:
@@ -186,7 +193,7 @@ lvalue:		ID				{
 								fprintf(fp, "lvalue: LOCAL ID at line %d --> %s\n", yylineno, yytext);
 
 								int found = scopeLookUp(yytext, currscope);
-								//!!!MADE CHANGES HERE!!!!
+
 								if( found == 2 || found == 3 || found == 4 || found == 5){
 									fprintf(fp, "Ok, found locally\n");
 								}
@@ -268,26 +275,26 @@ block:		LCURLY_BR	{
 							fprintf(fp, "block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
 							currscope++;
 							
-							fprintf(fp, "====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
+							//fprintf(fp, "====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 							} 
 			RCURLY_BR 	{	
 							fprintf(fp, "block: LCURLY_BR RCURLY_BR at line %d --> %s\n", yylineno, yytext);
 							hideScope(currscope);
 							inFunc--;
 							currscope--;
-							fprintf(fp, "====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
+							//fprintf(fp, "====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 						}		
 			|LCURLY_BR	{
 							fprintf(fp, "block: LCURLY_BR at line %d --> %s\n", yylineno, yytext); 
 							currscope++;
-							fprintf(fp, "====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
+							//fprintf(fp, "====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 						}
 			stmtlist  	{	fprintf(fp, "block: LCURLY_BR  stmtlist at line %d --> %s\n", yylineno, yytext);}
 			RCURLY_BR	{
 							fprintf(fp, "block: LCURLY_BR stmtlist RCURLY_BR at line %d --> %s\n", yylineno, yytext);
 							hideScope(currscope);
 							currscope--;
-							fprintf(fp, "====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
+							//fprintf(fp, "====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 
 						}
 			;
