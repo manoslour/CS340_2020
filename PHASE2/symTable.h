@@ -18,6 +18,7 @@ typedef struct Variable{
 	const char *name;
 	unsigned int scope;
 	unsigned int line ;
+	unsigned int inFunc;
 }Variable;
 
 typedef struct Function{
@@ -69,7 +70,7 @@ char* generateName(int nameCount);
 
 void hideScope(unsigned int scope);
 
-int findVarScope(char *name, unsigned int scope);
+int findInFunc(char *name, unsigned int scope);
 
 int scopeLookUp(char *name, unsigned int scope);
 
@@ -81,6 +82,6 @@ bool scopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope);
 
 bool insertFormal(struct SymbolTableEntry *funcname, struct SymbolTableEntry *formalEntry);
 
-struct SymbolTableEntry* hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope);
+struct SymbolTableEntry* hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope, unsigned int inFunc);
 
 #endif
