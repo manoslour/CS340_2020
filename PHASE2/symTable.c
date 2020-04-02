@@ -113,8 +113,9 @@ void hideScope(unsigned int scope){
 	}
 }
 
-int findVarScope(char *name, unsigned int scope){
+int findInFunc(char *name, unsigned int scope){
 	int result = 0;
+	char *symbolName;
 	SymbolTableEntry *tmpSymbol;
 	ScopeListEntry *tmpScope = scope_head; 
 
@@ -122,24 +123,22 @@ int findVarScope(char *name, unsigned int scope){
 		tmpScope = tmpScope->next;
 	}
 
-	result = scopeLookUp(name, tmpScope->scope);
+	printf("Arrived at currScope[%d]\n", tmpScope->scope);
 
-	if(result != 0){
-		//printf("Found in scope %d, result = %d\n", tmpScope->scope, result);
-		if(result == 4 || result == 5)
-			return tmpScope->scope;
-	}
-	else{
-		while (tmpScope != NULL){
-			result = scopeLookUp(name, tmpScope->scope);
-			if(result != 0){
-				//printf("Found in scope %d, result = %d\n", tmpScope->scope, result);
-				if(result == 4 || result == 5)
-					return tmpScope->scope;
+	while(tmpScope != NULL){
+
+		tmpSymbol = tmpScope->symbols;
+		printf("Started searching scope[%d] symbols\n", tmpScope->scope);
+
+		while(tmpSymbol != NULL){
+			symbolName = strdup(tmpSymbol->value.varVal->name);
+			if(tmpSymbol->isActive == 1 && strcmp(symbolName, name) == 0){
+				printf("Symbol %s found, inFunc = %d\n", symbolName, tmpSymbol->value.varVal->inFunc);
+				return tmpSymbol->value.varVal->inFunc;
 			}
-			//printf("Not found in scope %d, result = %d\n", tmpScope->scope, result);
-			tmpScope = tmpScope->prev;
+			tmpSymbol = tmpSymbol->scope_next;
 		}
+		tmpScope = tmpScope->prev;
 	}
 	return -1;
 }
@@ -222,18 +221,18 @@ int generalLookUp(char *name, unsigned int scope){
 
 void initialize(){
 
-	hashInsert("print", 0, Libfunc, 0);
-	hashInsert("input", 0, Libfunc, 0);
-	hashInsert("objectmemberkeys", 0, Libfunc, 0);
-	hashInsert("objecttotalmembers", 0, Libfunc, 0);
-	hashInsert("objectcopy", 0, Libfunc, 0);
-	hashInsert("tootalarguments", 0, Libfunc, 0);
-	hashInsert("argument", 0, Libfunc, 0);
-	hashInsert("typeof", 0, Libfunc, 0);
-	hashInsert("strtonum", 0, Libfunc, 0);
-	hashInsert("sqrt", 0, Libfunc, 0);
-	hashInsert("cos", 0, Libfunc, 0);
-	hashInsert("sin", 0, Libfunc, 0);
+	hashInsert("print", 0, Libfunc, 0, 0);
+	hashInsert("input", 0, Libfunc, 0, 0);
+	hashInsert("objectmemberkeys", 0, Libfunc, 0, 0);
+	hashInsert("objecttotalmembers", 0, Libfunc, 0, 0);
+	hashInsert("objectcopy", 0, Libfunc, 0, 0);
+	hashInsert("tootalarguments", 0, Libfunc, 0, 0);
+	hashInsert("argument", 0, Libfunc, 0, 0);
+	hashInsert("typeof", 0, Libfunc, 0, 0);
+	hashInsert("strtonum", 0, Libfunc, 0, 0);
+	hashInsert("sqrt", 0, Libfunc, 0, 0);
+	hashInsert("cos", 0, Libfunc, 0, 0);
+	hashInsert("sin", 0, Libfunc, 0, 0);
 }
 
 bool scopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope) {
@@ -290,7 +289,7 @@ bool scopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope) {
 	return 0;
 }
 
-struct SymbolTableEntry *hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope){
+struct SymbolTableEntry *hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope, unsigned int inFunc){
 	
 	int pos = (int)*name % Buckets;
 	
@@ -311,9 +310,10 @@ struct SymbolTableEntry *hashInsert(char *name, unsigned int line, enum SymbolTy
 		new_func = (struct Function*)malloc(sizeof(struct Function));
 		new_func->name = (char*)malloc(strlen(name+1));
 		strcpy((char*)new_func->name, name);
-		new_func->scope = scope; 
+		new_func->scope = scope;
 		new_func->line=line;
 		new_sym->value.funcVal = new_func;
+		
 	}
 	else if (type == Formal){
 		new_var = (struct Variable*)malloc(sizeof(struct Variable));
@@ -321,6 +321,7 @@ struct SymbolTableEntry *hashInsert(char *name, unsigned int line, enum SymbolTy
 		strcpy((char*)new_var->name, name);
 		new_var->scope = scope;
 		new_var->line = line;
+		new_var->inFunc = inFunc;
 		new_sym->value.varVal = new_var;
 	}
 	else {
@@ -329,6 +330,7 @@ struct SymbolTableEntry *hashInsert(char *name, unsigned int line, enum SymbolTy
 		strcpy((char*)new_var->name, name);
 		new_var->scope = scope;
 		new_var->line = line;
+		new_var->inFunc = inFunc;
 		new_sym->value.varVal = new_var;
 	}
 	
@@ -346,7 +348,6 @@ struct SymbolTableEntry *hashInsert(char *name, unsigned int line, enum SymbolTy
 		return new_sym;
 	}
 	return NULL;
-
 }
 
 void printScopeList(){
