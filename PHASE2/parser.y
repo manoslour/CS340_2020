@@ -52,54 +52,56 @@
 
 %%
 
-program:	stmtlist	{fprintf(fp, "promgram: stmtlist at line %d --> %s\n", yylineno, yytext);}
+program:	stmtlist	{	fprintf(fp, "promgram: stmtlist at line %d --> %s\n", yylineno, yytext);}
 			|
 			;
 
-stmtlist:	stmt				{fprintf(fp, "stmtlist: stmt at line %d --> %s\n", yylineno, yytext);}
-			|stmtlist stmt		{fprintf(fp, "stmtlist: stmtlist stmt at line %d --> %s\n", yylineno, yytext);}	
+stmtlist:	stmt				{	fprintf(fp, "stmtlist: stmt at line %d --> %s\n", yylineno, yytext);}
+			|stmtlist stmt		{	fprintf(fp, "stmtlist: stmtlist stmt at line %d --> %s\n", yylineno, yytext);}	
 			;
 
-stmt:		expr SEMICOLON			{fprintf(fp, "stmt: expr SEMICOLON at line %d --> %s\n", yylineno, yytext);}
-			|ifstmt					{fprintf(fp, "stmt: ifstmt at line %d --> %s\n", yylineno, yytext);}
-			|whilestmt				{fprintf(fp, "stmt: whilestmt at line %d --> %s\n", yylineno, yytext);}
-			|forstmt				{fprintf(fp, "stmt: forstmt at line %d --> %s\n", yylineno, yytext);}
-			|returnstmt				{fprintf(fp, "stmt: returnstmt at line %d --> %s\n", yylineno, yytext);}
+stmt:		expr SEMICOLON			{	fprintf(fp, "stmt: expr SEMICOLON at line %d --> %s\n", yylineno, yytext);}
+			|ifstmt					{	fprintf(fp, "stmt: ifstmt at line %d --> %s\n", yylineno, yytext);}
+			|whilestmt				{	fprintf(fp, "stmt: whilestmt at line %d --> %s\n", yylineno, yytext);}
+			|forstmt				{	fprintf(fp, "stmt: forstmt at line %d --> %s\n", yylineno, yytext);}
+			|returnstmt				{	fprintf(fp, "stmt: returnstmt at line %d --> %s\n", yylineno, yytext);}
 			|BREAK SEMICOLON		{
 										fprintf(fp, "stmt: BREAK SEMICOLON at line %d --> %s\n", yylineno, yytext);
-										if (inLoop == 0) addError("BREAK use while not in loop", yytext, yylineno);
+										if (inLoop == 0) 
+											addError("Break use while not in loop", yytext, yylineno);
 									}
 			|CONTINUE SEMICOLON		{	
 										fprintf(fp, "stmt: CONTINUE SEMICOLON at line %d --> %s\n", yylineno, yytext);
-										if (inLoop == 0) addError("CONTINUE use while not in loop", yytext, yylineno);
+										if (inLoop == 0) 
+											addError("Continue use while not in loop", yytext, yylineno);
 									}
-			|block					{fprintf(fp, "stmt: block at line %d --> %s\n", yylineno, yytext);}
-			|funcdef				{fprintf(fp, "stmt: funcdef at line %d --> %s\n", yylineno, yytext);}
-			|SEMICOLON				{fprintf(fp, "stmt: SEMICOLON at line %d --> %s\n", yylineno, yytext);}
+			|block					{	fprintf(fp, "stmt: block at line %d --> %s\n", yylineno, yytext);}
+			|funcdef				{	fprintf(fp, "stmt: funcdef at line %d --> %s\n", yylineno, yytext);}
+			|SEMICOLON				{	fprintf(fp, "stmt: SEMICOLON at line %d --> %s\n", yylineno, yytext);}
 			;
 
-expr:		assignexpr				{fprintf(fp, "expr: assignexpr at line %d --> %s\n", yylineno, yytext);}
-			|expr PLUS expr			{fprintf(fp, "expr: expr PLUS expr at line %d --> %s\n", yylineno, yytext);}
-			|expr MINUS expr		{fprintf(fp, "expr: MINUS op expr at line %d --> %s\n", yylineno, yytext);}
-			|expr MULT expr			{fprintf(fp, "expr: expr MULT expr at line %d --> %s\n", yylineno, yytext);}
-			|expr DIV expr			{fprintf(fp, "expr: expr DIV expr at line %d --> %s\n", yylineno, yytext);}
-			|expr MOD expr			{fprintf(fp, "expr: expr MOD expr at line %d --> %s\n", yylineno, yytext);}
-			|expr GREATER expr		{fprintf(fp, "expr: expr GREATER expr at line %d --> %s\n", yylineno, yytext);}
-			|expr GREATER_EQ expr	{fprintf(fp, "expr: expr GREATER_EQ expr at line %d --> %s\n", yylineno, yytext);}
-			|expr LESS expr			{fprintf(fp, "expr: expr LESS expr at line %d --> %s\n", yylineno, yytext);}
-			|expr LESS_EQ expr		{fprintf(fp, "expr: expr LESS_EQ expr at line %d --> %s\n", yylineno, yytext);}
-			|expr EQUAL expr		{fprintf(fp, "expr: expr EQUAL expr at line %d --> %s\n", yylineno, yytext);}
-			|expr NOT_EQUAL expr	{fprintf(fp, "expr: expr NOT_EQUAL expr at line %d --> %s\n", yylineno, yytext);}
-			|expr AND expr			{fprintf(fp, "expr: expr AND expr at line %d --> %s\n", yylineno, yytext);}
-			|expr OR expr			{fprintf(fp, "expr: expr OR expr at line %d --> %s\n", yylineno, yytext);}
-			|term					{fprintf(fp, "expr: term at line %d --> %s\n", yylineno, yytext);}
+expr:		assignexpr				{	fprintf(fp, "expr: assignexpr at line %d --> %s\n", yylineno, yytext);}
+			|expr PLUS expr			{	fprintf(fp, "expr: expr PLUS expr at line %d --> %s\n", yylineno, yytext);}
+			|expr MINUS expr		{	fprintf(fp, "expr: MINUS op expr at line %d --> %s\n", yylineno, yytext);}
+			|expr MULT expr			{	fprintf(fp, "expr: expr MULT expr at line %d --> %s\n", yylineno, yytext);}
+			|expr DIV expr			{	fprintf(fp, "expr: expr DIV expr at line %d --> %s\n", yylineno, yytext);}
+			|expr MOD expr			{	fprintf(fp, "expr: expr MOD expr at line %d --> %s\n", yylineno, yytext);}
+			|expr GREATER expr		{	fprintf(fp, "expr: expr GREATER expr at line %d --> %s\n", yylineno, yytext);}
+			|expr GREATER_EQ expr	{	fprintf(fp, "expr: expr GREATER_EQ expr at line %d --> %s\n", yylineno, yytext);}
+			|expr LESS expr			{	fprintf(fp, "expr: expr LESS expr at line %d --> %s\n", yylineno, yytext);}
+			|expr LESS_EQ expr		{	fprintf(fp, "expr: expr LESS_EQ expr at line %d --> %s\n", yylineno, yytext);}
+			|expr EQUAL expr		{	fprintf(fp, "expr: expr EQUAL expr at line %d --> %s\n", yylineno, yytext);}
+			|expr NOT_EQUAL expr	{	fprintf(fp, "expr: expr NOT_EQUAL expr at line %d --> %s\n", yylineno, yytext);}
+			|expr AND expr			{	fprintf(fp, "expr: expr AND expr at line %d --> %s\n", yylineno, yytext);}
+			|expr OR expr			{	fprintf(fp, "expr: expr OR expr at line %d --> %s\n", yylineno, yytext);}
+			|term					{	fprintf(fp, "expr: term at line %d --> %s\n", yylineno, yytext);}
 			;
 
-term:		L_PAR 						{fprintf(fp, "term: L_PAR at line %d --> %s\n", yylineno, yytext);}
-			expr 						{fprintf(fp, "term: L_PAR expr at line %d --> %s\n", yylineno, yytext);}
-			R_PAR						{fprintf(fp, "term: L_PAR expr R_PAR at line %d --> %s\n", yylineno, yytext);}
-			|MINUS expr %prec UMINUS	{fprintf(fp, "term: MINUS expr at line %d --> %s\n", yylineno, yytext);}
-			|NOT expr					{fprintf(fp, "term: NOT expr at line %d --> %s\n", yylineno, yytext);}
+term:		L_PAR 						{	fprintf(fp, "term: L_PAR at line %d --> %s\n", yylineno, yytext);}
+			expr 						{	fprintf(fp, "term: L_PAR expr at line %d --> %s\n", yylineno, yytext);}
+			R_PAR						{	fprintf(fp, "term: L_PAR expr R_PAR at line %d --> %s\n", yylineno, yytext);}
+			|MINUS expr %prec UMINUS	{	fprintf(fp, "term: MINUS expr at line %d --> %s\n", yylineno, yytext);}
+			|NOT expr					{	fprintf(fp, "term: NOT expr at line %d --> %s\n", yylineno, yytext);}
 			|INCR lvalue				{
 											fprintf(fp, "term: INCR lvalue at line %d --> %s\n", yylineno, yytext);
 											printf("LVALUE = %s\n", yytext);
@@ -121,18 +123,18 @@ term:		L_PAR 						{fprintf(fp, "term: L_PAR at line %d --> %s\n", yylineno, yyt
 											}
 											*/
 										}
-			|lvalue DECR				{fprintf(fp, "term: lvalue DECR at line %d --> %s\n", yylineno, yytext);}
-			|primary					{fprintf(fp, "term: primary at line %d --> %s\n", yylineno, yytext);}
+			|lvalue DECR				{	fprintf(fp, "term: lvalue DECR at line %d --> %s\n", yylineno, yytext);}
+			|primary					{	fprintf(fp, "term: primary at line %d --> %s\n", yylineno, yytext);}
 			;
 
-assignexpr:	lvalue ASSIGN expr		{fprintf(fp, "assignexpr: lvalue ASSIGN expr at line %d --> %s\n", yylineno, yytext);}
+assignexpr:	lvalue ASSIGN expr		{	fprintf(fp, "assignexpr: lvalue ASSIGN expr at line %d --> %s\n", yylineno, yytext);}
 			;
 
-primary:	lvalue					{fprintf(fp, "primary: lvalue at line %d --> %s\n", yylineno, yytext);}
-			|call					{fprintf(fp, "primary: call at line %d --> %s\n", yylineno, yytext);}
-			|objectdef				{fprintf(fp, "primary: objectdef at line %d --> %s\n", yylineno, yytext);}
-			|L_PAR funcdef R_PAR	{fprintf(fp, "primary: L_PAR funcdef R_PAR at line %d --> %s\n", yylineno, yytext);}
-			|const					{fprintf(fp, "primary: const at line %d --> %s\n", yylineno, yytext);}
+primary:	lvalue					{	fprintf(fp, "primary: lvalue at line %d --> %s\n", yylineno, yytext);}
+			|call					{	fprintf(fp, "primary: call at line %d --> %s\n", yylineno, yytext);}
+			|objectdef				{	fprintf(fp, "primary: objectdef at line %d --> %s\n", yylineno, yytext);}
+			|L_PAR funcdef R_PAR	{	fprintf(fp, "primary: L_PAR funcdef R_PAR at line %d --> %s\n", yylineno, yytext);}
+			|const					{	fprintf(fp, "primary: const at line %d --> %s\n", yylineno, yytext);}
 			;
 
 lvalue:		ID				{
@@ -215,7 +217,6 @@ lvalue:		ID				{
 									fprintf(fp, "Libfunc %s found in line %d", yytext, yylineno);
 								else if(found == 2)
 									fprintf(fp, "Global userFunc %s found in line %d\n", yytext, yylineno);
-									//NOMIZW TO ==4 EINAI PERITTO GIATI FORMALS EINAI PANTA SE SCOPE+
 								else if(found == 3 || found == 4 || found == 5) 
 									fprintf(fp, "Global var %s found in line %d\n", yytext, yylineno); 
 								else
@@ -265,27 +266,21 @@ indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR	{	fprintf(fp, "indexelem: {expr
 block:		LCURLY_BR	{
 							fprintf(fp, "block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
 							currscope++;
-							
-							//fprintf(fp, "====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 							} 
 			RCURLY_BR 	{	
 							fprintf(fp, "block: LCURLY_BR RCURLY_BR at line %d --> %s\n", yylineno, yytext);
 							hideScope(currscope);
 							currscope--;
-							//fprintf(fp, "====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 						}		
 			|LCURLY_BR	{
 							fprintf(fp, "block: LCURLY_BR at line %d --> %s\n", yylineno, yytext); 
 							currscope++;
-							//fprintf(fp, "====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
 						}
 			stmtlist  	{	fprintf(fp, "block: LCURLY_BR  stmtlist at line %d --> %s\n", yylineno, yytext);}
 			RCURLY_BR	{
 							fprintf(fp, "block: LCURLY_BR stmtlist RCURLY_BR at line %d --> %s\n", yylineno, yytext);
 							hideScope(currscope);
 							currscope--;
-							//fprintf(fp, "====CURRSCOPE = %d====|| line %d\n", currscope, yylineno);
-
 						}
 			;
 
@@ -297,7 +292,6 @@ funcdef:	FUNCTION
 					}
 			L_PAR 	{	
 						inFunc++;
-						//betweenFunc++;
 						currscope++;
 						fprintf(fp, "funcdef: FUNCTION L_PAR at line %d --> %s\n", yylineno, yytext);
 					}
@@ -309,7 +303,6 @@ funcdef:	FUNCTION
 			block  	{	
 						fprintf(fp, "funcdef: FUNCTION L_PAR idlist R_PAR block at line %d --> %s\n", yylineno, yytext);
 						inFunc--;
-						//betweenFunc--;
 					}
 			|FUNCTION ID 	{
 								fprintf(fp, "funcdef: FUNCTION ID at line %d --> %s\n", yylineno, yytext);
@@ -330,7 +323,6 @@ funcdef:	FUNCTION
 							} 
 			L_PAR	{
 						fprintf(fp, "funcdef: FUNCTION ID L_PAR at line %d --> %s\n", yylineno, yytext);
-						//betweenFunc++;
 						inFunc++;
 						currscope++; 
 						fprintf(fp, "funcdef: FUNCTION ID L_PAR at line %d --> %s\n", yylineno, yytext);
@@ -343,7 +335,6 @@ funcdef:	FUNCTION
 			block 	{
 						fprintf(fp, "funcdef: FUNCTION ID L_PAR idlist R_PAR block  at line %d --> %s\n", yylineno, yytext);
 						inFunc--;
-						//betweenFunc--;
 					}
 			;
 
