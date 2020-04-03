@@ -68,12 +68,12 @@ stmt:		expr SEMICOLON			{	fprintf(fp, "stmt: expr SEMICOLON at line %d --> %s\n"
 			|BREAK SEMICOLON		{
 										fprintf(fp, "stmt: BREAK SEMICOLON at line %d --> %s\n", yylineno, yytext);
 										if (inLoop == 0) 
-											addError("Break use while not in loop", yytext, yylineno);
+											addError("Break use while not in loop", "", yylineno);
 									}
 			|CONTINUE SEMICOLON		{	
 										fprintf(fp, "stmt: CONTINUE SEMICOLON at line %d --> %s\n", yylineno, yytext);
 										if (inLoop == 0) 
-											addError("Continue use while not in loop", yytext, yylineno);
+											addError("Continue use while not in loop", "", yylineno);
 									}
 			|block					{	fprintf(fp, "stmt: block at line %d --> %s\n", yylineno, yytext);}
 			|funcdef				{	fprintf(fp, "stmt: funcdef at line %d --> %s\n", yylineno, yytext);}
@@ -158,19 +158,17 @@ lvalue:		ID				{
 										break;
 									case 4:
 										fprintf(fp, "Local var found\n");
-										printf("INFUNC = %d VARINFUNC = %d\n", inFunc, varInFunc);
 										if(inFunc - varInFunc >= 1)
 											addError("Cannot access symbol", yytext, yylineno);
 										else
-											fprintf(fp, "Symbol %s found in different scope, but it's accessible\n", yylval.stringValue);
+											fprintf(fp, "Symbol %s found and it's accessible\n", yylval.stringValue);
 										break;
 									case 5:
 										fprintf(fp, "Formal var found\n");
-										printf("INFUNC = %d VARINFUNC = %d\n", inFunc, varInFunc);
 										if(inFunc - varInFunc >= 1)
 											addError("Cannot access symbol", yytext, yylineno);
 										else
-											fprintf(fp, "Symbol %s found in different scope, but it's accessible\n", yylval.stringValue);
+											fprintf(fp, "Symbol %s found and it's accessible\n", yylval.stringValue);
 										break;
 									default:
 										if(currscope == 0)
@@ -188,11 +186,11 @@ lvalue:		ID				{
 								int found = scopeLookUp(yytext, currscope);
 
 								if( found == 2 || found == 3 || found == 4 || found == 5){
-									fprintf(fp, "Ok, found locally\n");
+									fprintf(fp, "Ok, symbol found locally\n");
 								}
 								else if(scopeLookUp(yytext, 0) == 1){
 									if(currscope == 0)
-										fprintf(fp, "Ok, found in scope 0\n");
+										fprintf(fp, "Ok, symbol found in scope 0\n");
 									else
 										addError("Error, collision with library function", yytext, yylineno);
 								}
@@ -220,9 +218,9 @@ lvalue:		ID				{
 								else if(found == 3 || found == 4 || found == 5) 
 									fprintf(fp, "Global var %s found in line %d\n", yytext, yylineno); 
 								else
-									addError("Error, Global variable not found", yytext, yylineno);
+									addError("Error, Global symbol not found", yytext, yylineno);
 							}
-			|member			{fprintf(fp, "lvalue: member at line %d --> %s\n", yylineno, yytext);}
+			|member			{	fprintf(fp, "lvalue: member at line %d --> %s\n", yylineno, yytext);}
 			;
 
 member:		lvalue DOT ID 							{	fprintf(fp, "member: lvalue.ID at line %d --> %s\n", yylineno, yytext);}
@@ -315,7 +313,7 @@ funcdef:	FUNCTION
 									addError("Error, collision with library function",yytext,yylineno);
 								}
 								else if(found == 3 || found == 4 || found == 5){
-									addError("Error, variable already exists",yytext,yylineno);
+									addError("Error, symbol already exists",yytext,yylineno);
 								}
 								else {
 									tmp = hashInsert(yytext, yylineno, Userfunc, currscope, inFunc);
@@ -399,11 +397,13 @@ forstmt:  	FOR L_PAR elist SEMICOLON expr SEMICOLON elist R_PAR 	{	inLoop = 1;}
 returnstmt:	RETURN  SEMICOLON
 					{
 						fprintf(fp, "returnstmt: RETURN SEMICOLON at line %d --> %s\n", yylineno, yytext);
-						if (inFunc == 0) addError("Return state not in function",yytext,yylineno);
+						if (inFunc == 0) 
+							addError("Use of return while not in function", "", yylineno);
 					} 
 			|RETURN expr SEMICOLON	{
 										fprintf(fp, "returnstmt: RETURN expr SEMICOLON at line %d --> %s\n", yylineno, yytext);
-										if (inFunc == 0) addError("Return state not in function",yytext,yylineno);
+										if (inFunc == 0) 
+											addError("Use of return while not in function", "", yylineno);
 									}
 			;
 
