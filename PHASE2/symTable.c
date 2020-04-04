@@ -11,7 +11,6 @@ char* generateName(int nameCount){
 	return name;
 }
 
-
 void addError(char *output, char *content, unsigned int numLine){
     struct errorToken *last;
     struct errorToken *newNode = (struct errorToken *)malloc(sizeof(struct errorToken));
