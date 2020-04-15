@@ -229,36 +229,29 @@ member:		lvalue DOT ID 							{	fprintf(fp, "member: lvalue.ID at line %d --> %s
 			|call L_BR expr R_BR 					{	fprintf(fp, "member: lvalue[expr] at line %d --> %s\n", yylineno, yytext);}
 			;
 
-call:		call L_PAR elist R_PAR					{	fprintf(fp, "call: (elist) at line %d --> %s\n", yylineno, yytext);}
+call:		call L_PAR objectlist R_PAR					{	fprintf(fp, "call: (objectlist) at line %d --> %s\n", yylineno, yytext);}
 			|lvalue callsuffix						{	fprintf(fp, "call: lvalue callsuffix at line %d --> %s\n", yylineno, yytext);}
-			|L_PAR funcdef R_PAR L_PAR elist R_PAR	{	fprintf(fp, "call: (funcdef) (elist) at line %d --> %s\n", yylineno, yytext);}
+			|L_PAR funcdef R_PAR L_PAR objectlist R_PAR	{	fprintf(fp, "call: (funcdef) (objectlist) at line %d --> %s\n", yylineno, yytext);}
 			;
 
 callsuffix:	normcall 						{	fprintf(fp, "callsuffix: normcall at line %d --> %s\n", yylineno, yytext);}
 			|methodcall						{	fprintf(fp, "callsuffix: methodcall at line %d --> %s\n", yylineno, yytext);}
 			;
 
-normcall:	L_PAR elist R_PAR 				{	fprintf(fp, "normcall: (elist) at line %d --> %s\n", yylineno, yytext);}
+normcall:	L_PAR objectlist R_PAR 				{	fprintf(fp, "normcall: (objectlist) at line %d --> %s\n", yylineno, yytext);}
 			;
 
-methodcall:		DDOT ID L_PAR elist R_PAR 	{	fprintf(fp, "methodcall: ..ID (elist) at line %d --> %s\n", yylineno, yytext);}
+methodcall:		DDOT ID L_PAR objectlist R_PAR 	{	fprintf(fp, "methodcall: ..ID (objectlist) at line %d --> %s\n", yylineno, yytext);}
 				;
 
-elist:		expr						{	fprintf(fp, "elist: expr at line %d --> %s\n", yylineno, yytext);}
-			|expr COMMA elist			{	fprintf(fp, "elist: elist comma expr at line %d --> %s\n", yylineno, yytext);}
-			|
+objectlist:	expr 													{	fprintf(fp, "objectlist: expr at line %d --> %s\n", yylineno, yytext);}
+			|LCURLY_BR expr COLON expr RCURLY_BR					{	fprintf(fp, "objectlist: {expr:expr} at line %d --> %s\n", yylineno, yytext);}
+			|LCURLY_BR expr COLON expr RCURLY_BR COMMA objectlist	{	fprintf(fp, "objectlist: list {expr:expr}  at line %d --> %s\n", yylineno, yytext);}
+			|expr COMMA objectlist									{	fprintf(fp, "objectlist: list expr  at line %d --> %s\n", yylineno, yytext);}
+			|														{	fprintf(fp, "objectlist: empty  at line %d --> %s\n", yylineno, yytext);}
 			;
 
-objectdef:	L_BR elist R_BR 			{	fprintf(fp, "objectdef: [elist] at line %d --> %s\n", yylineno, yytext);}
-			|L_BR indexed R_BR 			{	fprintf(fp, "objectdef: [indexed] at line %d --> %s\n", yylineno, yytext);}
-			;
-
-indexed:	indexedelem					{	fprintf(fp, "indexed: indexelem at line %d --> %s\n", yylineno, yytext);}
-			|indexedelem COMMA indexed 	{	fprintf(fp, "indexed: indexed comma indexelem at line %d --> %s\n", yylineno, yytext);}
-			|
-			;
-
-indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR	{	fprintf(fp, "indexelem: {expr:expr} at line %d --> %s\n", yylineno, yytext);}
+objectdef:	L_BR objectlist R_BR 			{	fprintf(fp, "objectdef: [objectlist] at line %d --> %s\n", yylineno, yytext);}
 			;
 
 block:		LCURLY_BR	{
@@ -390,8 +383,8 @@ whilestmt:	WHILE L_PAR expr R_PAR	{	inLoop = 1;}
 			stmt 	{	fprintf(fp, "whilestmt: WHILE L_PAR expr R_PAR stmt at line %d --> %s\n", yylineno, yytext);}
 			;
 
-forstmt:  	FOR L_PAR elist SEMICOLON expr SEMICOLON elist R_PAR 	{	inLoop = 1;}
-			stmt {	fprintf(fp, "forstm: FOR L_PAR elist SEMICOLON expr SEMICOLON elist R_PAR stmt at line %d --> %s\n", yylineno, yytext);}
+forstmt:  	FOR L_PAR objectlist SEMICOLON expr SEMICOLON objectlist R_PAR 	{	inLoop = 1;}
+			stmt {	fprintf(fp, "forstm: FOR L_PAR objectlist SEMICOLON expr SEMICOLON objectlist R_PAR stmt at line %d --> %s\n", yylineno, yytext);}
 			;
 
 returnstmt:	RETURN  SEMICOLON
