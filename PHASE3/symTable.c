@@ -4,6 +4,15 @@ ScopeListEntry *scope_head = NULL; //Global pointer to the scope list's head
 SymbolTableEntry *HashTable[Buckets];
 struct errorToken *ERROR_HEAD = NULL; // GLobal pointer to the start of error_tokkens list
 
+quad* quads = (quad*) 0;
+unsigned total = 0;
+unsigned int currQuad = 0;
+
+unsigned int programVarOffset = 0;
+unsigned int functionLocalOffset = 0;
+unsigned int formalArgOffset = 0;
+unsigned int scopeSpaceCounter = 1;
+
 char* generateName(int nameCount){
 	char *name = malloc(100 * sizeof(char));
 	sprintf(name, "$f%d", nameCount);
