@@ -11,17 +11,69 @@
 #define RESET "\x1B[0m"
 
 #define Buckets 256
+#define EXPAND_SIZE 1024
+#define CURR_SIZE (total * sizeof(quad))
+#define NEW_SIZE (EXPAND_SIZE * sizeof(quad) + CURR_SIZE)	
 
-enum SymbolType {Global, Local, Formal, Userfunc, Libfunc}; 
+enum SymbolType { Global, Local, Formal, Userfunc, Libfunc };
 
-typedef struct Variable{
+enum iopcode {
+	assign,			add,			sub,
+	mul,			divide,			mod,
+	uminus,			and,			or,
+	not,			if_eq,			if_noteq,
+	if_lesseq,		if_greatereq,	if_less,
+	if_greater,		call,			param,
+	ret,			getretval,		funcstart,
+	funcend,		tablecreate,	tablegetelem,
+	tablesetelem 
+};
+
+enum scopespace_t {
+	programvar,
+	functionlocal,
+	formalarg
+};
+
+enum symbol_t { var_s, programfunc_s, libraryfunc_s };
+
+struct expr;
+
+struct quad {
+	iopcode op;
+	expr* result;
+	expr* arg1;
+	expr* arg2;
+	unsigned int label;
+	unsigned int line;
+};
+
+quad* quads = (quad*) 0;
+unsigned total = 0;
+unsigned int currQuad = 0;
+
+struct symbol {
+	symbol_t type;
+	char* name;
+	scopespace_t space;
+	unsigned int offset;
+	unsigned int scope;
+	unsigned int line
+};
+
+unsigned int programVarOffset = 0;
+unsigned int functionLocalOffset = 0;
+unsigned int formalArgOffset = 0;
+unsigned int scopeSpaceCounter = 1;
+
+typedef struct Variable {
 	const char *name;
 	unsigned int scope;
 	unsigned int line ;
 	unsigned int inFunc;
 }Variable;
 
-typedef struct Function{
+typedef struct Function {
 	const char *name; 
 	unsigned int scope ;
 	unsigned int line;
@@ -29,7 +81,7 @@ typedef struct Function{
 	// Formal arguments list. TO-SEE AGAIN
 }Function;
 
-typedef struct SymbolTableEntry{
+typedef struct SymbolTableEntry {
 	bool isActive;
 	union {
 		Variable *varVal;
@@ -43,7 +95,7 @@ typedef struct SymbolTableEntry{
 	// Einai extra plhroforia poy den xreiazetai sto struct giati exei na kanei mono me functions
 }SymbolTableEntry;
 
-typedef struct ScopeListEntry{
+typedef struct ScopeListEntry {
 	unsigned int scope;
 	struct SymbolTableEntry *symbols;
 	struct ScopeListEntry *next, *prev;
@@ -55,6 +107,8 @@ struct errorToken {
     unsigned int numLine;
     struct errorToken *next;
 };
+
+scopespace_t currscopespace();
 
 void initialize();
 
