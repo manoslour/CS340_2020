@@ -17,7 +17,7 @@
 
 enum SymbolType { Global, Local, Formal, Userfunc, Libfunc };
 
-enum iopcode {
+typedef enum {
 	assign,			add,			sub,
 	mul,			divide,			mod,
 	uminus,			and,			or,
@@ -27,72 +27,58 @@ enum iopcode {
 	ret,			getretval,		funcstart,
 	funcend,		tablecreate,	tablegetelem,
 	tablesetelem 
-};
+}iopcode;
 
-enum scopespace_t {
+typedef enum {
 	programvar,
 	functionlocal,
 	formalarg
-};
+}scopespace_t;
 
-enum expr_t
-{
-    var_e,
-    tableitem_e,
+typedef enum {
+    var_e,			tableitem_e,
+	programfunc_e,	libraryfunc_e,
+	arithexpr_e,	boolexpr_e,
+	assignexpr_e,	newtable_e,
+	constnum_e,		constbool_e,
+    conststring_e,	nil_e
+}expr_t;
 
-    programfunc_e,
-    libraryfunc_e,
+typedef enum { 
+	var_s, 
+	programfunc_s, 
+	libraryfunc_s 
+}symbol_t;
 
-    arithexpr_e,
-    boolexpr_e,
-    assignexpr_e,
-    newtable_e,
-
-    constnum_e,
-    constbool_e,
-    conststring_e,
-
-    nil_e
-};
-
-enum symbol_t { var_s, programfunc_s, libraryfunc_s };
-
-struct expr {
-	enum expr_t type;
+typedef struct expr {
+	expr_t type;
 	struct symbol* sym;
 	struct expr* index;
 	double numConst;
 	char* strConst;
 	unsigned char boolConst;
 	struct expr* next;
-};
+}expr;
 
-struct quad {
-	enum iopcode op;
+typedef struct quad {
+	iopcode op;
 	struct expr* result;
 	struct expr* arg1;
 	struct expr* arg2;
 	unsigned int label;
 	unsigned int line;
-};
+}quad;
 
-struct quad* quads = (struct quad*) 0;
-unsigned total = 0;
-unsigned int currQuad = 0;
 
-struct symbol {
-	enum symbol_t type;
+
+typedef struct symbol {
+	symbol_t type;
 	char* name;
-	enum scopespace_t space;
+	scopespace_t space;
 	unsigned int offset;
 	unsigned int scope;
 	unsigned int line;
-};
-
-unsigned int programVarOffset = 0;
-unsigned int functionLocalOffset = 0;
-unsigned int formalArgOffset = 0;
-unsigned int scopeSpaceCounter = 1;
+}symbol;
 
 typedef struct Variable {
 	const char *name;
@@ -118,9 +104,6 @@ typedef struct SymbolTableEntry {
 	enum SymbolType type;
 
 	struct SymbolTableEntry *next, *scope_next, *formal_next; 
-	// TO-SEE AGAIN.
-	// Kalytera na fygei to formal_next apo edw kai na meinei sto function.
-	// Einai extra plhroforia poy den xreiazetai sto struct giati exei na kanei mono me functions
 }SymbolTableEntry;
 
 typedef struct ScopeListEntry {
@@ -136,7 +119,7 @@ struct errorToken {
     struct errorToken *next;
 };
 
-enum scopespace_t currscopespace();
+scopespace_t currscopespace();
 
 void initialize();
 
