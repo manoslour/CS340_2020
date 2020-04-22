@@ -429,7 +429,7 @@ int yyerror(char* yaccProvidedMessage){
 }
 
 int main(int argc, char** argv){
-    fp = fopen("grammarOutput", "w+");
+    fp = fopen("syntaxAnalysis", "w+");
     initialize();
 
     if(argc > 1){
