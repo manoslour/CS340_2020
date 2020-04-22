@@ -7,7 +7,6 @@ struct errorToken *ERROR_HEAD = NULL; // GLobal pointer to the start of error_to
 char* generateName(int nameCount){
 	char *name = malloc(100 * sizeof(char));
 	sprintf(name, "$f%d", nameCount);
-	
 	return name;
 }
 
@@ -122,17 +121,17 @@ int findInFunc(char *name, unsigned int scope){
 		tmpScope = tmpScope->next;
 	}
 
-	printf("Arrived at currScope[%d]\n", tmpScope->scope);
+	//printf("Arrived at currScope[%d]\n", tmpScope->scope);
 
 	while(tmpScope != NULL){
 
 		tmpSymbol = tmpScope->symbols;
-		printf("Started searching scope[%d] symbols\n", tmpScope->scope);
+		//printf("Started searching scope[%d] symbols\n", tmpScope->scope);
 
 		while(tmpSymbol != NULL){
 			symbolName = strdup(tmpSymbol->value.varVal->name);
 			if(tmpSymbol->isActive == 1 && strcmp(symbolName, name) == 0){
-				printf("Symbol %s found, inFunc = %d\n", symbolName, tmpSymbol->value.varVal->inFunc);
+				//printf("Symbol %s found, inFunc = %d\n", symbolName, tmpSymbol->value.varVal->inFunc);
 				return tmpSymbol->value.varVal->inFunc;
 			}
 			tmpSymbol = tmpSymbol->scope_next;
@@ -238,9 +237,8 @@ bool scopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope) {
 
 	ScopeListEntry *tmp = scope_head , *new_scope, *prev = NULL;
 	SymbolTableEntry *parse;
-	
-	//CHANGED TMP == NULL to SCOPE_HEAD == NULL
-	if(scope_head == NULL){ // an einai to prwto
+
+	if(scope_head == NULL){
 		new_scope = (struct ScopeListEntry*)malloc(sizeof(struct ScopeListEntry));
 		new_scope->scope = scope ;
 		new_scope->next = new_scope->prev = NULL;
@@ -259,7 +257,7 @@ bool scopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope) {
 			}
 			tmp = tmp->next;
 		}
-		// an to scope den uparxei create it and sort insert O(n) lmaos
+
 		new_scope = (struct ScopeListEntry*)malloc(sizeof(struct ScopeListEntry));
 		new_scope->scope = scope ;
 		new_scope->next = new_scope->prev = NULL;
@@ -270,15 +268,15 @@ bool scopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope) {
 			prev = tmp; 
 			tmp = tmp->next; 
 		}
-		if (tmp == NULL && prev == scope_head){ // an einai na mpei 2o
+		if (tmp == NULL && prev == scope_head){
 			prev->next = new_scope; 
 			new_scope->prev = prev;
 		}
-		else if (tmp == NULL && prev != scope_head){ // an einai na mpei sto telos 
+		else if (tmp == NULL && prev != scope_head){
 			prev->next = new_scope; 
 			new_scope->prev = prev;
 		}
-		else{ // an einai na mpei kapou endiamesa
+		else{
 			prev->next = new_scope; 
 			new_scope->prev = prev; 
 			new_scope->next = tmp;
@@ -297,7 +295,6 @@ struct SymbolTableEntry *hashInsert(char *name, unsigned int line, enum SymbolTy
 	Function *new_func;
 	Variable *new_var;
 
-	//create the node
 	new_sym = (struct SymbolTableEntry*)malloc(sizeof(struct SymbolTableEntry));
 	new_sym->next =  NULL; 
 	new_sym->scope_next =  NULL; 
@@ -334,7 +331,6 @@ struct SymbolTableEntry *hashInsert(char *name, unsigned int line, enum SymbolTy
 	}
 	
 	scopeListInsert(new_sym,scope);
-	//if its the first
 	if (HashTable[pos] == NULL){
 		HashTable[pos] = new_sym;
 		return new_sym; 

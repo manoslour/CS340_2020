@@ -12,6 +12,7 @@
 	FILE *fp;
     unsigned int currscope = 0;
 	unsigned int inFunc = 0;
+	enum SymbolType type;
 	struct SymbolTableEntry *tmp;
 	unsigned int funcPrefix = 0;
 	unsigned int betweenFunc = 0;
@@ -68,12 +69,12 @@ stmt:		expr SEMICOLON			{	fprintf(fp, "stmt: expr SEMICOLON at line %d --> %s\n"
 			|BREAK SEMICOLON		{
 										fprintf(fp, "stmt: BREAK SEMICOLON at line %d --> %s\n", yylineno, yytext);
 										if (inLoop == 0) 
-											addError("Break use while not in loop", "", yylineno);
+											addError("Use of break while not in loop", "", yylineno);
 									}
 			|CONTINUE SEMICOLON		{	
 										fprintf(fp, "stmt: CONTINUE SEMICOLON at line %d --> %s\n", yylineno, yytext);
 										if (inLoop == 0) 
-											addError("Continue use while not in loop", "", yylineno);
+											addError("Use of continue while not in loop", "", yylineno);
 									}
 			|block					{	fprintf(fp, "stmt: block at line %d --> %s\n", yylineno, yytext);}
 			|funcdef				{	fprintf(fp, "stmt: funcdef at line %d --> %s\n", yylineno, yytext);}
@@ -104,30 +105,41 @@ term:		L_PAR 						{	fprintf(fp, "term: L_PAR at line %d --> %s\n", yylineno, yy
 			|NOT expr					{	fprintf(fp, "term: NOT expr at line %d --> %s\n", yylineno, yytext);}
 			|INCR lvalue				{
 											fprintf(fp, "term: INCR lvalue at line %d --> %s\n", yylineno, yytext);
-											printf("LVALUE = %s\n", yytext);
+											type = $2->type;
+											if(type == Userfunc || type == Libfunc)
+												addError("Error, using function as an lvalue", "", yylineno);
 										}
 			|lvalue INCR				{
 											fprintf(fp, "term: lvalue INCR at line %d --> %s\n", yylineno, yytext);
-											/*
-											enum SymbolType type = $1->type;
-											if(type != Global || type != Local || type != Formal){
-												addError("Error, cant increment function", yytext, yylineno);
-											}
-											*/
+											type = $1->type;
+											if(type == Userfunc || type == Libfunc)
+												addError("Error, using function as an lvalue", "", yylineno);
+
 										}
-			|DECR lvalue				{fprintf(fp, "term: DECR lvalue at line %d --> %s\n", yylineno, yytext);
-											/*
-											enum SymbolType type = $2->type;
-											if(type != Global || type != Local || type != Formal){
-												addError("Error, cant decr function", yytext, yylineno);
-											}
-											*/
+			|DECR lvalue				{
+											fprintf(fp, "term: DECR lvalue at line %d --> %s\n", yylineno, yytext);
+											type = $2->type;
+											if(type == Userfunc || type == Libfunc)
+												addError("Error, using function as an lvalue", "", yylineno);
 										}
-			|lvalue DECR				{	fprintf(fp, "term: lvalue DECR at line %d --> %s\n", yylineno, yytext);}
+			|lvalue DECR				{	
+											fprintf(fp, "term: lvalue DECR at line %d --> %s\n", yylineno, yytext);
+											type = $1->type;
+											if(type == Userfunc || type == Libfunc)
+												addError("Error, using function as an lvalue", "", yylineno);
+										}
 			|primary					{	fprintf(fp, "term: primary at line %d --> %s\n", yylineno, yytext);}
 			;
 
-assignexpr:	lvalue ASSIGN expr		{	fprintf(fp, "assignexpr: lvalue ASSIGN expr at line %d --> %s\n", yylineno, yytext);}
+assignexpr:	lvalue	{
+						type = $1->type;
+						if(type == Userfunc || type == Libfunc){
+							addError("Error, using function as an lvalue", "", yylineno);
+						}
+					} 
+			ASSIGN expr		{	
+										fprintf(fp, "assignexpr: lvalue ASSIGN expr at line %d --> %s\n", yylineno, yytext);
+									}
 			;
 
 primary:	lvalue					{	fprintf(fp, "primary: lvalue at line %d --> %s\n", yylineno, yytext);}
@@ -149,15 +161,19 @@ lvalue:		ID				{
 								switch (result){
 									case 1:
 										fprintf(fp, "Libfunc found\n");
+										$$->type = Libfunc;
 										break;
 									case 2:
 										fprintf(fp, "Userfunc found\n");
+										$$->type = Userfunc;
 										break;
 									case 3:
 										fprintf(fp, "Global var found\n");
+										$$->type = Global;
 										break;
 									case 4:
 										fprintf(fp, "Local var found\n");
+										$$->type = Local;
 										if(inFunc - varInFunc >= 1)
 											addError("Cannot access symbol", yytext, yylineno);
 										else
@@ -165,6 +181,7 @@ lvalue:		ID				{
 										break;
 									case 5:
 										fprintf(fp, "Formal var found\n");
+										$$->type = Formal;
 										if(inFunc - varInFunc >= 1)
 											addError("Cannot access symbol", yytext, yylineno);
 										else
@@ -176,12 +193,17 @@ lvalue:		ID				{
 										else
 											type = Local;
 										fprintf(fp, "Put %s to SymbolTable\n", yylval.stringValue);
-										$$ = hashInsert(yylval.stringValue, yylineno, type, currscope, inFunc);
+										hashInsert(yylval.stringValue, yylineno, type, currscope, inFunc);
+										$$->type = type;
+										//printf("SYMBOL TYPE = %d\n", $$->type);
 								}
 							}
 
 			|LOCAL ID		{
 								fprintf(fp, "lvalue: LOCAL ID at line %d --> %s\n", yylineno, yytext);
+								//printf("LOCAL SYMBOL = %s\n", yylval.stringValue);
+								//$$->type = Local;
+								//printf("LOCAL LVALUE TYPE = %d\n", $$->type);
 
 								int found = scopeLookUp(yytext, currscope);
 
@@ -203,14 +225,13 @@ lvalue:		ID				{
 										fprintf(fp, "New Local var in scope %d\n", currscope);
 										hashInsert(yytext, yylineno, Local, currscope, inFunc);
 									}
-								}		
+								}
 							}
 
 			|DCOLON ID		{
 								fprintf(fp, "lvalue: DCOLON ID at line %d --> %s\n", yylineno, yytext);
 
 								int found = scopeLookUp(yytext, 0);
-
 								if(found == 1)
 									fprintf(fp, "Libfunc %s found in line %d", yytext, yylineno);
 								else if(found == 2)
@@ -226,39 +247,32 @@ lvalue:		ID				{
 member:		lvalue DOT ID 							{	fprintf(fp, "member: lvalue.ID at line %d --> %s\n", yylineno, yytext);}
 			|lvalue L_BR expr R_BR 					{	fprintf(fp, "member: lvalue[expr] at line %d --> %s\n", yylineno, yytext);}
 			|call DOT ID 							{	fprintf(fp, "member: call.ID at line %d --> %s\n", yylineno, yytext);}
-			|call L_BR expr R_BR 					{	fprintf(fp, "member: lvalue[expr] at line %d --> %s\n", yylineno, yytext);}
+			|call L_BR expr R_BR 					{	fprintf(fp, "member: call[expr] at line %d --> %s\n", yylineno, yytext);}
 			;
 
-call:		call L_PAR elist R_PAR					{	fprintf(fp, "call: (elist) at line %d --> %s\n", yylineno, yytext);}
+call:		call L_PAR objectlist R_PAR					{	fprintf(fp, "call: (objectlist) at line %d --> %s\n", yylineno, yytext);}
 			|lvalue callsuffix						{	fprintf(fp, "call: lvalue callsuffix at line %d --> %s\n", yylineno, yytext);}
-			|L_PAR funcdef R_PAR L_PAR elist R_PAR	{	fprintf(fp, "call: (funcdef) (elist) at line %d --> %s\n", yylineno, yytext);}
+			|L_PAR funcdef R_PAR L_PAR objectlist R_PAR	{	fprintf(fp, "call: (funcdef) (objectlist) at line %d --> %s\n", yylineno, yytext);}
 			;
 
 callsuffix:	normcall 						{	fprintf(fp, "callsuffix: normcall at line %d --> %s\n", yylineno, yytext);}
 			|methodcall						{	fprintf(fp, "callsuffix: methodcall at line %d --> %s\n", yylineno, yytext);}
 			;
 
-normcall:	L_PAR elist R_PAR 				{	fprintf(fp, "normcall: (elist) at line %d --> %s\n", yylineno, yytext);}
+normcall:	L_PAR objectlist R_PAR 				{	fprintf(fp, "normcall: (objectlist) at line %d --> %s\n", yylineno, yytext);}
 			;
 
-methodcall:		DDOT ID L_PAR elist R_PAR 	{	fprintf(fp, "methodcall: ..ID (elist) at line %d --> %s\n", yylineno, yytext);}
+methodcall:		DDOT ID L_PAR objectlist R_PAR 	{	fprintf(fp, "methodcall: ..ID (objectlist) at line %d --> %s\n", yylineno, yytext);}
 				;
 
-elist:		expr						{	fprintf(fp, "elist: expr at line %d --> %s\n", yylineno, yytext);}
-			|expr COMMA elist			{	fprintf(fp, "elist: elist comma expr at line %d --> %s\n", yylineno, yytext);}
-			|
+objectlist:	expr 													{	fprintf(fp, "objectlist: expr at line %d --> %s\n", yylineno, yytext);}
+			|LCURLY_BR expr COLON expr RCURLY_BR					{	fprintf(fp, "objectlist: {expr:expr} at line %d --> %s\n", yylineno, yytext);}
+			|LCURLY_BR expr COLON expr RCURLY_BR COMMA objectlist	{	fprintf(fp, "objectlist: list {expr:expr}  at line %d --> %s\n", yylineno, yytext);}
+			|expr COMMA objectlist									{	fprintf(fp, "objectlist: list expr  at line %d --> %s\n", yylineno, yytext);}
+			|														{	fprintf(fp, "objectlist: empty  at line %d --> %s\n", yylineno, yytext);}
 			;
 
-objectdef:	L_BR elist R_BR 			{	fprintf(fp, "objectdef: [elist] at line %d --> %s\n", yylineno, yytext);}
-			|L_BR indexed R_BR 			{	fprintf(fp, "objectdef: [indexed] at line %d --> %s\n", yylineno, yytext);}
-			;
-
-indexed:	indexedelem					{	fprintf(fp, "indexed: indexelem at line %d --> %s\n", yylineno, yytext);}
-			|indexedelem COMMA indexed 	{	fprintf(fp, "indexed: indexed comma indexelem at line %d --> %s\n", yylineno, yytext);}
-			|
-			;
-
-indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR	{	fprintf(fp, "indexelem: {expr:expr} at line %d --> %s\n", yylineno, yytext);}
+objectdef:	L_BR objectlist R_BR 			{	fprintf(fp, "objectdef: [objectlist] at line %d --> %s\n", yylineno, yytext);}
 			;
 
 block:		LCURLY_BR	{
@@ -390,8 +404,8 @@ whilestmt:	WHILE L_PAR expr R_PAR	{	inLoop = 1;}
 			stmt 	{	fprintf(fp, "whilestmt: WHILE L_PAR expr R_PAR stmt at line %d --> %s\n", yylineno, yytext);}
 			;
 
-forstmt:  	FOR L_PAR elist SEMICOLON expr SEMICOLON elist R_PAR 	{	inLoop = 1;}
-			stmt {	fprintf(fp, "forstm: FOR L_PAR elist SEMICOLON expr SEMICOLON elist R_PAR stmt at line %d --> %s\n", yylineno, yytext);}
+forstmt:  	FOR L_PAR objectlist SEMICOLON expr SEMICOLON objectlist R_PAR 	{	inLoop = 1;}
+			stmt {	fprintf(fp, "forstm: FOR L_PAR objectlist SEMICOLON expr SEMICOLON objectlist R_PAR stmt at line %d --> %s\n", yylineno, yytext);}
 			;
 
 returnstmt:	RETURN  SEMICOLON
