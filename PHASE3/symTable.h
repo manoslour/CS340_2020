@@ -58,7 +58,7 @@ struct symbol {
 	enum scopespace_t space;
 	unsigned int offset;
 	unsigned int scope;
-	unsigned int line
+	unsigned int line;
 };
 
 unsigned int programVarOffset = 0;
