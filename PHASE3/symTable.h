@@ -40,22 +40,22 @@ enum symbol_t { var_s, programfunc_s, libraryfunc_s };
 struct expr;
 
 struct quad {
-	iopcode op;
-	expr* result;
-	expr* arg1;
-	expr* arg2;
+	enum iopcode op;
+	struct expr* result;
+	struct expr* arg1;
+	struct expr* arg2;
 	unsigned int label;
 	unsigned int line;
 };
 
-quad* quads = (quad*) 0;
+struct quad* quads = (struct quad*) 0;
 unsigned total = 0;
 unsigned int currQuad = 0;
 
 struct symbol {
-	symbol_t type;
+	enum symbol_t type;
 	char* name;
-	scopespace_t space;
+	enum scopespace_t space;
 	unsigned int offset;
 	unsigned int scope;
 	unsigned int line
@@ -108,7 +108,7 @@ struct errorToken {
     struct errorToken *next;
 };
 
-scopespace_t currscopespace();
+enum scopespace_t currscopespace();
 
 void initialize();
 
