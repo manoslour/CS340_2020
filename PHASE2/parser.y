@@ -195,11 +195,15 @@ lvalue:		ID				{
 										fprintf(fp, "Put %s to SymbolTable\n", yylval.stringValue);
 										hashInsert(yylval.stringValue, yylineno, type, currscope, inFunc);
 										$$->type = type;
+										//printf("SYMBOL TYPE = %d\n", $$->type);
 								}
 							}
 
 			|LOCAL ID		{
 								fprintf(fp, "lvalue: LOCAL ID at line %d --> %s\n", yylineno, yytext);
+								//printf("LOCAL SYMBOL = %s\n", yylval.stringValue);
+								//$$->type = Local;
+								//printf("LOCAL LVALUE TYPE = %d\n", $$->type);
 
 								int found = scopeLookUp(yytext, currscope);
 
@@ -221,7 +225,7 @@ lvalue:		ID				{
 										fprintf(fp, "New Local var in scope %d\n", currscope);
 										hashInsert(yytext, yylineno, Local, currscope, inFunc);
 									}
-								}		
+								}
 							}
 
 			|DCOLON ID		{
