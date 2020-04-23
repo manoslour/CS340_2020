@@ -13,6 +13,104 @@ unsigned int functionLocalOffset = 0;
 unsigned int formalArgOffset = 0;
 unsigned int scopeSpaceCounter = 1;
 
+//----------------------------------------------------------------------------------------------
+
+void expand(){
+
+	assert(total == currQuad);
+	quad* p = (quad*) malloc(NEW_SIZE);
+	if(quads){
+		memcpy(p, quads, CURR_SIZE);
+		free(quads);
+	}
+	quads = p;
+	total += EXPAND_SIZE;
+}
+
+void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, unsigned int line){
+
+	if(currQuad == total)
+		expand();
+
+	quad* p = quads + currQuad++;
+	p->arg1 = arg1;
+	p->arg2 = arg2;
+	p->result = result;
+	p->label = label;
+	p->line = line;
+}
+
+SymbolTableEntry* lookup(char* name, unsigned int scope){
+
+	SymbolTableEntry *tmpSymbol;
+	ScopeListEntry *tmpScope = scope_head;
+
+	while (tmpScope->next != NULL && tmpScope->scope != scope){
+		printf("Currently at scope %d\n", tmpScope->scope);
+		tmpScope = tmpScope->next;
+	}
+
+	tmpSymbol = tmpScope->symbols;
+
+	while(tmpSymbol != NULL){
+		if(!strcmp(tmpSymbol->name, name)){
+			printf("Symbol %s found in scope %d\n", tmpSymbol->name, tmpScope->scope);
+			return tmpSymbol;
+		}
+		tmpSymbol = tmpSymbol->scope_next;
+	}
+	return NULL;
+}
+
+scopespace_t currscopespace(){
+	if(scopeSpaceCounter == 1)
+		return programvar;
+	else if(scopeSpaceCounter % 2 == 0)
+		return formalarg;
+	else
+		return functionlocal;
+}
+
+unsigned int currscopeoffset(){
+	switch (currscopespace()){
+		case programvar:
+			return programVarOffset;
+		case functionlocal:
+			return functionLocalOffset;
+		case formalarg:
+			return formalArgOffset;
+		default:
+			assert(0);
+	}
+}
+
+void inccurrscopeoffset(){
+	switch (currscopespace()){
+		case programvar:
+			++programVarOffset;
+			break;
+		case functionlocal:
+			++functionLocalOffset;
+			break;
+		case formalarg:
+			++formalArgOffset;
+			break;
+		default:
+			assert(0);
+	}
+}
+
+void enterscopespace(){	
+	++scopeSpaceCounter;
+}
+
+void exitscopespace(){
+	assert(scopeSpaceCounter > 1);
+	--scopeSpaceCounter;
+}
+
+//----------------------------------------------------------------------------------------------
+
 char* generateName(int nameCount){
 	char *name = malloc(100 * sizeof(char));
 	sprintf(name, "$f%d", nameCount);
@@ -21,7 +119,7 @@ char* generateName(int nameCount){
 
 void addError(char *output, char *content, unsigned int numLine){
     struct errorToken *last;
-    struct errorToken *newNode = (struct errorToken *)malloc(sizeof(struct errorToken));
+    struct errorToken *newNode = (struct errorToken *) malloc(sizeof(struct errorToken));
     char *tmpOutput = strdup(output);
     char *tmpContent = strdup(content);
 
@@ -57,7 +155,7 @@ void printErrorList(){
     printf("\n");
 }
 
-bool insertFormal(struct SymbolTableEntry *funcname, struct SymbolTableEntry *formalEntry){
+bool insertFormal(SymbolTableEntry *funcname, SymbolTableEntry *formalEntry){
 
 	struct SymbolTableEntry *tmp, *parse;
 
@@ -90,9 +188,9 @@ void printFormals(){
 
 			if (tmp->type == Libfunc || tmp->type == Userfunc){
 				parse = tmp;
-				printf("Function \"%s\" has formals:\n", tmp->value.funcVal->name);
+				printf("Function \"%s\" has formals:\n", tmp->name);
 				while (parse->formal_next != NULL) {
-					printf("\t\"%s\" [Formal] (line %d) (scope %d)\n", parse->formal_next->value.varVal->name, parse->formal_next->value.varVal->line, parse->formal_next->value.varVal->scope);
+					printf("\t\"%s\" [Formal] (line %d) (scope %d)\n", parse->formal_next->name, parse->formal_next->value.varVal->line, parse->formal_next->value.varVal->scope);
 					parse = parse->formal_next;
 				}
 				printf("\n");
@@ -138,7 +236,7 @@ int findInFunc(char *name, unsigned int scope){
 		//printf("Started searching scope[%d] symbols\n", tmpScope->scope);
 
 		while(tmpSymbol != NULL){
-			symbolName = strdup(tmpSymbol->value.varVal->name);
+			symbolName = strdup(tmpSymbol->name);
 			if(tmpSymbol->isActive == 1 && strcmp(symbolName, name) == 0){
 				//printf("Symbol %s found, inFunc = %d\n", symbolName, tmpSymbol->value.varVal->inFunc);
 				return tmpSymbol->value.varVal->inFunc;
@@ -164,23 +262,23 @@ int scopeLookUp(char *name, unsigned int scope){
 			while (tmpSymbol != NULL) {
 				
 				if (tmpSymbol->type == Libfunc && tmpSymbol->isActive == 1){
-					if (!strcmp(tmpSymbol->value.funcVal->name, name))
+					if (!strcmp(tmpSymbol->name, name))
 						return 1; // Libfunc found
 				} 
 				if (tmpSymbol->type == Userfunc && tmpSymbol->isActive == 1){
-					if (!strcmp(tmpSymbol->value.funcVal->name, name)) 
+					if (!strcmp(tmpSymbol->name, name)) 
 						return 2; // Userfunc found
 				}
 				if(tmpSymbol->type == Global && tmpSymbol->isActive == 1){
-					if (!strcmp(tmpSymbol->value.varVal->name, name)) 
+					if (!strcmp(tmpSymbol->name, name)) 
 						return 3; // Global Variable found
 				}
 				if(tmpSymbol->type == Local && tmpSymbol->isActive == 1){
-					if (!strcmp(tmpSymbol->value.varVal->name, name)) 
+					if (!strcmp(tmpSymbol->name, name)) 
 						return 4; // Local Variable found
 				}
 				if(tmpSymbol->type == Formal && tmpSymbol->isActive == 1){
-					if (!strcmp(tmpSymbol->value.varVal->name, name))
+					if (!strcmp(tmpSymbol->name, name))
 						return 5; // Formal Variable found
 				}
 
@@ -242,13 +340,13 @@ void initialize(){
 	hashInsert("sin", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
 }
 
-bool scopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope) {
+bool scopeListInsert (SymbolTableEntry *sym_node, unsigned int scope) {
 
 	ScopeListEntry *tmp = scope_head , *new_scope, *prev = NULL;
 	SymbolTableEntry *parse;
 
 	if(scope_head == NULL){
-		new_scope = (struct ScopeListEntry*)malloc(sizeof(struct ScopeListEntry));
+		new_scope = (ScopeListEntry*) malloc(sizeof(ScopeListEntry));
 		new_scope->scope = scope ;
 		new_scope->next = new_scope->prev = NULL;
 		new_scope->symbols = sym_node;
@@ -267,7 +365,7 @@ bool scopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope) {
 			tmp = tmp->next;
 		}
 
-		new_scope = (struct ScopeListEntry*)malloc(sizeof(struct ScopeListEntry));
+		new_scope = (ScopeListEntry*) malloc(sizeof(ScopeListEntry));
 		new_scope->scope = scope ;
 		new_scope->next = new_scope->prev = NULL;
 		new_scope->symbols = sym_node;
@@ -295,7 +393,7 @@ bool scopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope) {
 	return 0;
 }
 
-struct SymbolTableEntry *hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope, unsigned int inFunc, symbol_t extratype, scopespace_t space, unsigned int offset){
+SymbolTableEntry *hashInsert(char *name, unsigned int line, SymbolType type, unsigned int scope, unsigned int inFunc, symbol_t extratype, scopespace_t space, unsigned int offset){
 	
 	int pos = (int)*name % Buckets;
 	
@@ -304,7 +402,7 @@ struct SymbolTableEntry *hashInsert(char *name, unsigned int line, enum SymbolTy
 	Function *new_func;
 	Variable *new_var;
 
-	new_sym = (struct SymbolTableEntry*)malloc(sizeof(struct SymbolTableEntry));
+	new_sym = (SymbolTableEntry*) malloc(sizeof(SymbolTableEntry));
 	new_sym->next =  NULL; 
 	new_sym->scope_next =  NULL; 
 	new_sym->formal_next = NULL;
@@ -313,29 +411,24 @@ struct SymbolTableEntry *hashInsert(char *name, unsigned int line, enum SymbolTy
 	new_sym->extratype = extratype;
 	new_sym->space = space;
 	new_sym->offset = offset;
+	new_sym->name = strdup(name);
 
 	if(type == Userfunc || type == Libfunc ) {
-		new_func = (struct Function*)malloc(sizeof(struct Function));
-		new_func->name = (char*)malloc(strlen(name+1));
-		strcpy((char*)new_func->name, name);
+		new_func = (Function*) malloc(sizeof(Function));
 		new_func->scope = scope;
 		new_func->line=line;
 		new_sym->value.funcVal = new_func;
 		
 	}
 	else if (type == Formal){
-		new_var = (struct Variable*)malloc(sizeof(struct Variable));
-		new_var->name = (char*)malloc(strlen(name+1));
-		strcpy((char*)new_var->name, name);
+		new_var = (Variable*) malloc(sizeof(Variable));
 		new_var->scope = scope;
 		new_var->line = line;
 		new_var->inFunc = inFunc;
 		new_sym->value.varVal = new_var;
 	}
 	else {
-		new_var = (struct Variable*)malloc(sizeof(struct Variable));
-		new_var->name = (char*)malloc(strlen(name+1));
-		strcpy((char*)new_var->name, name);
+		new_var = (Variable*) malloc(sizeof(Variable));
 		new_var->scope = scope;
 		new_var->line = line;
 		new_var->inFunc = inFunc;
@@ -369,15 +462,15 @@ void printScopeList(){
 		while (tmp != NULL){
 
 			if (tmp->type == Libfunc) printf("\"%s\"\t [Library Function]\t (line %d)\t (scope %d)"
-				,tmp->value.funcVal->name,tmp->value.funcVal->line,tmp->value.funcVal->scope);
+				,tmp->name,tmp->value.funcVal->line,tmp->value.funcVal->scope);
 			else if (tmp->type == Userfunc) printf("\"%s\"\t [User Function]\t (line %d)\t (scope %d)"
-				,tmp->value.funcVal->name,tmp->value.funcVal->line,tmp->value.funcVal->scope);
+				,tmp->name,tmp->value.funcVal->line,tmp->value.funcVal->scope);
 			else if (tmp->type == Global) printf("\"%s\"\t [Global Variable]\t (line %d)\t (scope %d)"
-				,tmp->value.varVal->name,tmp->value.varVal->line,tmp->value.varVal->scope);
+				,tmp->name,tmp->value.varVal->line,tmp->value.varVal->scope);
 			else if (tmp->type == Local) printf("\"%s\"\t [Local Variable]\t (line %d)\t (scope %d)"
-				,tmp->value.varVal->name,tmp->value.varVal->line,tmp->value.varVal->scope);
+				,tmp->name,tmp->value.varVal->line,tmp->value.varVal->scope);
 			else if (tmp->type == Formal) printf("\"%s\"\t [Formal Variable]\t (line %d)\t (scope %d)"
-				,tmp->value.varVal->name,tmp->value.varVal->line,tmp->value.varVal->scope);
+				,tmp->name,tmp->value.varVal->line,tmp->value.varVal->scope);
 			printf("\n");
 			tmp = tmp->scope_next; 
 		}

@@ -3,8 +3,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
+#include <assert.h>
+#include <stdbool.h>
 
 #define RED   "\x1B[31m"
 #define YEL   "\x1B[33m"
@@ -15,7 +16,13 @@
 #define CURR_SIZE (total * sizeof(quad))
 #define NEW_SIZE (EXPAND_SIZE * sizeof(quad) + CURR_SIZE)	
 
-enum SymbolType { Global, Local, Formal, Userfunc, Libfunc };
+typedef enum { 
+	Global, 
+	Local, 
+	Formal, 
+	Userfunc, 
+	Libfunc 
+}SymbolType;
 
 typedef enum {
 	assign,			add,			sub,
@@ -74,26 +81,25 @@ typedef struct symbol {
 }symbol;
 
 typedef struct Variable {
-	const char *name;
 	unsigned int scope;
 	unsigned int line ;
 	unsigned int inFunc;
 }Variable;
 
 typedef struct Function {
-	const char *name; 
 	unsigned int scope ;
 	unsigned int line;
 }Function;
 
 typedef struct SymbolTableEntry {
+	char *name;
 	bool isActive;
 	union {
 		Variable *varVal;
 		Function *funcVal;
 	} value;
-	enum SymbolType type;
 
+	SymbolType type;
 	//Phase 3 Additions
 	symbol_t extratype;
 	scopespace_t space;
@@ -116,7 +122,8 @@ struct errorToken {
     struct errorToken *next;
 };
 
-scopespace_t currscopespace();
+
+void expand();
 
 void initialize();
 
@@ -126,7 +133,17 @@ void printErrorList();
 
 bool hide (int scope);
 
+void exitscopespace();
+
+void enterscopespace();
+
 bool enable (int scope );
+
+void inccurrscopeoffset();
+
+scopespace_t currscopespace();
+
+unsigned int currscopeoffset();
 
 char* generateName(int nameCount);
 
@@ -138,12 +155,16 @@ int scopeLookUp(char *name, unsigned int scope);
 
 int generalLookUp(char *name, unsigned int scope);
 
+SymbolTableEntry* lookup(char* name, unsigned int scope);
+
 void addError(char *output, char *content, unsigned int numLine);
 
-bool scopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope);
+bool scopeListInsert (SymbolTableEntry *sym_node, unsigned int scope);
 
-bool insertFormal(struct SymbolTableEntry *funcname, struct SymbolTableEntry *formalEntry);
+bool insertFormal(SymbolTableEntry *funcname, SymbolTableEntry *formalEntry);
 
-struct SymbolTableEntry* hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope, unsigned int inFunc, symbol_t extratype, scopespace_t space, unsigned int offset);
+void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, unsigned int line);
+
+SymbolTableEntry* hashInsert(char *name, unsigned int line, SymbolType type, unsigned int scope, unsigned int inFunc, symbol_t extratype, scopespace_t space, unsigned int offset);
 
 #endif
