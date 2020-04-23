@@ -12,8 +12,8 @@
 	FILE *fp;
     unsigned int currscope = 0;
 	unsigned int inFunc = 0;
-	enum SymbolType type;
-	struct SymbolTableEntry *tmp;
+	SymbolType type;
+	SymbolTableEntry *tmp;
 	unsigned int funcPrefix = 0;
 	unsigned int betweenFunc = 0;
 	unsigned int inLoop = 0;
@@ -153,7 +153,7 @@ lvalue:		ID				{
 								fprintf(fp, "lvalue: ID at line %d --> %s\n", yylineno, yylval.stringValue);
 
 								int result, varInFunc;
-								enum SymbolType type;
+								SymbolType type;
 								
 								result = generalLookUp(yylval.stringValue, currscope);
 								varInFunc= findInFunc(yylval.stringValue, currscope);
