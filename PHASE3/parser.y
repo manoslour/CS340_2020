@@ -6,29 +6,26 @@
     int yyerror(char* yaccProvidedMessage);
     extern int yylex(void);
 
-
-
-
     extern int yylineno;
     extern char *yytext;
     extern FILE *yyin;
 	FILE *fp;
     unsigned int currscope = 0;
 	unsigned int inFunc = 0;
-	enum SymbolType type;
-	struct SymbolTableEntry *tmp;
+	SymbolType type;
+	symbol *tmp;
 	unsigned int funcPrefix = 0;
 	unsigned int betweenFunc = 0;
 	unsigned int inLoop = 0;
 %}
 
-%defines
+//%defines
 
 %union{
     int intValue;
     double realValue;
     char* stringValue;
-	struct SymbolTableEntry* exprNode;
+	struct symbol* exprNode;
 }
 
 %type <exprNode> lvalue
@@ -108,26 +105,26 @@ term:		L_PAR 						{	fprintf(fp, "term: L_PAR at line %d --> %s\n", yylineno, yy
 			|NOT expr					{	fprintf(fp, "term: NOT expr at line %d --> %s\n", yylineno, yytext);}
 			|INCR lvalue				{
 											fprintf(fp, "term: INCR lvalue at line %d --> %s\n", yylineno, yytext);
-											type = $2->type;
+											//type = $2->type;
 											if(type == Userfunc || type == Libfunc)
 												addError("Error, using function as an lvalue", "", yylineno);
 										}
 			|lvalue INCR				{
 											fprintf(fp, "term: lvalue INCR at line %d --> %s\n", yylineno, yytext);
-											type = $1->type;
+											//type = $1->type;
 											if(type == Userfunc || type == Libfunc)
 												addError("Error, using function as an lvalue", "", yylineno);
 
 										}
 			|DECR lvalue				{
 											fprintf(fp, "term: DECR lvalue at line %d --> %s\n", yylineno, yytext);
-											type = $2->type;
+											//type = $2->type;
 											if(type == Userfunc || type == Libfunc)
 												addError("Error, using function as an lvalue", "", yylineno);
 										}
 			|lvalue DECR				{	
 											fprintf(fp, "term: lvalue DECR at line %d --> %s\n", yylineno, yytext);
-											type = $1->type;
+											//type = $1->type;
 											if(type == Userfunc || type == Libfunc)
 												addError("Error, using function as an lvalue", "", yylineno);
 										}
@@ -135,7 +132,7 @@ term:		L_PAR 						{	fprintf(fp, "term: L_PAR at line %d --> %s\n", yylineno, yy
 			;
 
 assignexpr:	lvalue	{
-						type = $1->type;
+						//type = $1->type;
 						if(type == Userfunc || type == Libfunc){
 							addError("Error, using function as an lvalue", "", yylineno);
 						}
@@ -154,95 +151,16 @@ primary:	lvalue					{	fprintf(fp, "primary: lvalue at line %d --> %s\n", yylinen
 
 lvalue:		ID				{
 								fprintf(fp, "lvalue: ID at line %d --> %s\n", yylineno, yylval.stringValue);
+								//symbol *sym = lookup(&&)
+			
 
-								int result, varInFunc;
-								enum SymbolType type;
-								
-								result = generalLookUp(yylval.stringValue, currscope);
-								varInFunc= findInFunc(yylval.stringValue, currscope);
-
-								switch (result){
-									case 1:
-										fprintf(fp, "Libfunc found\n");
-										$$->type = Libfunc;
-										break;
-									case 2:
-										fprintf(fp, "Userfunc found\n");
-										$$->type = Userfunc;
-										break;
-									case 3:
-										fprintf(fp, "Global var found\n");
-										$$->type = Global;
-										break;
-									case 4:
-										fprintf(fp, "Local var found\n");
-										$$->type = Local;
-										if(inFunc - varInFunc >= 1)
-											addError("Cannot access symbol", yytext, yylineno);
-										else
-											fprintf(fp, "Symbol %s found and it's accessible\n", yylval.stringValue);
-										break;
-									case 5:
-										fprintf(fp, "Formal var found\n");
-										$$->type = Formal;
-										if(inFunc - varInFunc >= 1)
-											addError("Cannot access symbol", yytext, yylineno);
-										else
-											fprintf(fp, "Symbol %s found and it's accessible\n", yylval.stringValue);
-										break;
-									default:
-										if(currscope == 0)
-											type = Global;
-										else
-											type = Local;
-										fprintf(fp, "Put %s to SymbolTable\n", yylval.stringValue);
-										hashInsert(yylval.stringValue, yylineno, type, currscope, inFunc);
-										$$->type = type;
-										//printf("SYMBOL TYPE = %d\n", $$->type);
-								}
 							}
 
 			|LOCAL ID		{
-								fprintf(fp, "lvalue: LOCAL ID at line %d --> %s\n", yylineno, yytext);
-								//printf("LOCAL SYMBOL = %s\n", yylval.stringValue);
-								//$$->type = Local;
-								//printf("LOCAL LVALUE TYPE = %d\n", $$->type);
-
-								int found = scopeLookUp(yytext, currscope);
-
-								if( found == 2 || found == 3 || found == 4 || found == 5){
-									fprintf(fp, "Ok, symbol found locally\n");
-								}
-								else if(scopeLookUp(yytext, 0) == 1){
-									if(currscope == 0)
-										fprintf(fp, "Ok, symbol found in scope 0\n");
-									else
-										addError("Error, collision with library function", yytext, yylineno);
-								}
-								else{
-									if(currscope == 0){
-										fprintf(fp, "New Global var in scope %d\n", currscope);
-										hashInsert(yytext, yylineno, Global, currscope, inFunc);
-									}
-									else{
-										fprintf(fp, "New Local var in scope %d\n", currscope);
-										hashInsert(yytext, yylineno, Local, currscope, inFunc);
-									}
-								}
+								printf("\nNai ti");
 							}
 
 			|DCOLON ID		{
-								fprintf(fp, "lvalue: DCOLON ID at line %d --> %s\n", yylineno, yytext);
-
-								int found = scopeLookUp(yytext, 0);
-								if(found == 1)
-									fprintf(fp, "Libfunc %s found in line %d", yytext, yylineno);
-								else if(found == 2)
-									fprintf(fp, "Global userFunc %s found in line %d\n", yytext, yylineno);
-								else if(found == 3 || found == 4 || found == 5) 
-									fprintf(fp, "Global var %s found in line %d\n", yytext, yylineno); 
-								else
-									addError("Error, Global symbol not found", yytext, yylineno);
 							}
 			|member			{	fprintf(fp, "lvalue: member at line %d --> %s\n", yylineno, yytext);}
 			;
@@ -302,7 +220,7 @@ block:		LCURLY_BR	{
 funcdef:	FUNCTION
 					{	
 						fprintf(fp, "funcdef: FUNCTION at line %d --> %s\n", yylineno, yytext);
-						tmp = hashInsert(generateName(funcPrefix), yylineno, Userfunc, currscope, inFunc);
+						//tmp = hashInsert(generateName(funcPrefix), yylineno, Userfunc, currscope, inFunc);
 						funcPrefix++;
 					}
 			L_PAR 	{	
@@ -320,21 +238,6 @@ funcdef:	FUNCTION
 						inFunc--;
 					}
 			|FUNCTION ID 	{
-								fprintf(fp, "funcdef: FUNCTION ID at line %d --> %s\n", yylineno, yytext);
-								int found = scopeLookUp(yytext,currscope);
-
-								if(found == 2){
-									addError("Error, function already exists in this scope ",yytext,yylineno);
-								}
-								else if (scopeLookUp(yytext, 0) == 1){
-									addError("Error, collision with library function",yytext,yylineno);
-								}
-								else if(found == 3 || found == 4 || found == 5){
-									addError("Error, symbol already exists",yytext,yylineno);
-								}
-								else {
-									tmp = hashInsert(yytext, yylineno, Userfunc, currscope, inFunc);
-								}
 							} 
 			L_PAR	{
 						fprintf(fp, "funcdef: FUNCTION ID L_PAR at line %d --> %s\n", yylineno, yytext);
@@ -362,38 +265,10 @@ const:		REAL 		{	fprintf(fp, "const: REAL at line %d --> %s\n", yylineno, yytext
 			;
 
 idlist:		ID	{
-					fprintf(fp, "idlist: ID at line %d --> %s\n", yylineno, yytext);	
-
-					SymbolTableEntry *formal;
-					int found = scopeLookUp(yytext, currscope);
-
-					if (scopeLookUp(yytext, 0) == 1 ){
-						addError("Error, collision with library function", yytext, yylineno);
-					}
-					else if (found != 0){
-						addError("Error, symbol already exists", yytext, yylineno);
-					}
-					else {
-						tmp = hashInsert(yytext,yylineno,Formal,currscope, inFunc);
-						insertFormal(tmp, formal);
-					}
+					
 				}
 			|idlist COMMA ID 	{	
-									fprintf(fp, "idlist: idlist COMMA ID at line %d --> %s\n", yylineno, yytext);													
-									SymbolTableEntry *formal;
 									
-									int found = scopeLookUp(yytext, currscope);
-
-									if (scopeLookUp(yytext, 0) == 1 ) {
-										addError("Error, collision with library function", yytext, yylineno);
-									}
-									else if (found != 0){
-										addError("Error, symbol already exists", yytext, yylineno);
-									}
-									else {
-										formal = hashInsert(yytext,yylineno,Formal,currscope, inFunc);
-										insertFormal(tmp, formal);
-									}
 								}
 			|
 			;
@@ -432,7 +307,7 @@ int yyerror(char* yaccProvidedMessage){
 }
 
 int main(int argc, char** argv){
-    fp = fopen("grammarOutput", "w+");
+    fp = fopen("syntaxAnalysis", "w+");
     initialize();
 
     if(argc > 1){
