@@ -17,6 +17,8 @@
 	unsigned int funcPrefix = 0;
 	unsigned int betweenFunc = 0;
 	unsigned int inLoop = 0;
+
+	
 %}
 
 //%defines
@@ -151,16 +153,28 @@ primary:	lvalue					{	fprintf(fp, "primary: lvalue at line %d --> %s\n", yylinen
 
 lvalue:		ID				{
 								fprintf(fp, "lvalue: ID at line %d --> %s\n", yylineno, yylval.stringValue);
-								//symbol *sym = lookup(&&)
-			
-
+								//insert the symbol var or whatever
+								symbol *sym = lookup(yytext,currscopespace());
+								printf("TO SYM EINAI %p ", sym);
+								if(sym == NULL){
+									hashInsert(yytext, currscopespace(), yylineno, var_s, currscopespace(), currscopeoffset() );
+								} //instert
+								else {
+									printf("Exists");
+								}//do stuff
 							}
 
 			|LOCAL ID		{
-								printf("\nNai ti");
+								//insert the symbol local etc.
+								symbol *sym = lookup(yytext,currscopespace());
+								printf("TO SYM EINAI %p ", sym);
+								
 							}
 
 			|DCOLON ID		{
+								symbol *sym = lookup(yytext,0);
+								printf("TO SYM EINAI %p ", sym);
+								
 							}
 			|member			{	fprintf(fp, "lvalue: member at line %d --> %s\n", yylineno, yytext);}
 			;
