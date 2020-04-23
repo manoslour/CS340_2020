@@ -228,18 +228,18 @@ int generalLookUp(char *name, unsigned int scope){
 
 void initialize(){
 
-	hashInsert("print", 0, Libfunc, 0, 0);
-	hashInsert("input", 0, Libfunc, 0, 0);
-	hashInsert("objectmemberkeys", 0, Libfunc, 0, 0);
-	hashInsert("objecttotalmembers", 0, Libfunc, 0, 0);
-	hashInsert("objectcopy", 0, Libfunc, 0, 0);
-	hashInsert("tootalarguments", 0, Libfunc, 0, 0);
-	hashInsert("argument", 0, Libfunc, 0, 0);
-	hashInsert("typeof", 0, Libfunc, 0, 0);
-	hashInsert("strtonum", 0, Libfunc, 0, 0);
-	hashInsert("sqrt", 0, Libfunc, 0, 0);
-	hashInsert("cos", 0, Libfunc, 0, 0);
-	hashInsert("sin", 0, Libfunc, 0, 0);
+	hashInsert("print", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
+	hashInsert("input", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
+	hashInsert("objectmemberkeys", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
+	hashInsert("objecttotalmembers", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
+	hashInsert("objectcopy", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
+	hashInsert("tootalarguments", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
+	hashInsert("argument", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
+	hashInsert("typeof", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
+	hashInsert("strtonum", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
+	hashInsert("sqrt", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
+	hashInsert("cos", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
+	hashInsert("sin", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
 }
 
 bool scopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope) {
@@ -295,7 +295,7 @@ bool scopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope) {
 	return 0;
 }
 
-struct SymbolTableEntry *hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope, unsigned int inFunc){
+struct SymbolTableEntry *hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope, unsigned int inFunc, symbol_t extratype, scopespace_t space, unsigned int offset){
 	
 	int pos = (int)*name % Buckets;
 	
@@ -310,6 +310,9 @@ struct SymbolTableEntry *hashInsert(char *name, unsigned int line, enum SymbolTy
 	new_sym->formal_next = NULL;
 	new_sym->isActive = true ;
 	new_sym->type = type ;
+	new_sym->extratype = extratype;
+	new_sym->space = space;
+	new_sym->offset = offset;
 
 	if(type == Userfunc || type == Libfunc ) {
 		new_func = (struct Function*)malloc(sizeof(struct Function));

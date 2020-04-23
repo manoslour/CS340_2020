@@ -70,12 +70,7 @@ typedef struct quad {
 }quad;
 
 typedef struct symbol {
-	symbol_t type;
-	char* name;
-	scopespace_t space;
-	unsigned int offset;
-	unsigned int scope;
-	unsigned int line;
+
 }symbol;
 
 typedef struct Variable {
@@ -89,8 +84,6 @@ typedef struct Function {
 	const char *name; 
 	unsigned int scope ;
 	unsigned int line;
-	//struct SymbolTableEntry *next; 
-	// Formal arguments list. TO-SEE AGAIN
 }Function;
 
 typedef struct SymbolTableEntry {
@@ -100,6 +93,12 @@ typedef struct SymbolTableEntry {
 		Function *funcVal;
 	} value;
 	enum SymbolType type;
+
+	//Phase 3 Additions
+	symbol_t extratype;
+	scopespace_t space;
+	unsigned int offset;
+	// ----------------
 
 	struct SymbolTableEntry *next, *scope_next, *formal_next; 
 }SymbolTableEntry;
@@ -145,6 +144,6 @@ bool scopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope);
 
 bool insertFormal(struct SymbolTableEntry *funcname, struct SymbolTableEntry *formalEntry);
 
-struct SymbolTableEntry* hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope, unsigned int inFunc);
+struct SymbolTableEntry* hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope, unsigned int inFunc, symbol_t extratype, scopespace_t space, unsigned int offset);
 
 #endif
