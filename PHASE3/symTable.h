@@ -69,8 +69,6 @@ typedef struct quad {
 	unsigned int line;
 }quad;
 
-
-
 typedef struct symbol {
 	symbol_t type;
 	char* name;
