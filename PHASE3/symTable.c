@@ -1,7 +1,7 @@
 #include "symTable.h"
 
 ScopeListEntry *scope_head = NULL; //Global pointer to the scope list's head
-SymbolTableEntry *HashTable[Buckets];
+symbol *HashTable[Buckets];
 struct errorToken *ERROR_HEAD = NULL; // GLobal pointer to the start of error_tokkens list
 
 quad* quads = (quad*) 0;
@@ -40,9 +40,33 @@ void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, 
 	p->line = line;
 }
 
-SymbolTableEntry* lookup(char* name, unsigned int scope){
+expr* lvalue_expr(symbol* sym){
+	assert(sym);
+	expr* e = (expr*) malloc(sizeof(expr));
+	memset(e, 0, sizeof(expr));
 
-	SymbolTableEntry *tmpSymbol;
+	e->next = (expr*) 0;
+	e->sym = sym;
+
+	switch (sym->extratype){
+		case var_s:
+			e->type = var_e;
+			break;
+		case programfunc_s:
+			e->type = programfunc_e;
+			break;
+		case libraryfunc_s:
+			e->type = programfunc_e;
+			break;
+		default:
+			assert(0);
+	}
+	return e;
+}
+
+symbol* lookup(char* name, unsigned int scope){
+
+	symbol *tmpSymbol;
 	ScopeListEntry *tmpScope = scope_head;
 
 	while (tmpScope->next != NULL && tmpScope->scope != scope){
@@ -155,9 +179,9 @@ void printErrorList(){
     printf("\n");
 }
 
-bool insertFormal(SymbolTableEntry *funcname, SymbolTableEntry *formalEntry){
+bool insertFormal(symbol *funcname, symbol *formalEntry){
 
-	struct SymbolTableEntry *tmp, *parse;
+	symbol *tmp, *parse;
 
 	//an pas na valeis var se function h formal se var h var anti gia formal efuges kai den kaneis tpt 
 	if ((funcname->type != Libfunc && funcname->type != Userfunc) || formalEntry->type != Formal ) {
@@ -178,7 +202,7 @@ bool insertFormal(SymbolTableEntry *funcname, SymbolTableEntry *formalEntry){
 
 void printFormals(){
 
-	struct SymbolTableEntry *tmp, *parse;
+	symbol *tmp, *parse;
 	struct ScopeListEntry *temp = scope_head;
 
 	while (temp != NULL){
@@ -204,7 +228,7 @@ void printFormals(){
 void hideScope(unsigned int scope){
 	
 	ScopeListEntry *temp = scope_head;
-	SymbolTableEntry *tmp;
+	symbol *tmp;
 	
 	while (temp != NULL){
 		if (temp->scope == scope ){
@@ -221,7 +245,7 @@ void hideScope(unsigned int scope){
 int findInFunc(char *name, unsigned int scope){
 	int result = 0;
 	char *symbolName;
-	SymbolTableEntry *tmpSymbol;
+	symbol *tmpSymbol;
 	ScopeListEntry *tmpScope = scope_head; 
 
 	while (tmpScope->next != NULL && tmpScope->scope != scope){
@@ -250,7 +274,7 @@ int findInFunc(char *name, unsigned int scope){
 
 int scopeLookUp(char *name, unsigned int scope){
 	
-	SymbolTableEntry *tmpSymbol;
+	symbol *tmpSymbol;
 	ScopeListEntry *tmpScope = scope_head;
 
 	while (tmpScope != NULL){
@@ -293,7 +317,7 @@ int scopeLookUp(char *name, unsigned int scope){
 int generalLookUp(char *name, unsigned int scope){
 
 	int result = 0;
-	SymbolTableEntry *tmpSymbol;
+	symbol *tmpSymbol;
 	ScopeListEntry *tmpScope = scope_head; 
 
 	while (tmpScope->next != NULL && tmpScope->scope != scope){
@@ -326,24 +350,24 @@ int generalLookUp(char *name, unsigned int scope){
 
 void initialize(){
 
-	hashInsert("print", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
-	hashInsert("input", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
-	hashInsert("objectmemberkeys", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
-	hashInsert("objecttotalmembers", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
-	hashInsert("objectcopy", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
-	hashInsert("tootalarguments", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
-	hashInsert("argument", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
-	hashInsert("typeof", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
-	hashInsert("strtonum", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
-	hashInsert("sqrt", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
-	hashInsert("cos", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
-	hashInsert("sin", 0, Libfunc, 0, 0, libraryfunc_s, -1, 0);
+	hashInsert("print", 0, Libfunc, 0, 0);
+	hashInsert("input", 0, Libfunc, 0, 0);
+	hashInsert("objectmemberkeys", 0, Libfunc, 0, 0);
+	hashInsert("objecttotalmembers", 0, Libfunc, 0, 0);
+	hashInsert("objectcopy", 0, Libfunc, 0, 0);
+	hashInsert("tootalarguments", 0, Libfunc, 0, 0);
+	hashInsert("argument", 0, Libfunc, 0, 0);
+	hashInsert("typeof", 0, Libfunc, 0, 0);
+	hashInsert("strtonum", 0, Libfunc, 0, 0);
+	hashInsert("sqrt", 0, Libfunc, 0, 0);
+	hashInsert("cos", 0, Libfunc, 0, 0);
+	hashInsert("sin", 0, Libfunc, 0, 0);
 }
 
-bool scopeListInsert (SymbolTableEntry *sym_node, unsigned int scope) {
+bool scopeListInsert (symbol *sym_node, unsigned int scope) {
 
 	ScopeListEntry *tmp = scope_head , *new_scope, *prev = NULL;
-	SymbolTableEntry *parse;
+	symbol *parse;
 
 	if(scope_head == NULL){
 		new_scope = (ScopeListEntry*) malloc(sizeof(ScopeListEntry));
@@ -393,24 +417,21 @@ bool scopeListInsert (SymbolTableEntry *sym_node, unsigned int scope) {
 	return 0;
 }
 
-SymbolTableEntry *hashInsert(char *name, unsigned int line, SymbolType type, unsigned int scope, unsigned int inFunc, symbol_t extratype, scopespace_t space, unsigned int offset){
+symbol* hashInsert(char *name, unsigned int line, SymbolType type, unsigned int scope, unsigned int inFunc){
 	
 	int pos = (int)*name % Buckets;
 	
 	ScopeListEntry *tmp = scope_head, *new_scope;
-	SymbolTableEntry *new_sym, *parse;
+	symbol *new_sym, *parse;
 	Function *new_func;
 	Variable *new_var;
 
-	new_sym = (SymbolTableEntry*) malloc(sizeof(SymbolTableEntry));
+	new_sym = (symbol*) malloc(sizeof(symbol));
 	new_sym->next =  NULL; 
 	new_sym->scope_next =  NULL; 
 	new_sym->formal_next = NULL;
-	new_sym->isActive = true ;
-	new_sym->type = type ;
-	new_sym->extratype = extratype;
-	new_sym->space = space;
-	new_sym->offset = offset;
+	new_sym->isActive = true;
+	new_sym->type = type;
 	new_sym->name = strdup(name);
 
 	if(type == Userfunc || type == Libfunc ) {
@@ -453,7 +474,7 @@ SymbolTableEntry *hashInsert(char *name, unsigned int line, SymbolType type, uns
 void printScopeList(){
 
 	ScopeListEntry *temp = scope_head;
-	SymbolTableEntry *tmp ;
+	symbol *tmp ;
 
 	while (temp != NULL){
 

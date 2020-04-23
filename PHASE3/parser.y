@@ -13,7 +13,7 @@
     unsigned int currscope = 0;
 	unsigned int inFunc = 0;
 	SymbolType type;
-	SymbolTableEntry *tmp;
+	symbol *tmp;
 	unsigned int funcPrefix = 0;
 	unsigned int betweenFunc = 0;
 	unsigned int inLoop = 0;
@@ -25,7 +25,7 @@
     int intValue;
     double realValue;
     char* stringValue;
-	struct SymbolTableEntry* exprNode;
+	struct symbol* exprNode;
 }
 
 %type <exprNode> lvalue
@@ -152,11 +152,13 @@ primary:	lvalue					{	fprintf(fp, "primary: lvalue at line %d --> %s\n", yylinen
 lvalue:		ID				{
 								fprintf(fp, "lvalue: ID at line %d --> %s\n", yylineno, yylval.stringValue);
 
-								int result, varInFunc;
+								symbol* sym;
 								SymbolType type;
-								
-								result = generalLookUp(yylval.stringValue, currscope);
+								int result, varInFunc;
+
+								sym = lookup(yylval.stringValue, currscope);
 								varInFunc= findInFunc(yylval.stringValue, currscope);
+								result = generalLookUp(yylval.stringValue, currscope);
 
 								switch (result){
 									case 1:
@@ -192,10 +194,18 @@ lvalue:		ID				{
 											type = Global;
 										else
 											type = Local;
-										fprintf(fp, "Put %s to SymbolTable\n", yylval.stringValue);
+										//fprintf(fp, "Put %s to SymbolTable\n", yylval.stringValue);
 										//hashInsert(yylval.stringValue, yylineno, type, currscope, inFunc);
 										$$->type = type;
 										//printf("SYMBOL TYPE = %d\n", $$->type);
+								}
+
+								if(sym == NULL){
+									
+									sym = hashInsert(yylval.stringValue, yylineno, type, currscope, inFunc);
+									sym->space = currscopespace();
+									sym->offset = currscopeoffset();
+									inccurrscopeoffset();
 								}
 							}
 
@@ -361,7 +371,7 @@ const:		REAL 		{	fprintf(fp, "const: REAL at line %d --> %s\n", yylineno, yytext
 idlist:		ID	{
 					fprintf(fp, "idlist: ID at line %d --> %s\n", yylineno, yytext);	
 
-					SymbolTableEntry *formal;
+					symbol *formal;
 					int found = scopeLookUp(yytext, currscope);
 
 					if (scopeLookUp(yytext, 0) == 1 ){
@@ -377,7 +387,7 @@ idlist:		ID	{
 				}
 			|idlist COMMA ID 	{	
 									fprintf(fp, "idlist: idlist COMMA ID at line %d --> %s\n", yylineno, yytext);													
-									SymbolTableEntry *formal;
+									symbol *formal;
 									
 									int found = scopeLookUp(yytext, currscope);
 

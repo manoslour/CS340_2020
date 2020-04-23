@@ -76,10 +76,6 @@ typedef struct quad {
 	unsigned int line;
 }quad;
 
-typedef struct symbol {
-
-}symbol;
-
 typedef struct Variable {
 	unsigned int scope;
 	unsigned int line ;
@@ -91,7 +87,7 @@ typedef struct Function {
 	unsigned int line;
 }Function;
 
-typedef struct SymbolTableEntry {
+typedef struct symbol {
 	char *name;
 	bool isActive;
 	union {
@@ -100,18 +96,16 @@ typedef struct SymbolTableEntry {
 	} value;
 
 	SymbolType type;
-	//Phase 3 Additions
 	symbol_t extratype;
 	scopespace_t space;
 	unsigned int offset;
-	// ----------------
 
-	struct SymbolTableEntry *next, *scope_next, *formal_next; 
-}SymbolTableEntry;
+	struct symbol *next, *scope_next, *formal_next; 
+}symbol;
 
 typedef struct ScopeListEntry {
 	unsigned int scope;
-	struct SymbolTableEntry *symbols;
+	struct symbol *symbols;
 	struct ScopeListEntry *next, *prev;
 }ScopeListEntry;
 
@@ -155,16 +149,16 @@ int scopeLookUp(char *name, unsigned int scope);
 
 int generalLookUp(char *name, unsigned int scope);
 
-SymbolTableEntry* lookup(char* name, unsigned int scope);
+symbol* lookup(char* name, unsigned int scope);
 
 void addError(char *output, char *content, unsigned int numLine);
 
-bool scopeListInsert (SymbolTableEntry *sym_node, unsigned int scope);
+bool scopeListInsert (symbol *sym_node, unsigned int scope);
 
-bool insertFormal(SymbolTableEntry *funcname, SymbolTableEntry *formalEntry);
+bool insertFormal(symbol *funcname, symbol *formalEntry);
 
 void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, unsigned int line);
 
-SymbolTableEntry* hashInsert(char *name, unsigned int line, SymbolType type, unsigned int scope, unsigned int inFunc, symbol_t extratype, scopespace_t space, unsigned int offset);
+symbol* hashInsert(char *name, unsigned int line, SymbolType type, unsigned int scope, unsigned int inFunc);
 
 #endif
