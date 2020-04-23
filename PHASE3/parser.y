@@ -193,7 +193,7 @@ lvalue:		ID				{
 										else
 											type = Local;
 										fprintf(fp, "Put %s to SymbolTable\n", yylval.stringValue);
-										hashInsert(yylval.stringValue, yylineno, type, currscope, inFunc);
+										//hashInsert(yylval.stringValue, yylineno, type, currscope, inFunc);
 										$$->type = type;
 										//printf("SYMBOL TYPE = %d\n", $$->type);
 								}
@@ -219,11 +219,11 @@ lvalue:		ID				{
 								else{
 									if(currscope == 0){
 										fprintf(fp, "New Global var in scope %d\n", currscope);
-										hashInsert(yytext, yylineno, Global, currscope, inFunc);
+										//hashInsert(yytext, yylineno, Global, currscope, inFunc);
 									}
 									else{
 										fprintf(fp, "New Local var in scope %d\n", currscope);
-										hashInsert(yytext, yylineno, Local, currscope, inFunc);
+										//hashInsert(yytext, yylineno, Local, currscope, inFunc);
 									}
 								}
 							}
@@ -299,7 +299,7 @@ block:		LCURLY_BR	{
 funcdef:	FUNCTION
 					{	
 						fprintf(fp, "funcdef: FUNCTION at line %d --> %s\n", yylineno, yytext);
-						tmp = hashInsert(generateName(funcPrefix), yylineno, Userfunc, currscope, inFunc);
+						//tmp = hashInsert(generateName(funcPrefix), yylineno, Userfunc, currscope, inFunc);
 						funcPrefix++;
 					}
 			L_PAR 	{	
@@ -330,7 +330,7 @@ funcdef:	FUNCTION
 									addError("Error, symbol already exists",yytext,yylineno);
 								}
 								else {
-									tmp = hashInsert(yytext, yylineno, Userfunc, currscope, inFunc);
+									//tmp = hashInsert(yytext, yylineno, Userfunc, currscope, inFunc);
 								}
 							} 
 			L_PAR	{
@@ -371,7 +371,7 @@ idlist:		ID	{
 						addError("Error, symbol already exists", yytext, yylineno);
 					}
 					else {
-						tmp = hashInsert(yytext,yylineno,Formal,currscope, inFunc);
+						//tmp = hashInsert(yytext,yylineno,Formal,currscope, inFunc);
 						insertFormal(tmp, formal);
 					}
 				}
@@ -388,7 +388,7 @@ idlist:		ID	{
 										addError("Error, symbol already exists", yytext, yylineno);
 									}
 									else {
-										formal = hashInsert(yytext,yylineno,Formal,currscope, inFunc);
+										//formal = hashInsert(yytext,yylineno,Formal,currscope, inFunc);
 										insertFormal(tmp, formal);
 									}
 								}
