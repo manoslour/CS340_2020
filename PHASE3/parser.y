@@ -24,10 +24,11 @@
     int intValue;
     double realValue;
     char* stringValue;
-	struct symbol* exprNode;
+	struct symbol* symNode;
+	struct expr* exprNode;
 }
 
-%type <exprNode> lvalue
+%type <exprNode> lvalue member primary assignexpr call term objectdef const
 %token <intValue> INTEGER
 %token <realValue> REAL
 %token <stringValue> ID
@@ -153,7 +154,7 @@ lvalue:		ID				{
 								
 								symbol *sym = lookup(yylval.stringValue, currscope);
 								if(sym == NULL){
-									hashInsert(yylval.stringValue, currscope, yylineno, var_s, currscopespace(), currscopeoffset());
+									sym = hashInsert(yylval.stringValue, currscope, yylineno, var_s, currscopespace(), currscopeoffset());
 									inccurrscopeoffset();
 									printf("Inserted symbol %s\n", yylval.stringValue);
 								}
@@ -161,6 +162,7 @@ lvalue:		ID				{
 									printf("Symbol %s already defined\n", sym->name);
 									//MUST CHECK ACCESSIBILITY
 								}
+								$$ = lvalue_expr(sym);
 							}
 
 			|LOCAL ID		{
@@ -172,9 +174,15 @@ lvalue:		ID				{
 										printf("Error, collision with libfunc at line %d\n", yylineno);
 									}
 									else{
-										hashInsert(yytext, currscope, yylineno, var_s, currscopespace(), currscopeoffset());
+										sym = hashInsert(yytext, currscope, yylineno, var_s, currscopespace(), currscopeoffset());
 										inccurrscopeoffset();
+										printf("Inserted local symbol %s\n", yylval.stringValue);
 									}
+								}
+								else{
+									if(sym->type == programfunc_s)
+										printf("Warning sym is a function\n");
+										$$ = lvalue_expr(sym);
 								}
 							}
 
@@ -182,6 +190,8 @@ lvalue:		ID				{
 								symbol *sym = scopelookup(yytext,0);
 								if(sym == NULL)
 									printf("Symbol %s does not exist\n", yylval.stringValue);
+								else
+									$$ = lvalue_expr(sym);
 							}
 			|member			{	fprintf(fp, "lvalue: member at line %d --> %s\n", yylineno, yytext);}
 			;
@@ -278,7 +288,9 @@ funcdef:	FUNCTION
 					}
 			;
 
-const:		REAL 		{	fprintf(fp, "const: REAL at line %d --> %s\n", yylineno, yytext);}
+const:		REAL 		{	fprintf(fp, "const: REAL at line %d --> %s\n", yylineno, yytext);
+							//$$ = 
+						}
 			|INTEGER	{	fprintf(fp, "const: INTEGER at line %d --> %s\n", yylineno, yytext);}
 			|STRING 	{	fprintf(fp, "const: FLEX_STRING at line %d --> %s\n", yylineno, yytext);}
 			|NIL		{	fprintf(fp, "const: NIL at line %d --> %s\n", yylineno, yytext);}
