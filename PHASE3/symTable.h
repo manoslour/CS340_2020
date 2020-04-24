@@ -3,8 +3,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
+#include <assert.h>
+#include <stdbool.h>
 
 #define RED   "\x1B[31m"
 #define YEL   "\x1B[33m"
@@ -15,7 +16,13 @@
 #define CURR_SIZE (total * sizeof(quad))
 #define NEW_SIZE (EXPAND_SIZE * sizeof(quad) + CURR_SIZE)	
 
-enum SymbolType { Global, Local, Formal, Userfunc, Libfunc };
+typedef enum { 
+	Global, 
+	Local, 
+	Formal, 
+	Userfunc, 
+	Libfunc 
+}SymbolType;
 
 typedef enum {
 	assign,			add,			sub,
@@ -67,46 +74,24 @@ typedef struct quad {
 	struct expr* arg2;
 	unsigned int label;
 	unsigned int line;
+	struct quad *next;
 }quad;
 
 typedef struct symbol {
+	char *name;
+	bool isActive;
+	unsigned int scope;
+	unsigned int line;
+	
 	symbol_t type;
-	char* name;
 	scopespace_t space;
 	unsigned int offset;
-	unsigned int scope;
-	unsigned int line;
+	struct symbol *next, *scope_next; 
 }symbol;
-
-typedef struct Variable {
-	const char *name;
-	unsigned int scope;
-	unsigned int line ;
-	unsigned int inFunc;
-}Variable;
-
-typedef struct Function {
-	const char *name; 
-	unsigned int scope ;
-	unsigned int line;
-	//struct SymbolTableEntry *next; 
-	// Formal arguments list. TO-SEE AGAIN
-}Function;
-
-typedef struct SymbolTableEntry {
-	bool isActive;
-	union {
-		Variable *varVal;
-		Function *funcVal;
-	} value;
-	enum SymbolType type;
-
-	struct SymbolTableEntry *next, *scope_next, *formal_next; 
-}SymbolTableEntry;
 
 typedef struct ScopeListEntry {
 	unsigned int scope;
-	struct SymbolTableEntry *symbols;
+	struct symbol *symbols;
 	struct ScopeListEntry *next, *prev;
 }ScopeListEntry;
 
@@ -117,7 +102,13 @@ struct errorToken {
     struct errorToken *next;
 };
 
-scopespace_t currscopespace();
+void expand();
+
+void resettemp();
+
+symbol* newtemp();
+
+char* newtempname();
 
 void initialize();
 
@@ -127,7 +118,19 @@ void printErrorList();
 
 bool hide (int scope);
 
+void exitscopespace();
+
+void enterscopespace();
+
 bool enable (int scope );
+
+void inccurrscopeoffset();
+
+scopespace_t currscopespace();
+
+expr* lvalue_expr(symbol* sym);
+
+unsigned int currscopeoffset();
 
 char* generateName(int nameCount);
 
@@ -135,16 +138,17 @@ void hideScope(unsigned int scope);
 
 int findInFunc(char *name, unsigned int scope);
 
-int scopeLookUp(char *name, unsigned int scope);
+symbol* lookup(char* name, unsigned int scope);
 
-int generalLookUp(char *name, unsigned int scope);
+symbol* scopelookup(char* name, unsigned int scope);
+
+bool scopeListInsert (symbol *sym_node, unsigned int scope);
 
 void addError(char *output, char *content, unsigned int numLine);
 
-bool scopeListInsert (struct SymbolTableEntry *sym_node, unsigned int scope);
+void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, unsigned int line);
 
-bool insertFormal(struct SymbolTableEntry *funcname, struct SymbolTableEntry *formalEntry);
+symbol* tempInsert(char *name, unsigned int scope);
 
-struct SymbolTableEntry* hashInsert(char *name, unsigned int line, enum SymbolType type, unsigned int scope, unsigned int inFunc);
-
+symbol* hashInsert(char *name, unsigned int scope, unsigned int line, symbol_t extratype, scopespace_t space, unsigned int offset);
 #endif
