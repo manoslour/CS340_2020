@@ -48,7 +48,7 @@ expr* lvalue_expr(symbol* sym){
 	e->next = (expr*) 0;
 	e->sym = sym;
 
-	switch (sym->extratype){
+	switch (sym->type){
 		case var_s:
 			e->type = var_e;
 			break;
@@ -65,6 +65,37 @@ expr* lvalue_expr(symbol* sym){
 }
 
 symbol* lookup(char* name, unsigned int scope){
+	symbol *tmpSymbol, *found;
+	ScopeListEntry *tmpScope = scope_head;
+
+	while(tmpScope->next != NULL && tmpScope->scope != scope){
+		printf("Currently at scope %d\n", tmpScope->scope);
+		tmpScope = tmpScope->next;
+	}
+	
+	found = scopelookup(name, tmpScope->scope);
+	
+	if(found != NULL){
+		printf("Found in scope %d, sym_type = %d\n", tmpScope->scope, found->type);
+		return found;
+	}
+	else{
+		while (tmpScope->prev != NULL){
+			found = scopelookup(name, tmpScope->scope);
+			if(found != NULL){
+				printf("Found in scope %d, sym_type = %d\n", tmpScope->scope, found->type);
+				return found;
+			}
+			printf("Not found in scope %d\n", tmpScope->scope);
+			tmpScope = tmpScope->prev;
+		}
+	}
+
+	printf("Symbol not found\n");
+	return NULL;
+}
+
+symbol* scopelookup(char* name, unsigned int scope){
 
 	symbol *tmpSymbol;
 	ScopeListEntry *tmpScope = scope_head;
@@ -73,8 +104,15 @@ symbol* lookup(char* name, unsigned int scope){
 		printf("Currently at scope %d\n", tmpScope->scope);
 		tmpScope = tmpScope->next;
 	}
+	
+	printf("Current scope [%d] | Given scope [%d]\n", tmpScope->scope, scope);
+	if(tmpScope->scope != scope){
+		printf("Scope [%d] doesnt exist yet\n", scope);
+		return NULL;
+	}
 
 	tmpSymbol = tmpScope->symbols;
+	printf("scopeLookUp: Entering scope's %d symbol list\n", tmpScope->scope);
 
 	while(tmpSymbol != NULL){
 		if(!strcmp(tmpSymbol->name, name)){
@@ -83,6 +121,7 @@ symbol* lookup(char* name, unsigned int scope){
 		}
 		tmpSymbol = tmpSymbol->scope_next;
 	}
+
 	return NULL;
 }
 
@@ -136,7 +175,7 @@ void exitscopespace(){
 //----------------------------------------------------------------------------------------------
 
 char* generateName(int nameCount){
-	char *name = malloc(100 * sizeof(char));
+	char *name = malloc(5 * sizeof(char));
 	sprintf(name, "$f%d", nameCount);
 	return name;
 }
@@ -179,56 +218,10 @@ void printErrorList(){
     printf("\n");
 }
 
-bool insertFormal(symbol *funcname, symbol *formalEntry){
-
-	symbol *tmp, *parse;
-
-	//an pas na valeis var se function h formal se var h var anti gia formal efuges kai den kaneis tpt 
-	if ((funcname->type != Libfunc && funcname->type != Userfunc) || formalEntry->type != Formal ) {
-		//printf("you are trying to add formals to a variable , not a function"); 
-		return 0;
-	}
-	
-	parse = funcname;
-	if (parse->formal_next == NULL){
-		parse->formal_next = formalEntry;
-	}
-	else {
-		while (parse->formal_next != NULL) parse = parse->formal_next;
-		parse->formal_next = formalEntry; 
-	}
-	return 1;
-}
-
-void printFormals(){
-
-	symbol *tmp, *parse;
-	struct ScopeListEntry *temp = scope_head;
-
-	while (temp != NULL){
-
-		tmp = temp->symbols;
-		while (tmp != NULL){
-
-			if (tmp->type == Libfunc || tmp->type == Userfunc){
-				parse = tmp;
-				printf("Function \"%s\" has formals:\n", tmp->name);
-				while (parse->formal_next != NULL) {
-					printf("\t\"%s\" [Formal] (line %d) (scope %d)\n", parse->formal_next->name, parse->formal_next->value.varVal->line, parse->formal_next->value.varVal->scope);
-					parse = parse->formal_next;
-				}
-				printf("\n");
-			}
-			tmp = tmp->scope_next;
-		}
-		temp = temp->next;
-	}
-}
-
 void hideScope(unsigned int scope){
 	
-	ScopeListEntry *temp = scope_head;
 	symbol *tmp;
+	ScopeListEntry *temp = scope_head;
 	
 	while (temp != NULL){
 		if (temp->scope == scope ){
@@ -242,126 +235,20 @@ void hideScope(unsigned int scope){
 	}
 }
 
-int findInFunc(char *name, unsigned int scope){
-	int result = 0;
-	char *symbolName;
-	symbol *tmpSymbol;
-	ScopeListEntry *tmpScope = scope_head; 
-
-	while (tmpScope->next != NULL && tmpScope->scope != scope){
-		tmpScope = tmpScope->next;
-	}
-
-	//printf("Arrived at currScope[%d]\n", tmpScope->scope);
-
-	while(tmpScope != NULL){
-
-		tmpSymbol = tmpScope->symbols;
-		//printf("Started searching scope[%d] symbols\n", tmpScope->scope);
-
-		while(tmpSymbol != NULL){
-			symbolName = strdup(tmpSymbol->name);
-			if(tmpSymbol->isActive == 1 && strcmp(symbolName, name) == 0){
-				//printf("Symbol %s found, inFunc = %d\n", symbolName, tmpSymbol->value.varVal->inFunc);
-				return tmpSymbol->value.varVal->inFunc;
-			}
-			tmpSymbol = tmpSymbol->scope_next;
-		}
-		tmpScope = tmpScope->prev;
-	}
-	return -1;
-}
-
-int scopeLookUp(char *name, unsigned int scope){
-	
-	symbol *tmpSymbol;
-	ScopeListEntry *tmpScope = scope_head;
-
-	while (tmpScope != NULL){
-
-		if(tmpScope->scope == scope){
-
-			tmpSymbol = tmpScope->symbols;
-			
-			while (tmpSymbol != NULL) {
-				
-				if (tmpSymbol->type == Libfunc && tmpSymbol->isActive == 1){
-					if (!strcmp(tmpSymbol->name, name))
-						return 1; // Libfunc found
-				} 
-				if (tmpSymbol->type == Userfunc && tmpSymbol->isActive == 1){
-					if (!strcmp(tmpSymbol->name, name)) 
-						return 2; // Userfunc found
-				}
-				if(tmpSymbol->type == Global && tmpSymbol->isActive == 1){
-					if (!strcmp(tmpSymbol->name, name)) 
-						return 3; // Global Variable found
-				}
-				if(tmpSymbol->type == Local && tmpSymbol->isActive == 1){
-					if (!strcmp(tmpSymbol->name, name)) 
-						return 4; // Local Variable found
-				}
-				if(tmpSymbol->type == Formal && tmpSymbol->isActive == 1){
-					if (!strcmp(tmpSymbol->name, name))
-						return 5; // Formal Variable found
-				}
-
-				tmpSymbol = tmpSymbol->scope_next;
-			}
-		} 
-		tmpScope = tmpScope->next;
-	} 
-	return 0;
-}
-
-int generalLookUp(char *name, unsigned int scope){
-
-	int result = 0;
-	symbol *tmpSymbol;
-	ScopeListEntry *tmpScope = scope_head; 
-
-	while (tmpScope->next != NULL && tmpScope->scope != scope){
-		//printf("Currently at scope %d\n", tmpScope->scope);
-		tmpScope = tmpScope->next;
-	}
-
-	// If tmpScope->scope < scope, given scope doesnt exist yet. Works as expected.
-	//printf("Arrived at given scope[%d|%d]\n", tmpScope->scope, scope);
-	result = scopeLookUp(name, tmpScope->scope);
-
-	if(result != 0){
-		//printf("Found in scope %d, result = %d\n", tmpScope->scope, result);
-		return result;
-	}
-	else{
-		while (tmpScope != NULL){
-			result = scopeLookUp(name, tmpScope->scope);
-			if(result != 0){
-				//printf("Found in scope %d, result = %d\n", tmpScope->scope, result);
-				break;
-			}
-			//printf("Not found in scope %d, result = %d\n", tmpScope->scope, result);
-			tmpScope = tmpScope->prev;
-		}
-	}
-
-	return result;
-}
-
 void initialize(){
 
-	hashInsert("print", 0, Libfunc, 0, 0);
-	hashInsert("input", 0, Libfunc, 0, 0);
-	hashInsert("objectmemberkeys", 0, Libfunc, 0, 0);
-	hashInsert("objecttotalmembers", 0, Libfunc, 0, 0);
-	hashInsert("objectcopy", 0, Libfunc, 0, 0);
-	hashInsert("tootalarguments", 0, Libfunc, 0, 0);
-	hashInsert("argument", 0, Libfunc, 0, 0);
-	hashInsert("typeof", 0, Libfunc, 0, 0);
-	hashInsert("strtonum", 0, Libfunc, 0, 0);
-	hashInsert("sqrt", 0, Libfunc, 0, 0);
-	hashInsert("cos", 0, Libfunc, 0, 0);
-	hashInsert("sin", 0, Libfunc, 0, 0);
+	hashInsert("print", 0, 0, libraryfunc_s, 0, 0);
+	hashInsert("input", 0 , 0, libraryfunc_s, 0, 0);
+	hashInsert("objectmemberkeys", 0, 0, libraryfunc_s, 0, 0);
+	hashInsert("objecttotalmembers", 0, 0, libraryfunc_s, 0, 0);
+	hashInsert("objectcopy", 0, 0, libraryfunc_s, 0, 0);
+	hashInsert("tootalarguments", 0, 0, libraryfunc_s, 0, 0);
+	hashInsert("argument", 0, 0, libraryfunc_s, 0, 0);
+	hashInsert("typeof", 0, 0, libraryfunc_s, 0, 0);
+	hashInsert("strtonum", 0, 0, libraryfunc_s, 0, 0);
+	hashInsert("sqrt", 0, 0, libraryfunc_s, 0, 0);
+	hashInsert("cos", 0, 0, libraryfunc_s, 0, 0);
+	hashInsert("sin", 0, 0, libraryfunc_s, 0, 0);
 }
 
 bool scopeListInsert (symbol *sym_node, unsigned int scope) {
@@ -417,44 +304,25 @@ bool scopeListInsert (symbol *sym_node, unsigned int scope) {
 	return 0;
 }
 
-symbol* hashInsert(char *name, unsigned int line, SymbolType type, unsigned int scope, unsigned int inFunc){
+symbol* hashInsert(char *name, unsigned int scope, unsigned int line, symbol_t type, scopespace_t space, unsigned int offset){
 	
 	int pos = (int)*name % Buckets;
 	
 	ScopeListEntry *tmp = scope_head, *new_scope;
 	symbol *new_sym, *parse;
-	Function *new_func;
-	Variable *new_var;
+	
 
 	new_sym = (symbol*) malloc(sizeof(symbol));
 	new_sym->next =  NULL; 
 	new_sym->scope_next =  NULL; 
-	new_sym->formal_next = NULL;
 	new_sym->isActive = true;
-	new_sym->type = type;
+	
 	new_sym->name = strdup(name);
-
-	if(type == Userfunc || type == Libfunc ) {
-		new_func = (Function*) malloc(sizeof(Function));
-		new_func->scope = scope;
-		new_func->line=line;
-		new_sym->value.funcVal = new_func;
-		
-	}
-	else if (type == Formal){
-		new_var = (Variable*) malloc(sizeof(Variable));
-		new_var->scope = scope;
-		new_var->line = line;
-		new_var->inFunc = inFunc;
-		new_sym->value.varVal = new_var;
-	}
-	else {
-		new_var = (Variable*) malloc(sizeof(Variable));
-		new_var->scope = scope;
-		new_var->line = line;
-		new_var->inFunc = inFunc;
-		new_sym->value.varVal = new_var;
-	}
+	new_sym->scope = scope;
+	new_sym->line = line; 
+	new_sym->type = type;
+	new_sym->space = space;
+	new_sym->offset = offset; 
 	
 	scopeListInsert(new_sym,scope);
 	if (HashTable[pos] == NULL){
@@ -463,14 +331,13 @@ symbol* hashInsert(char *name, unsigned int line, SymbolType type, unsigned int 
 	}
 	else {
 		parse = HashTable[pos];
-		while (parse->next != NULL) parse = parse->next;
 
+		while (parse->next != NULL) parse = parse->next;
 		parse->next = new_sym;
 		return new_sym;
 	}
 	return NULL;
 }
-
 void printScopeList(){
 
 	ScopeListEntry *temp = scope_head;
@@ -481,17 +348,13 @@ void printScopeList(){
 		printf("\n-----------------------------  "YEL"SCOPE #%d"RESET"  ----------------------------- \n\n",temp->scope );
 		tmp = temp->symbols;
 		while (tmp != NULL){
+			if (tmp->type == var_s) printf("\"%s\"\t [Variable]\t (line %d)\t (scope %d)"
+				,tmp->name,tmp->line,tmp->scope);
+			else if (tmp->type == programfunc_s)printf("\"%s\"\t [Program Function]\t (line %d)\t (scope %d)"
+				,tmp->name,tmp->line,tmp->scope);
+			else if (tmp->type == libraryfunc_s)printf("\"%s\"\t [Library Function]\t (line %d)\t (scope %d)"
+				,tmp->name,tmp->line,tmp->scope);
 
-			if (tmp->type == Libfunc) printf("\"%s\"\t [Library Function]\t (line %d)\t (scope %d)"
-				,tmp->name,tmp->value.funcVal->line,tmp->value.funcVal->scope);
-			else if (tmp->type == Userfunc) printf("\"%s\"\t [User Function]\t (line %d)\t (scope %d)"
-				,tmp->name,tmp->value.funcVal->line,tmp->value.funcVal->scope);
-			else if (tmp->type == Global) printf("\"%s\"\t [Global Variable]\t (line %d)\t (scope %d)"
-				,tmp->name,tmp->value.varVal->line,tmp->value.varVal->scope);
-			else if (tmp->type == Local) printf("\"%s\"\t [Local Variable]\t (line %d)\t (scope %d)"
-				,tmp->name,tmp->value.varVal->line,tmp->value.varVal->scope);
-			else if (tmp->type == Formal) printf("\"%s\"\t [Formal Variable]\t (line %d)\t (scope %d)"
-				,tmp->name,tmp->value.varVal->line,tmp->value.varVal->scope);
 			printf("\n");
 			tmp = tmp->scope_next; 
 		}
