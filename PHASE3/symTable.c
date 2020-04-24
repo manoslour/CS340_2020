@@ -36,11 +36,39 @@ symbol* newtemp(){
 	
 	if(sym == NULL)
 		// !!! MUST SEE AGAIN !!!
-		return hashInsert(name, currscope(), -1, -1, currscopespace(), currscopeoffset());
+		return tempInsert(name, currscope());
 	else
 		return sym;
 }
 
+symbol* tempInsert(char *name, unsigned int scope){
+	
+	int pos = (int)*name % Buckets;
+	
+	ScopeListEntry *tmp = scope_head, *new_scope;
+	symbol *new_sym, *parse;
+
+	new_sym = (symbol*) malloc(sizeof(symbol));
+	new_sym->next =  NULL; 
+	new_sym->scope_next =  NULL; 
+	new_sym->isActive = true;
+	
+	new_sym->name = strdup(name);
+	
+	scopeListInsert(new_sym,scope);
+	if (HashTable[pos] == NULL){
+		HashTable[pos] = new_sym;
+		return new_sym; 
+	}
+	else {
+		parse = HashTable[pos];
+
+		while (parse->next != NULL) parse = parse->next;
+		parse->next = new_sym;
+		return new_sym;
+	}
+	return NULL;
+}
 
 void expand(){
 
@@ -338,7 +366,6 @@ symbol* hashInsert(char *name, unsigned int scope, unsigned int line, symbol_t t
 	ScopeListEntry *tmp = scope_head, *new_scope;
 	symbol *new_sym, *parse;
 	
-
 	new_sym = (symbol*) malloc(sizeof(symbol));
 	new_sym->next =  NULL; 
 	new_sym->scope_next =  NULL; 
@@ -365,6 +392,7 @@ symbol* hashInsert(char *name, unsigned int scope, unsigned int line, symbol_t t
 	}
 	return NULL;
 }
+
 void printScopeList(){
 
 	ScopeListEntry *temp = scope_head;
