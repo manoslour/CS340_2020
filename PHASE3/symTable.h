@@ -82,10 +82,12 @@ typedef struct symbol {
 	bool isActive;
 	unsigned int scope;
 	unsigned int line;
-	
+	unsigned int iaddress;
 	symbol_t type;
 	scopespace_t space;
 	unsigned int offset;
+	unsigned int totalLocals;
+
 	struct symbol *next, *scope_next; 
 }symbol;
 
@@ -122,6 +124,8 @@ void exitscopespace();
 
 void enterscopespace();
 
+char* newtempfuncname();
+
 bool enable (int scope );
 
 void inccurrscopeoffset();
@@ -131,8 +135,6 @@ scopespace_t currscopespace();
 expr* lvalue_expr(symbol* sym);
 
 unsigned int currscopeoffset();
-
-char* generateName(int nameCount);
 
 void hideScope(unsigned int scope);
 
@@ -150,5 +152,16 @@ void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, 
 
 symbol* tempInsert(char *name, unsigned int scope);
 
-symbol* hashInsert(char *name, unsigned int scope, unsigned int line, symbol_t extratype, scopespace_t space, unsigned int offset);
+symbol* hashInsert(char *name, unsigned int scope, unsigned int line, symbol_t type, scopespace_t space, unsigned int offset);
+
+void resetformalargsoffset();
+
+void resetfunctionlocalsoffset();
+
+void restorecurrscopeoffset(unsigned int n);
+
+unsigned int nextquadlabel();
+
+void patchlabel(unsigned int quadNo, unsigned int label);
+
 #endif

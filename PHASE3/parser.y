@@ -13,7 +13,7 @@
     extern char *yytext;
 	unsigned int inFunc = 0;
 	unsigned int inLoop = 0;
-	unsigned int funcPrefix = 0;
+	unsigned int funcprefix = 0;
 	unsigned int betweenFunc = 0;
 	unsigned int currentscope = 0;
 %}
@@ -23,16 +23,19 @@
 %union{
     int intValue;
     double realValue;
+	unsigned int unsignedValue;
     char* stringValue;
 	struct symbol* symNode;
 	struct expr* exprNode;
 }
 
+%type <stringValue> funcname
+%type <unsignedValue> funcbody
+%type <symNode> funcprefix funcdef
 %type <exprNode> lvalue member primary assignexpr call term objectdef const
-%token <intValue> INTEGER
 %token <realValue> REAL
-%token <stringValue> ID
-%token <stringValue> STRING
+%token <intValue> INTEGER
+%token <stringValue> ID STRING
 %token IF ELSE WHILE FOR FUNCTION RETURN BREAK CONTINUE AND NOT OR LOCAL TRUE FALSE NIL
 %token ASSIGN PLUS MINUS MULT DIV MOD EQUAL NOT_EQUAL INCR DECR GREATER LESS GREATER_EQ LESS_EQ
 %token LCURLY_BR RCURLY_BR L_BR R_BR L_PAR R_PAR SEMICOLON COMMA COLON DCOLON DOT DDOT
@@ -261,45 +264,56 @@ block:		LCURLY_BR	{
 						}
 			;
 
-funcdef:	FUNCTION
-					{	
-						fprintf(fp, "funcdef: FUNCTION at line %d --> %s\n", yylineno, yytext);
-						//tmp = hashInsert(generateName(funcPrefix), yylineno, Userfunc, currentscope, inFunc);
-						funcPrefix++;
+funcdef:		funcprefix funcargs funcbody	{
+													fprintf(fp, "funcdef: funcprefix funcargs funcbody at line %d --> %s\n", yylineno, yytext);
+													exitscopespace();
+													$1->totalLocals = $3;
+													// int offset = pop_and_top(scopeoffsetStack); <- pop and get pre scope offset
+													//restorecurrscopeoffset(offset)
+													$$ = $1;
+													emit(funcend, lvalue_expr($1), NULL, NULL, nextquadlabel(), yylineno);
+												}
+				;
+
+funcprefix:		FUNCTION funcname	{
+										fprintf(fp, "funcprefix: FUNCTION funcname at line %d --> %s\n", yylineno, yytext);
+										$$ = hashInsert($2, currentscope, yylineno, programfunc_s, currscopespace(), currscopeoffset());
+										$$->iaddress = nextquadlabel();
+										emit(funcstart, lvalue_expr($$), NULL, NULL, nextquadlabel(), yylineno);
+										// push(scopeoffsetstack, currscopeoffset()); <- Save current offset
+										enterscopespace();
+										resetformalargsoffset();
+									}
+				;
+				
+funcname:		ID	{
+						fprintf(fp, "funcname: ID at line %d --> %s\n", yylineno, yytext);
+						$$ = $1; // Works
+						printf("Funcname = %s\n", $$);
 					}
-			L_PAR 	{	
-						inFunc++;
-						currentscope++;
-						fprintf(fp, "funcdef: FUNCTION L_PAR at line %d --> %s\n", yylineno, yytext);
+				|	{
+						fprintf(fp, "funcname: empty at line %d --> %s\n", yylineno, yytext);
+						$$ = newtempfuncname(); // Works
+						printf("Funcname = %s\n", $$);
 					}
-			idlist 	{	fprintf(fp, "funcdef: FUNCTION L_PAR idlist at line %d --> %s\n", yylineno, yytext);}
-			R_PAR	{	
-						fprintf(fp, "funcdef: FUNCTION L_PAR idlist R_PAR at line %d --> %s\n", yylineno, yytext);
-						currentscope--;
-					}
-			block  	{	
-						fprintf(fp, "funcdef: FUNCTION L_PAR idlist R_PAR block at line %d --> %s\n", yylineno, yytext);
-						inFunc--;
-					}
-			|FUNCTION ID 	{
-								fprintf(fp, "funcdef: FUNCTION ID at line %d --> %s\n", yylineno, yytext);
-							} 
-			L_PAR	{
-						fprintf(fp, "funcdef: FUNCTION ID L_PAR at line %d --> %s\n", yylineno, yytext);
-						inFunc++;
-						currentscope++; 
-						fprintf(fp, "funcdef: FUNCTION ID L_PAR at line %d --> %s\n", yylineno, yytext);
-					}
-			idlist 	{	fprintf(fp, "funcdef: FUNCTION ID L_PAR idlist at line %d --> %s\n", yylineno, yytext);}
-			R_PAR	{
-						fprintf(fp, "funcdef: FUNCTION ID L_PAR idlist R_PAR at line %d --> %s\n", yylineno, yytext);
-						currentscope--;
-					}
-			block 	{
-						fprintf(fp, "funcdef: FUNCTION ID L_PAR idlist R_PAR block  at line %d --> %s\n", yylineno, yytext);
-						inFunc--;
-					}
-			;
+				;
+
+funcargs:		L_PAR	{	currentscope++;} 
+				idlist
+				R_PAR	{
+							fprintf(fp, "funcargs: (idlist) at line %d --> %s\n", yylineno, yytext);
+							currentscope--;
+							enterscopespace();
+							resetfunctionlocalsoffset();
+						}
+				;
+
+funcbody:		block	{
+							fprintf(fp, "funcbody: block at line %d --> %s\n", yylineno, yytext);
+							$$ = currscopeoffset();
+							exitscopespace();
+						}
+				;
 
 const:		REAL 		{	fprintf(fp, "const: REAL at line %d --> %s\n", yylineno, yytext);
 							//$$ = 
