@@ -153,7 +153,7 @@ lvalue:		ID				{
 								fprintf(fp, "lvalue: ID at line %d --> %s\n", yylineno, yylval.stringValue);
 								
 								symbol *sym = lookup(yylval.stringValue, currentscope);
-								
+
 								if(sym == NULL){
 									sym = hashInsert(yylval.stringValue, currentscope, yylineno, var_s, currscopespace(), currscopeoffset());
 									inccurrscopeoffset();
@@ -170,6 +170,7 @@ lvalue:		ID				{
 								test2 = strdup(newtempname());
 								printf("test1 = %s\n", test1);
 								printf("test2 = %s\n", test2);
+								newtemp();
 								resettemp();
 								test3 = strdup(newtempname());
 								printf("test3 = %s\n", test3);
