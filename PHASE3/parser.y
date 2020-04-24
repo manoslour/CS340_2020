@@ -154,6 +154,7 @@ lvalue:		ID				{
 								symbol *sym = lookup(yylval.stringValue, currscope);
 								if(sym == NULL){
 									hashInsert(yylval.stringValue, currscope, yylineno, var_s, currscopespace(), currscopeoffset());
+									inccurrscopeoffset();
 									printf("Inserted symbol %s\n", yylval.stringValue);
 								}
 								else {
@@ -167,10 +168,13 @@ lvalue:		ID				{
 								sym = scopelookup(yylval.stringValue,currscope);
 								if(sym == NULL){
 									tmp = scopelookup(yylval.stringValue, 0);
-									if(tmp != NULL && tmp->type == libraryfunc_s)
+									if(tmp != NULL && tmp->type == libraryfunc_s){
 										printf("Error, collision with libfunc at line %d\n", yylineno);
-									else
+									}
+									else{
 										hashInsert(yytext, currscope, yylineno, var_s, currscopespace(), currscopeoffset());
+										inccurrscopeoffset();
+									}
 								}
 							}
 
