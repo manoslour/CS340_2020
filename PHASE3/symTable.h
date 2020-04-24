@@ -104,6 +104,12 @@ struct errorToken {
 
 void expand();
 
+void resettemp();
+
+symbol* newtemp();
+
+char* newtempname();
+
 void initialize();
 
 void printScopeList();

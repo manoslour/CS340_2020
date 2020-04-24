@@ -8,12 +8,39 @@ quad* quads = (quad*) 0;
 unsigned total = 0;
 unsigned int currQuad = 0;
 
+unsigned int tempcounter = 0;
+extern unsigned int currentscope;
+
 unsigned int programVarOffset = 0;
 unsigned int functionLocalOffset = 0;
 unsigned int formalArgOffset = 0;
 unsigned int scopeSpaceCounter = 1;
 
 //----------------------------------------------------------------------------------------------
+
+void resettemp() {tempcounter = 0;}
+
+unsigned int currscope() {return currentscope;}
+
+char* newtempname(){
+	char *tempname = malloc(100 * sizeof(char));
+	sprintf(tempname, "_t%d", tempcounter++);
+	return tempname;
+}
+
+symbol* newtemp(){
+
+	symbol* sym;
+	char* name = strdup(newtempname());
+	sym = scopelookup(name, currscope());
+	
+	if(sym == NULL)
+		// !!! MUST SEE AGAIN !!!
+		return hashInsert(name, currscope(), -1, -1, currscopespace(), currscopeoffset());
+	else
+		return sym;
+}
+
 
 void expand(){
 
