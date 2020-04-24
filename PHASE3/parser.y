@@ -5,17 +5,17 @@
     int yyerror(char* yaccProvidedMessage);
     extern int yylex(void);
 
+	FILE *fp;
+	symbol *tmp;
+	SymbolType type;
+    extern FILE *yyin;
     extern int yylineno;
     extern char *yytext;
-    extern FILE *yyin;
-	FILE *fp;
-    unsigned int currscope = 0;
 	unsigned int inFunc = 0;
-	SymbolType type;
-	symbol *tmp;
+	unsigned int inLoop = 0;
 	unsigned int funcPrefix = 0;
 	unsigned int betweenFunc = 0;
-	unsigned int inLoop = 0;
+	unsigned int currentscope = 0;
 %}
 
 //%defines
@@ -152,9 +152,10 @@ primary:	lvalue					{	fprintf(fp, "primary: lvalue at line %d --> %s\n", yylinen
 lvalue:		ID				{
 								fprintf(fp, "lvalue: ID at line %d --> %s\n", yylineno, yylval.stringValue);
 								
-								symbol *sym = lookup(yylval.stringValue, currscope);
+								symbol *sym = lookup(yylval.stringValue, currentscope);
+								
 								if(sym == NULL){
-									sym = hashInsert(yylval.stringValue, currscope, yylineno, var_s, currscopespace(), currscopeoffset());
+									sym = hashInsert(yylval.stringValue, currentscope, yylineno, var_s, currscopespace(), currscopeoffset());
 									inccurrscopeoffset();
 									printf("Inserted symbol %s\n", yylval.stringValue);
 								}
@@ -163,18 +164,29 @@ lvalue:		ID				{
 									//MUST CHECK ACCESSIBILITY
 								}
 								$$ = lvalue_expr(sym);
+								/*
+								char *test1, *test2, *test3;
+								test1 = strdup(newtempname());
+								test2 = strdup(newtempname());
+								printf("test1 = %s\n", test1);
+								printf("test2 = %s\n", test2);
+								resettemp();
+								test3 = strdup(newtempname());
+								printf("test3 = %s\n", test3);
+								*/
 							}
 
 			|LOCAL ID		{
 								symbol *sym, *tmp;
-								sym = scopelookup(yylval.stringValue,currscope);
+								sym = scopelookup(yylval.stringValue,currentscope);
+
 								if(sym == NULL){
 									tmp = scopelookup(yylval.stringValue, 0);
 									if(tmp != NULL && tmp->type == libraryfunc_s){
 										printf("Error, collision with libfunc at line %d\n", yylineno);
 									}
 									else{
-										sym = hashInsert(yytext, currscope, yylineno, var_s, currscopespace(), currscopeoffset());
+										sym = hashInsert(yytext, currentscope, yylineno, var_s, currscopespace(), currscopeoffset());
 										inccurrscopeoffset();
 										printf("Inserted local symbol %s\n", yylval.stringValue);
 									}
@@ -229,40 +241,40 @@ objectdef:	L_BR objectlist R_BR 			{	fprintf(fp, "objectdef: [objectlist] at lin
 
 block:		LCURLY_BR	{
 							fprintf(fp, "block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
-							currscope++;
+							currentscope++;
 							} 
 			RCURLY_BR 	{	
 							fprintf(fp, "block: LCURLY_BR RCURLY_BR at line %d --> %s\n", yylineno, yytext);
-							hideScope(currscope);
-							currscope--;
+							hideScope(currentscope);
+							currentscope--;
 						}		
 			|LCURLY_BR	{
 							fprintf(fp, "block: LCURLY_BR at line %d --> %s\n", yylineno, yytext); 
-							currscope++;
+							currentscope++;
 						}
 			stmtlist  	{	fprintf(fp, "block: LCURLY_BR  stmtlist at line %d --> %s\n", yylineno, yytext);}
 			RCURLY_BR	{
 							fprintf(fp, "block: LCURLY_BR stmtlist RCURLY_BR at line %d --> %s\n", yylineno, yytext);
-							hideScope(currscope);
-							currscope--;
+							hideScope(currentscope);
+							currentscope--;
 						}
 			;
 
 funcdef:	FUNCTION
 					{	
 						fprintf(fp, "funcdef: FUNCTION at line %d --> %s\n", yylineno, yytext);
-						//tmp = hashInsert(generateName(funcPrefix), yylineno, Userfunc, currscope, inFunc);
+						//tmp = hashInsert(generateName(funcPrefix), yylineno, Userfunc, currentscope, inFunc);
 						funcPrefix++;
 					}
 			L_PAR 	{	
 						inFunc++;
-						currscope++;
+						currentscope++;
 						fprintf(fp, "funcdef: FUNCTION L_PAR at line %d --> %s\n", yylineno, yytext);
 					}
 			idlist 	{	fprintf(fp, "funcdef: FUNCTION L_PAR idlist at line %d --> %s\n", yylineno, yytext);}
 			R_PAR	{	
 						fprintf(fp, "funcdef: FUNCTION L_PAR idlist R_PAR at line %d --> %s\n", yylineno, yytext);
-						currscope--;
+						currentscope--;
 					}
 			block  	{	
 						fprintf(fp, "funcdef: FUNCTION L_PAR idlist R_PAR block at line %d --> %s\n", yylineno, yytext);
@@ -274,13 +286,13 @@ funcdef:	FUNCTION
 			L_PAR	{
 						fprintf(fp, "funcdef: FUNCTION ID L_PAR at line %d --> %s\n", yylineno, yytext);
 						inFunc++;
-						currscope++; 
+						currentscope++; 
 						fprintf(fp, "funcdef: FUNCTION ID L_PAR at line %d --> %s\n", yylineno, yytext);
 					}
 			idlist 	{	fprintf(fp, "funcdef: FUNCTION ID L_PAR idlist at line %d --> %s\n", yylineno, yytext);}
 			R_PAR	{
 						fprintf(fp, "funcdef: FUNCTION ID L_PAR idlist R_PAR at line %d --> %s\n", yylineno, yytext);
-						currscope--;
+						currentscope--;
 					}
 			block 	{
 						fprintf(fp, "funcdef: FUNCTION ID L_PAR idlist R_PAR block  at line %d --> %s\n", yylineno, yytext);
