@@ -122,6 +122,8 @@ void inccurrscopeoffset();
 
 scopespace_t currscopespace();
 
+expr* lvalue_expr(symbol* sym);
+
 unsigned int currscopeoffset();
 
 char* generateName(int nameCount);

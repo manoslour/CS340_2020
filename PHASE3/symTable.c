@@ -56,7 +56,7 @@ expr* lvalue_expr(symbol* sym){
 			e->type = programfunc_e;
 			break;
 		case libraryfunc_s:
-			e->type = programfunc_e;
+			e->type = libraryfunc_e;
 			break;
 		default:
 			assert(0);
