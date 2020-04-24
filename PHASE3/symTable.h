@@ -148,5 +148,7 @@ void addError(char *output, char *content, unsigned int numLine);
 
 void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, unsigned int line);
 
+symbol* tempInsert(char *name, unsigned int scope);
+
 symbol* hashInsert(char *name, unsigned int scope, unsigned int line, symbol_t extratype, scopespace_t space, unsigned int offset);
 #endif
