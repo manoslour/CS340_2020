@@ -80,7 +80,7 @@ symbol* lookup(char* name, unsigned int scope){
 		return found;
 	}
 	else{
-		while (tmpScope->prev != NULL){
+		while (tmpScope != NULL){
 			found = scopelookup(name, tmpScope->scope);
 			if(found != NULL){
 				printf("Found in scope %d, sym_type = %d\n", tmpScope->scope, found->type);
