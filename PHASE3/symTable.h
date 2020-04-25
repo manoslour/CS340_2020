@@ -74,7 +74,6 @@ typedef struct quad {
 	struct expr* arg2;
 	unsigned int label;
 	unsigned int line;
-	struct quad *next;
 }quad;
 
 typedef struct symbol {
@@ -87,7 +86,6 @@ typedef struct symbol {
 	scopespace_t space;
 	unsigned int offset;
 	unsigned int totalLocals;
-
 	struct symbol *next, *scope_next; 
 }symbol;
 
