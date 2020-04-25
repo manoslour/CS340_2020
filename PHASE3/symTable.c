@@ -9,6 +9,7 @@ unsigned total = 0;
 unsigned int currQuad = 0;
 
 unsigned int tempcounter = 0;
+extern unsigned int funcprefix;
 extern unsigned int currentscope;
 
 unsigned int programVarOffset = 0;
@@ -227,11 +228,38 @@ void exitscopespace(){
 	--scopeSpaceCounter;
 }
 
+void resetformalargsoffset() {formalArgOffset = 0;}
+
+void resetfunctionlocalsoffset() {functionLocalOffset = 0;}
+
+void restorecurrscopeoffset(unsigned int n){
+	switch(currscopespace()){
+		case programvar:
+			programVarOffset = n;
+			break;
+		case functionlocal:
+			functionLocalOffset = n;
+			break;
+		case formalarg:
+			formalArgOffset = n;
+			break;
+		default:
+			assert(0);
+	}
+}
+
+unsigned int nextquadlabel() {return currQuad;}
+
+void patchlabel(unsigned int quadNo, unsigned int label){
+	assert(quadNo < currQuad);
+	quads[quadNo].label = label;
+}
+
 //----------------------------------------------------------------------------------------------
 
-char* generateName(int nameCount){
+char* newtempfuncname(){
 	char *name = malloc(5 * sizeof(char));
-	sprintf(name, "$f%d", nameCount);
+	sprintf(name, "$f%d", funcprefix++);
 	return name;
 }
 
