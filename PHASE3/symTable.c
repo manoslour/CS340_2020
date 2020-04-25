@@ -89,6 +89,7 @@ void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, 
 		expand();
 
 	quad* p = quads + currQuad++;
+	p->op = op;
 	p->arg1 = arg1;
 	p->arg2 = arg2;
 	p->result = result;
@@ -125,29 +126,29 @@ symbol* lookup(char* name, unsigned int scope){
 	ScopeListEntry *tmpScope = scope_head;
 
 	while(tmpScope->next != NULL && tmpScope->scope != scope){
-		printf("Currently at scope %d\n", tmpScope->scope);
+		//printf("Currently at scope %d\n", tmpScope->scope);
 		tmpScope = tmpScope->next;
 	}
 	
 	found = scopelookup(name, tmpScope->scope);
 	
 	if(found != NULL){
-		printf("Found in scope %d, sym_type = %d\n", tmpScope->scope, found->type);
+		//printf("Found in scope %d, sym_type = %d\n", tmpScope->scope, found->type);
 		return found;
 	}
 	else{
 		while (tmpScope != NULL){
 			found = scopelookup(name, tmpScope->scope);
 			if(found != NULL){
-				printf("Found in scope %d, sym_type = %d\n", tmpScope->scope, found->type);
+				//printf("Found in scope %d, sym_type = %d\n", tmpScope->scope, found->type);
 				return found;
 			}
-			printf("Not found in scope %d\n", tmpScope->scope);
+			//printf("Not found in scope %d\n", tmpScope->scope);
 			tmpScope = tmpScope->prev;
 		}
 	}
 
-	printf("Symbol not found\n");
+	//printf("Symbol not found\n");
 	return NULL;
 }
 
@@ -157,22 +158,22 @@ symbol* scopelookup(char* name, unsigned int scope){
 	ScopeListEntry *tmpScope = scope_head;
 
 	while (tmpScope->next != NULL && tmpScope->scope != scope){
-		printf("Currently at scope %d\n", tmpScope->scope);
+		//printf("Currently at scope %d\n", tmpScope->scope);
 		tmpScope = tmpScope->next;
 	}
 	
-	printf("Current scope [%d] | Given scope [%d]\n", tmpScope->scope, scope);
+	//printf("Current scope [%d] | Given scope [%d]\n", tmpScope->scope, scope);
 	if(tmpScope->scope != scope){
-		printf("Scope [%d] doesnt exist yet\n", scope);
+		//printf("Scope [%d] doesnt exist yet\n", scope);
 		return NULL;
 	}
 
 	tmpSymbol = tmpScope->symbols;
-	printf("scopeLookUp: Entering scope's %d symbol list\n", tmpScope->scope);
+	//printf("scopeLookUp: Entering scope's %d symbol list\n", tmpScope->scope);
 
 	while(tmpSymbol != NULL){
 		if(!strcmp(tmpSymbol->name, name)){
-			printf("Symbol %s found in scope %d\n", tmpSymbol->name, tmpScope->scope);
+			//printf("Symbol %s found in scope %d\n", tmpSymbol->name, tmpScope->scope);
 			return tmpSymbol;
 		}
 		tmpSymbol = tmpSymbol->scope_next;
@@ -257,10 +258,18 @@ void patchlabel(unsigned int quadNo, unsigned int label){
 
 void printQuads(){
 	int i;
-	printf("\nQuad#\topcode\tresult\t\targ1\t\t\t arg2\t\t label");
-	printf("\n--------------------------------------------------------------" );
+	char *arg1, *arg2, *result ;
+	printf("\nQuad#\t\topcode\t\tresult\t\targ1\t\targ2\t\tlabel");
+	printf("\n-------------------------------------------------------------------------------------");
 	for (i = 0; i < currQuad; i++){
-		printf("\n%d:\t%d\t\t%s\t\t%s\t\t%s\t%d", i, (quads+i)->op, (quads+i)->result->sym->name, (quads+i)->arg1->sym->name, (quads+i)->arg2->sym->name, (quads+i)->label);
+		//elenxos gia null
+		if ((quads+i)->result == NULL ) result = "";
+		else result = strdup((quads+i)->result->sym->name);
+		if ((quads+i)->arg1 == NULL ) arg1 = "";
+		else arg1 = strdup((quads+i)->arg1->sym->name);
+		if ((quads+i)->arg2 == NULL ) arg2 = "";
+		else arg2 = strdup((quads+i)->arg2->sym->name);
+		printf("\n%d:\t\t%d\t\t%s\t\t%s\t\t%s\t\t%d", i+1, (quads+i)->op, result, arg1, arg2, (quads+i)->label);
 	}
   printf("\n");
 }
