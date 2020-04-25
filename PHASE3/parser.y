@@ -34,7 +34,7 @@
 %type <stringValue> funcname
 %type <unsignedValue> funcbody
 %type <symNode> funcprefix funcdef
-%type <exprNode> lvalue member primary assignexpr call term objectdef const
+%type <exprNode> lvalue tableitem primary assignexpr call term objectdef const expr
 %token <realValue> REAL
 %token <intValue> INTEGER
 %token <stringValue> ID STRING
@@ -136,18 +136,26 @@ term:		L_PAR 						{	fprintf(fp, "term: L_PAR at line %d --> %s\n", yylineno, yy
 			|primary					{	fprintf(fp, "term: primary at line %d --> %s\n", yylineno, yytext);}
 			;
 
-assignexpr:	lvalue	{
-						//type = $1->type;
-						if(type == Userfunc || type == Libfunc){
-							addError("Error, using function as an lvalue", "", yylineno);
-						}
-					} 
-			ASSIGN expr				{	
+assignexpr:	lvalue ASSIGN expr		{	
 										fprintf(fp, "assignexpr: lvalue ASSIGN expr at line %d --> %s\n", yylineno, yytext);
+										if($1->type == tableitem_e){
+											emit(tablesetelem, $1, $1->index, $3, -1, yylineno);
+											$$ = emit_iftableitem($1, yylineno);
+											$$->type = assignexpr_e;
+										}
+										else{
+											emit(assign, $3, NULL, $1, -1, yylineno);
+											$$ = newexpr(assignexpr_e);
+											$$->sym = newtemp();
+											emit(assign, $1, NULL, $$, -1, yylineno);
+										}
+
 									}
 			;
 
-primary:	lvalue					{	fprintf(fp, "primary: lvalue at line %d --> %s\n", yylineno, yytext);}
+primary:	lvalue					{	fprintf(fp, "primary: lvalue at line %d --> %s\n", yylineno, yytext);
+										$$ = emit_iftableitem($1, yylineno);
+									}
 			|call					{	fprintf(fp, "primary: call at line %d --> %s\n", yylineno, yytext);}
 			|objectdef				{	fprintf(fp, "primary: objectdef at line %d --> %s\n", yylineno, yytext);}
 			|L_PAR funcdef R_PAR	{	fprintf(fp, "primary: L_PAR funcdef R_PAR at line %d --> %s\n", yylineno, yytext);}
@@ -200,18 +208,27 @@ lvalue:		ID				{
 								else
 									$$ = lvalue_expr(sym);
 							}
-			|member			{	fprintf(fp, "lvalue: member at line %d --> %s\n", yylineno, yytext);}
+			|tableitem			{	fprintf(fp, "lvalue: tableitem at line %d --> %s\n", yylineno, yytext);
+									$$ = $1;
+								}
 			;
 
-member:		lvalue DOT ID 							{	fprintf(fp, "member: lvalue.ID at line %d --> %s\n", yylineno, yytext);}
-			|lvalue L_BR expr R_BR 					{	fprintf(fp, "member: lvalue[expr] at line %d --> %s\n", yylineno, yytext);}
-			|call DOT ID 							{	fprintf(fp, "member: call.ID at line %d --> %s\n", yylineno, yytext);}
-			|call L_BR expr R_BR 					{	fprintf(fp, "member: call[expr] at line %d --> %s\n", yylineno, yytext);}
+tableitem:	lvalue DOT ID 						{	fprintf(fp, "tableitem: lvalue.ID at line %d --> %s\n", yylineno, yytext);
+													$$ = member_item($1, $3, yylineno);
+												}
+			|lvalue L_BR expr R_BR 				{	fprintf(fp, "tableitem: lvalue[expr] at line %d --> %s\n", yylineno, yytext);
+													$1 = emit_iftableitem($1, yylineno);
+													$$ = newexpr(tableitem_e);
+													$$->sym = $1->sym;
+													$$->index = $3;
+												}
+			|call DOT ID 						{	fprintf(fp, "tableitem: call.ID at line %d --> %s\n", yylineno, yytext);}
+			|call L_BR expr R_BR 				{	fprintf(fp, "tableitem: call[expr] at line %d --> %s\n", yylineno, yytext);}
 			;
 
-call:		call L_PAR objectlist R_PAR					{	fprintf(fp, "call: (objectlist) at line %d --> %s\n", yylineno, yytext);}
-			|lvalue callsuffix						{	fprintf(fp, "call: lvalue callsuffix at line %d --> %s\n", yylineno, yytext);}
-			|L_PAR funcdef R_PAR L_PAR objectlist R_PAR	{	fprintf(fp, "call: (funcdef) (objectlist) at line %d --> %s\n", yylineno, yytext);}
+call:		call L_PAR objectlist R_PAR						{	fprintf(fp, "call: (objectlist) at line %d --> %s\n", yylineno, yytext);}
+			|lvalue callsuffix								{	fprintf(fp, "call: lvalue callsuffix at line %d --> %s\n", yylineno, yytext);}
+			|L_PAR funcdef R_PAR L_PAR objectlist R_PAR		{	fprintf(fp, "call: (funcdef) (objectlist) at line %d --> %s\n", yylineno, yytext);}
 			;
 
 callsuffix:	normcall 						{	fprintf(fp, "callsuffix: normcall at line %d --> %s\n", yylineno, yytext);}
@@ -262,7 +279,7 @@ funcdef:		funcprefix funcargs funcbody	{
 													int offset = pop(scopeoffsetStack); // pop and get pre scope offset
 													restorecurrscopeoffset(offset);
 													$$ = $1;
-													emit(funcend, NULL, NULL, lvalue_expr($1), nextquadlabel(), yylineno);
+													emit(funcend, NULL, NULL, lvalue_expr($1), -1, yylineno);
 												}
 				;
 
@@ -270,7 +287,7 @@ funcprefix:		FUNCTION funcname	{
 										fprintf(fp, "funcprefix: FUNCTION funcname at line %d --> %s\n", yylineno, yytext);
 										$$ = hashInsert($2, currentscope, yylineno, programfunc_s, currscopespace(), currscopeoffset());
 										$$->iaddress = nextquadlabel();
-										emit(funcstart, NULL, NULL, lvalue_expr($$), nextquadlabel(), yylineno);
+										emit(funcstart, NULL, NULL, lvalue_expr($$), -1, yylineno);
 										push(scopeoffsetStack, currscopeoffset()); // Save current offset
 										enterscopespace();
 										resetformalargsoffset();
