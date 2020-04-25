@@ -102,6 +102,7 @@ struct errorToken {
     struct errorToken *next;
 };
 
+
 void expand();
 
 void resettemp();
@@ -138,7 +139,7 @@ unsigned int currscopeoffset();
 
 void hideScope(unsigned int scope);
 
-int findInFunc(char *name, unsigned int scope);
+char* translateopcode(iopcode opcode);
 
 symbol* lookup(char* name, unsigned int scope);
 

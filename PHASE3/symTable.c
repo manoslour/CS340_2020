@@ -258,10 +258,13 @@ void patchlabel(unsigned int quadNo, unsigned int label){
 
 void printQuads(){
 	int i;
-	char *arg1, *arg2, *result ;
+	char *arg1, *arg2, *result, *opcode;
 	printf("\nQuad#\t\topcode\t\tresult\t\targ1\t\targ2\t\tlabel");
 	printf("\n-------------------------------------------------------------------------------------");
 	for (i = 0; i < currQuad; i++){
+
+		opcode = strdup(translateopcode((quads+i)->op));
+
 		//elenxos gia null
 		if ((quads+i)->result == NULL ) result = "";
 		else result = strdup((quads+i)->result->sym->name);
@@ -269,9 +272,41 @@ void printQuads(){
 		else arg1 = strdup((quads+i)->arg1->sym->name);
 		if ((quads+i)->arg2 == NULL ) arg2 = "";
 		else arg2 = strdup((quads+i)->arg2->sym->name);
-		printf("\n%d:\t\t%d\t\t%s\t\t%s\t\t%s\t\t%d", i+1, (quads+i)->op, result, arg1, arg2, (quads+i)->label);
+
+		printf("\n%d:\t\t%s\t\t%s\t\t%s\t\t%s\t\t%d", i+1, opcode, result, arg1, arg2, (quads+i)->label);
 	}
   printf("\n");
+}
+
+char* translateopcode(iopcode opcode){
+	char* name;
+	switch(opcode){
+		case 0:		name = "assign"; break;
+		case 1:		name = "add"; break;
+		case 2:		name = "sub"; break;
+		case 3:		name = "mul"; break;
+		case 4:		name = "divide"; break;
+		case 5:		name = "mod"; break;
+		case 6:		name = "uminus"; break;
+		case 7:		name = "and"; break;
+		case 8:		name = "or"; break;
+		case 9:		name = "not"; break;
+		case 10:	name = "if_eq"; break;
+		case 11:	name = "if_noteq"; break;
+		case 12:	name = "if_lesseq"; break;
+		case 13:	name = "if_greatereq"; break;
+		case 14:	name = "if_less"; break;
+		case 15:	name = "if_greater"; break;
+		case 16:	name = "call"; break;
+		case 17:	name = "param"; break;
+		case 18:	name = "ret"; break;
+		case 19:	name = "getretval"; break;
+		case 20:	name = "funcstart"; break;
+		case 21:	name = "funcend"; break;
+		case 22:	name = "tablecreate"; break;
+		case 23:	name = "tablegetelem"; break;
+		case 24:	name = "tablesetelem"; break;
+	}
 }
 
 //----------------------------------------------------------------------------------------------
