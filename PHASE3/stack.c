@@ -1,7 +1,5 @@
 #include "stack.h"
 
-struct StackNode *root = NULL;
-
 int isEmpty(StackNode *root){
     if(root == NULL)
         return 1;
@@ -13,27 +11,27 @@ unsigned int peek(StackNode *root){
     if(isEmpty(root))
         return -1;
     else
-        return root->offset;
+        return root->numoflocals;
 }
 
-void push(StackNode *root, unsigned int offset){
+void push(StackNode **root, unsigned int offset){
 
     StackNode *newNode = (StackNode*) malloc(sizeof(StackNode));
-    newNode->offset = offset;
-    newNode->next = root;
-    root = newNode;
+    newNode->numoflocals = offset;
+    newNode->next = *root;
+    *root = newNode;
     printf("Node Offset = %d\n", offset);
     printf("Pushed node to stack\n");
 }
 
-unsigned int pop(StackNode *root){
+unsigned int pop(StackNode **root){
     unsigned int offset;
-    if(isEmpty(root)){
+    if(isEmpty(*root)){
         return -1;
     }
     else{
-        offset = peek(root);
-        root = root->next;
+        offset = peek(*root);
+        *root = (*root)->next;
         return offset;
     }
 }
@@ -41,13 +39,13 @@ unsigned int pop(StackNode *root){
 /*
 int main(){
 
-        push(root, 10);
-        push(root, 20);
-        push(root, 30);
+    StackNode *root = NULL;
 
-        printf("%d popped from stack\n", pop(root));
-        printf("Top element is %d\n", peek(root));
-
-        return 0;
+    push(&root, 10);
+    push(&root, 20);
+    push(&root, 30);
+    printf("%d popped from stack\n", pop(&root));
+    printf("Top element is %d\n", peek(root));
+    return 0;
 }
 */

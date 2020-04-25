@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 typedef struct StackNode{
-    unsigned int offset;
+    unsigned int numoflocals;
     struct StackNode *next;
 }StackNode;
 
@@ -10,6 +10,6 @@ int isEmpty(StackNode *root);
 
 unsigned int peek(StackNode *root);
 
-void push(StackNode *root, unsigned int offset);
+void push(StackNode **root, unsigned int offset);
 
-unsigned int pop(StackNode *root);
+unsigned int pop(StackNode **root);
