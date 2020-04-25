@@ -106,6 +106,8 @@ void expand();
 
 void resettemp();
 
+void printQuads();
+
 symbol* newtemp();
 
 char* newtempname();

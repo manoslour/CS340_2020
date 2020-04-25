@@ -255,6 +255,16 @@ void patchlabel(unsigned int quadNo, unsigned int label){
 	quads[quadNo].label = label;
 }
 
+void printQuads(){
+	int i;
+	printf("\nQuad#\topcode\tresult\t\targ1\t\t\t arg2\t\t label");
+	printf("\n--------------------------------------------------------------" );
+	for (i = 0; i < currQuad; i++){
+		printf("\n%d:\t%d\t\t%s\t\t%s\t\t%s\t%d", i, (quads+i)->op, (quads+i)->result->sym->name, (quads+i)->arg1->sym->name, (quads+i)->arg2->sym->name, (quads+i)->label);
+	}
+  printf("\n");
+}
+
 //----------------------------------------------------------------------------------------------
 
 char* newtempfuncname(){

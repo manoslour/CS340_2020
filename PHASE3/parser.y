@@ -384,6 +384,7 @@ int main(int argc, char** argv){
 	scopeoffsetStack = initStack();
 	initialize();
     yyparse();
+	printQuads();
     printScopeList();
 	printErrorList();
 
