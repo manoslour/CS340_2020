@@ -262,7 +262,7 @@ funcdef:		funcprefix funcargs funcbody	{
 													int offset = pop(scopeoffsetStack); // pop and get pre scope offset
 													restorecurrscopeoffset(offset);
 													$$ = $1;
-													emit(funcend, lvalue_expr($1), NULL, NULL, nextquadlabel(), yylineno);
+													emit(funcend, NULL, NULL, lvalue_expr($1), nextquadlabel(), yylineno);
 												}
 				;
 
@@ -270,7 +270,7 @@ funcprefix:		FUNCTION funcname	{
 										fprintf(fp, "funcprefix: FUNCTION funcname at line %d --> %s\n", yylineno, yytext);
 										$$ = hashInsert($2, currentscope, yylineno, programfunc_s, currscopespace(), currscopeoffset());
 										$$->iaddress = nextquadlabel();
-										emit(funcstart, lvalue_expr($$), NULL, NULL, nextquadlabel(), yylineno);
+										emit(funcstart, NULL, NULL, lvalue_expr($$), nextquadlabel(), yylineno);
 										push(scopeoffsetStack, currscopeoffset()); // Save current offset
 										enterscopespace();
 										resetformalargsoffset();
