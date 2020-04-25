@@ -1,5 +1,11 @@
 #include "stack.h"
 
+StackNode* initStack(){
+    StackNode *tmp = (StackNode*) malloc(sizeof(StackNode));
+    tmp->next = NULL;
+    return tmp;
+}
+
 int isEmpty(StackNode *root){
     if(root == NULL)
         return 1;
@@ -14,24 +20,23 @@ unsigned int peek(StackNode *root){
         return root->numoflocals;
 }
 
-void push(StackNode **root, unsigned int offset){
-
+void push(StackNode *root, unsigned int offset){
     StackNode *newNode = (StackNode*) malloc(sizeof(StackNode));
     newNode->numoflocals = offset;
-    newNode->next = *root;
-    *root = newNode;
+    newNode->next = root;
+    root = newNode;
     printf("Node Offset = %d\n", offset);
     printf("Pushed node to stack\n");
 }
 
-unsigned int pop(StackNode **root){
+unsigned int pop(StackNode *root){
     unsigned int offset;
-    if(isEmpty(*root)){
+    if(isEmpty(root)){
         return -1;
     }
     else{
-        offset = peek(*root);
-        *root = (*root)->next;
+        offset = peek(root);
+        root = root->next;
         return offset;
     }
 }
