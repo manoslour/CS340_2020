@@ -127,6 +127,8 @@ void enterscopespace();
 
 char* newtempfuncname();
 
+expr* newexpr(expr_t t);
+
 bool enable (int scope );
 
 void inccurrscopeoffset();
@@ -137,15 +139,21 @@ expr* lvalue_expr(symbol* sym);
 
 unsigned int currscopeoffset();
 
+expr* newexpr_conststring(char* s);
+
 void hideScope(unsigned int scope);
 
 char* translateopcode(iopcode opcode);
 
 symbol* lookup(char* name, unsigned int scope);
 
+expr* emit_iftableitem(expr* e, unsigned int line);
+
 symbol* scopelookup(char* name, unsigned int scope);
 
 bool scopeListInsert (symbol *sym_node, unsigned int scope);
+
+expr* member_item (expr* lv, char* name, unsigned int line);
 
 void addError(char *output, char *content, unsigned int numLine);
 

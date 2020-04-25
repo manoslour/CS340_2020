@@ -265,7 +265,6 @@ void printQuads(){
 
 		opcode = strdup(translateopcode((quads+i)->op));
 
-		//elenxos gia null
 		if ((quads+i)->result == NULL ) result = "";
 		else result = strdup((quads+i)->result->sym->name);
 		if ((quads+i)->arg1 == NULL ) arg1 = "";
@@ -275,7 +274,7 @@ void printQuads(){
 
 		printf("\n%d:\t\t%s\t\t%s\t\t%s\t\t%s\t\t%d", i+1, opcode, result, arg1, arg2, (quads+i)->label);
 	}
-  printf("\n");
+  	printf("\n");
 }
 
 char* translateopcode(iopcode opcode){
@@ -309,6 +308,37 @@ char* translateopcode(iopcode opcode){
 	}
 }
 
+expr* member_item (expr* lv, char* name, unsigned int line){
+	lv = emit_iftableitem(lv, line); //Emit code if r-value use of table item
+	expr* ti = newexpr(tableitem_e); //Make a new expression
+	ti->sym = lv->sym;
+	ti->index = newexpr_conststring(name); //Cosnt string index
+	return ti;
+}
+
+expr* newexpr(expr_t t){
+	expr* e = (expr*) malloc(sizeof(expr));
+	memset(e, 0, sizeof(expr));
+	e->type = t;
+	return e;
+}
+
+expr* newexpr_conststring(char* s){
+	expr* e = newexpr(conststring_e);
+	e->strConst = strdup(s);
+	return e;
+}
+
+expr* emit_iftableitem(expr* e, unsigned int line){
+	if(e->type != tableitem_e)
+		return e;
+	else{
+		expr* result = newexpr(var_e);
+		result->sym = newtemp();
+		emit(tablegetelem, e, e->index, result, -1, line);
+		return result;
+	}
+}
 //----------------------------------------------------------------------------------------------
 
 char* newtempfuncname(){
