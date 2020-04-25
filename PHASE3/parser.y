@@ -1,5 +1,6 @@
  %{
     #include <stdio.h>
+	#include "stack.h"
 	#include "symTable.h"
 
     int yyerror(char* yaccProvidedMessage);
@@ -14,6 +15,7 @@
 	unsigned int inFunc = 0;
 	unsigned int inLoop = 0;
 	unsigned int funcprefix = 0;
+	StackNode *scopeoffsetStack = NULL;
 	unsigned int betweenFunc = 0;
 	unsigned int currentscope = 0;
 %}
@@ -268,8 +270,8 @@ funcdef:		funcprefix funcargs funcbody	{
 													fprintf(fp, "funcdef: funcprefix funcargs funcbody at line %d --> %s\n", yylineno, yytext);
 													exitscopespace();
 													$1->totalLocals = $3;
-													// int offset = pop_and_top(scopeoffsetStack); <- pop and get pre scope offset
-													//restorecurrscopeoffset(offset)
+													int offset = pop(scopeoffsetStack); // pop and get pre scope offset
+													restorecurrscopeoffset(offset);
 													$$ = $1;
 													emit(funcend, lvalue_expr($1), NULL, NULL, nextquadlabel(), yylineno);
 												}
@@ -280,7 +282,7 @@ funcprefix:		FUNCTION funcname	{
 										$$ = hashInsert($2, currentscope, yylineno, programfunc_s, currscopespace(), currscopeoffset());
 										$$->iaddress = nextquadlabel();
 										emit(funcstart, lvalue_expr($$), NULL, NULL, nextquadlabel(), yylineno);
-										// push(scopeoffsetstack, currscopeoffset()); <- Save current offset
+										push(scopeoffsetStack, currscopeoffset()); // Save current offset
 										enterscopespace();
 										resetformalargsoffset();
 									}
@@ -369,7 +371,6 @@ int yyerror(char* yaccProvidedMessage){
 
 int main(int argc, char** argv){
     fp = fopen("syntaxAnalysis", "w+");
-    initialize();
 
     if(argc > 1){
         if(!(yyin = fopen(argv[1], "r"))){
@@ -380,7 +381,8 @@ int main(int argc, char** argv){
     else{
         yyin = stdin;
     }
-
+	scopeoffsetStack = initStack();
+	initialize();
     yyparse();
     printScopeList();
 	printErrorList();
