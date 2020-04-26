@@ -268,7 +268,7 @@ void patchlabel(unsigned int quadNo, unsigned int label){
 void printQuads(){
 	int i;
 	char *arg1, *arg2, *result, *opcode;
-	printf("\nQuad#\topcode\t\t\tresult\t\targ1\t\targ2\t\tlabel");
+	printf("\nQuad#\t\topcode\t\tresult\t\targ1\t\targ2\t\tlabel");
 	printf("\n-------------------------------------------------------------------------------------");
 	for (i = 0; i < currQuad; i++){
 		opcode = strdup(translateopcode((quads+i)->op));
@@ -292,9 +292,9 @@ void printQuads(){
 			if ( (quads+i)->arg2->sym == NULL) {arg2 = strdup((quads+i)->arg2->strConst);}
             else {arg2 = strdup((quads+i)->arg2->sym->name);}
 		}
-		printf("\n%d:\t%12s \t%10s\t %10s \t%10s\t %10d", i+1, opcode, result, arg1, arg2, (quads+i)->label);
+		printf("\n%d:\t%14s\t%11s\t%11s\t%9s\t%10d", i+1, opcode, result, arg1, arg2, (quads+i)->label);
 	}
-  	printf("\n");
+  	printf("\n\n\n");
 }
 
 char* translateopcode(iopcode opcode){
