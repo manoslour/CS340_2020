@@ -88,6 +88,14 @@ void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, 
 	if(currQuad == total)
 		expand();
 
+	printf("Entered emit\n");
+	printf("opcode = %d ", op);
+	printf("arg1: %s ", arg1->sym->name); 
+	printf("arg2: %s ", arg2->sym->name);
+	printf("result = %s ", result->sym->name);
+	printf("label = %d ", label);
+	printf("line = %d\n", line);
+
 	quad* p = quads + currQuad++;
 	p->op = op;
 	p->arg1 = arg1;
@@ -262,16 +270,34 @@ void printQuads(){
 	printf("\nQuad#\t\topcode\t\tresult\t\targ1\t\targ2\t\tlabel");
 	printf("\n-------------------------------------------------------------------------------------");
 	for (i = 0; i < currQuad; i++){
-
+		printf("\nCurrquad = %d\n", i);
 		opcode = strdup(translateopcode((quads+i)->op));
+		printf("Opcode = %s\n", opcode);
 
-		if ((quads+i)->result == NULL ) result = "";
-		else result = strdup((quads+i)->result->sym->name);
-		if ((quads+i)->arg1 == NULL ) arg1 = "";
-		else arg1 = strdup((quads+i)->arg1->sym->name);
-		if ((quads+i)->arg2 == NULL ) arg2 = "";
-		else arg2 = strdup((quads+i)->arg2->sym->name);
-
+		if ((quads+i)->result == NULL ){
+			printf("result = null\n");
+			result = "";	
+		} 
+		else{
+			printf("Result not null\n");
+			result = strdup((quads+i)->result->sym->name);
+		} 
+		if ((quads+i)->arg1 == NULL ) {
+			printf("arg1 = null\n");
+			arg1 = "";
+		}
+		else {
+			printf("arg1 not null");
+			arg1 = strdup((quads+i)->arg1->sym->name);
+		}
+		if ((quads+i)->arg2 == NULL ) {
+			printf("arg2 = null\n");
+			arg2 = "";
+		}
+		else {
+			printf("arg2 not null\n");
+			arg2 = strdup((quads+i)->arg2->sym->name);
+		}
 		printf("\n%d:\t\t%s\t\t%s\t\t%s\t\t%s\t\t%d", i+1, opcode, result, arg1, arg2, (quads+i)->label);
 	}
   	printf("\n");

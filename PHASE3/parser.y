@@ -138,17 +138,23 @@ term:		L_PAR 						{	fprintf(fp, "term: L_PAR at line %d --> %s\n", yylineno, yy
 
 assignexpr:	lvalue ASSIGN expr		{	
 										fprintf(fp, "assignexpr: lvalue ASSIGN expr at line %d --> %s\n", yylineno, yytext);
+										printf("Entered assignexpr\n");
 										if($1->type == tableitem_e){
-											emit(tablesetelem, $1, $1->index, $3, -1, yylineno);
+											printf("lvalue = tableitem_e\n");
+											printf("exprname = %s\n", $3->sym->name);
+											emit(tablesetelem, $1, $1->index, $3, -1, yylineno); //!SKAEI EDW!
 											$$ = emit_iftableitem($1, yylineno);
 											$$->type = assignexpr_e;
+											printf("assignexpr->type = %d\n", $$->type);
 										}
 										else{
+											printf("Entered else case\n");
 											emit(assign, $3, NULL, $1, -1, yylineno);
 											$$ = newexpr(assignexpr_e);
 											$$->sym = newtemp();
 											emit(assign, $1, NULL, $$, -1, yylineno);
 										}
+										printf("Exiting assignexpr\n");
 
 									}
 			;
@@ -214,7 +220,11 @@ lvalue:		ID				{
 			;
 
 tableitem:	lvalue DOT ID 						{	fprintf(fp, "tableitem: lvalue.ID at line %d --> %s\n", yylineno, yytext);
+													printf("ENTERED lvalue.id\n");
+													printf("ID = %s\n", $3);
+													printf("lvalue name = %s, line = %d\n", $1->sym->name, $1->sym->line);
 													$$ = member_item($1, $3, yylineno);
+													printf("tableitem name = %s\n", $$->sym->name);
 												}
 			|lvalue L_BR expr R_BR 				{	fprintf(fp, "tableitem: lvalue[expr] at line %d --> %s\n", yylineno, yytext);
 													$1 = emit_iftableitem($1, yylineno);
