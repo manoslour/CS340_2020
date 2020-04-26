@@ -279,18 +279,13 @@ objectlist:	expr 													{
 																		fprintf(fp, "objectlist: expr at line %d --> %s\n", yylineno, yytext);
 																		printf("Entered objectlist: expr\n");
 																		$$ = $1;
-																		printf("$$ = %s\n", $$->sym->name);
 																	}
 			|LCURLY_BR expr COLON expr RCURLY_BR					{	fprintf(fp, "objectlist: {expr:expr} at line %d --> %s\n", yylineno, yytext);}
 			|LCURLY_BR expr COLON expr RCURLY_BR COMMA objectlist	{	fprintf(fp, "objectlist: {expr:expr}, objectlist at line %d --> %s\n", yylineno, yytext);}
 			|expr COMMA objectlist									{	
 																		fprintf(fp, "objectlist: expr, objectlist at line %d --> %s\n", yylineno, yytext);
 																		printf("Entered objectlist: expr, objectlist\n");
-																		printf("$$ = %s\n", $$->sym->name);
-																		//printf("$1 = %s\n", $1->sym->name);
-																		printf("$3 = %s\n", $3->sym->name);
 																		$1->next = $3;
-																		//$$ = $3;
 																	}
 			|														{	fprintf(fp, "objectlist: empty at line %d --> %s\n", yylineno, yytext);}
 			;
