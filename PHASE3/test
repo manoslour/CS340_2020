@@ -1,2 +1,2 @@
-x = f(y)(a,b);
-//sprite..move(dx, dy);
+x = f(y)(a,b,c);
+sprite..move(dx, dy, dz, dw);

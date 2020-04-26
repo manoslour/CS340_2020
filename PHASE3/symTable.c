@@ -356,8 +356,6 @@ expr* make_call(expr* lv, expr* reserved_elist, unsigned int line){
 	expr* func = emit_iftableitem(lv, line);
 	printf("Entered make_call\n");
 	while(reserved_elist){
-		printf("Entered while in make_call\n");
-		printf("elist param = %s\n", reserved_elist->sym->name);
 		emit(param, reserved_elist, NULL, NULL, -1, line);
 		reserved_elist = reserved_elist->next;
 	}

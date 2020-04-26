@@ -214,11 +214,24 @@ call:		call L_PAR objectlist R_PAR						{	fprintf(fp, "call: (objectlist) at lin
 																fprintf(fp, "call: lvalue callsuffix at line %d --> %s\n", yylineno, yytext);
 																$1 = emit_iftableitem($1, yylineno); //In case it was a table item too
 																printf("Enterd call: lvalue callsufix\n");
+																expr* tmp = $2->elist;
 																if($2->method){
 																	printf("Entered if check\n");
 																	expr* t = $1;
 																	$1 = emit_iftableitem(member_item(t, $2->name, yylineno), yylineno);
-																	$2->elist->next = t; //Insert as first argument(reserved, so last)
+																	tmp = $2->elist;
+																	while( (tmp->next) != NULL){
+																		printf("tmp = %s\n", tmp->sym->name);
+																		tmp = tmp->next;
+																	}
+																	printf("Exited while\n");
+																	printf("tmp = %s\n", tmp->sym->name);
+																	tmp->next = t; //Insert as first argument(reserved, so last)
+																	tmp = $2->elist;
+																	while(tmp != NULL){
+																		printf("objectlist = %s\n", tmp->sym->name);
+																		tmp = tmp->next;
+																	}	
 																}
 																$$ = make_call($1, $2->elist, yylineno);
 															}
@@ -237,8 +250,9 @@ callsuffix:	normcall 						{
 											}
 			|methodcall						{	
 												fprintf(fp, "callsuffix: methodcall at line %d --> %s\n", yylineno, yytext);
+												printf("Entered callsufix: methodcall\n");
 												$$ = $1;
-												printf("Entered methodcall\n");	
+												expr* tmp = $1->elist;
 											}
 			;
 
@@ -253,7 +267,7 @@ normcall:	L_PAR objectlist R_PAR 				{
 methodcall:		DDOT ID L_PAR objectlist R_PAR 	{	
 													fprintf(fp, "methodcall: ..ID (objectlist) at line %d --> %s\n", yylineno, yytext);
 													printf("methodcall: ..id(objectlist)\n");
-													printf("objectlist = %s\n", $4->sym->name);
+													expr* tmp = $4;
 													//printf("objectlist->next = %s\n", $4->next->sym->name);
 													$$->elist = $4;
 													$$->method = 1;
@@ -265,19 +279,18 @@ objectlist:	expr 													{
 																		fprintf(fp, "objectlist: expr at line %d --> %s\n", yylineno, yytext);
 																		printf("Entered objectlist: expr\n");
 																		$$ = $1;
-																		printf("objectlist = %s\n", $$->sym->name);
+																		printf("$$ = %s\n", $$->sym->name);
 																	}
 			|LCURLY_BR expr COLON expr RCURLY_BR					{	fprintf(fp, "objectlist: {expr:expr} at line %d --> %s\n", yylineno, yytext);}
 			|LCURLY_BR expr COLON expr RCURLY_BR COMMA objectlist	{	fprintf(fp, "objectlist: {expr:expr}, objectlist at line %d --> %s\n", yylineno, yytext);}
 			|expr COMMA objectlist									{	
 																		fprintf(fp, "objectlist: expr, objectlist at line %d --> %s\n", yylineno, yytext);
 																		printf("Entered objectlist: expr, objectlist\n");
-																		printf("objectlist = %s\n", $$->sym->name);
-																		printf("$1 = %s\n", $1->sym->name);
+																		printf("$$ = %s\n", $$->sym->name);
+																		//printf("$1 = %s\n", $1->sym->name);
 																		printf("$3 = %s\n", $3->sym->name);
 																		$1->next = $3;
-																		//printf("$3->next = %s\n", $3->next->sym->name);
-																		//$$ = $1;	
+																		//$$ = $3;
 																	}
 			|														{	fprintf(fp, "objectlist: empty at line %d --> %s\n", yylineno, yytext);}
 			;
