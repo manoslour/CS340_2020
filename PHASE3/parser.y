@@ -138,8 +138,9 @@ term:		L_PAR 						{	fprintf(fp, "term: L_PAR at line %d --> %s\n", yylineno, yy
 
 assignexpr:	lvalue ASSIGN expr		{	
 										fprintf(fp, "assignexpr: lvalue ASSIGN expr at line %d --> %s\n", yylineno, yytext);
+
 										if($1->type == tableitem_e){
-											emit(tablesetelem, $1, $1->index, $3, -1, yylineno);
+											emit(tablesetelem, $1, $1->index, $3, -1, yylineno); //!SKAEI EDW!
 											$$ = emit_iftableitem($1, yylineno);
 											$$->type = assignexpr_e;
 										}
@@ -149,7 +150,7 @@ assignexpr:	lvalue ASSIGN expr		{
 											$$->sym = newtemp();
 											emit(assign, $1, NULL, $$, -1, yylineno);
 										}
-
+										//printf("Exiting assignexpr\n");
 									}
 			;
 
