@@ -360,6 +360,19 @@ expr* emit_iftableitem(expr* e, unsigned int line){
 		return result;
 	}
 }
+
+expr* make_call(expr* lv, expr* reserved_elist, unsigned int line){
+	expr* func = emit_iftableitem(lv, line);
+	while(reserved_elist){
+		emit(param, reserved_elist, NULL, NULL, -1, line);
+		reserved_elist = reserved_elist->next;
+	}
+	emit(call, func, NULL, NULL, -1, line);
+	expr* result = newexpr(var_e);
+	result->sym = newtemp();
+	emit(getretval, NULL, NULL, result, -1, line);
+	return result;
+}
 //----------------------------------------------------------------------------------------------
 
 char* newtempfuncname(){
