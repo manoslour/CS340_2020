@@ -89,6 +89,12 @@ typedef struct symbol {
 	struct symbol *next, *scope_next; 
 }symbol;
 
+typedef struct call {
+	expr* elist;
+	unsigned char method;
+	char* name;
+}callStr;
+
 typedef struct ScopeListEntry {
 	unsigned int scope;
 	struct symbol *symbols;
@@ -172,5 +178,7 @@ void restorecurrscopeoffset(unsigned int n);
 unsigned int nextquadlabel();
 
 void patchlabel(unsigned int quadNo, unsigned int label);
+
+expr* make_call(expr* lv, expr* reserved_elist, unsigned int line);
 
 #endif

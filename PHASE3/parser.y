@@ -29,12 +29,14 @@
     char* stringValue;
 	struct symbol* symNode;
 	struct expr* exprNode;
+	struct call* callNode;
 }
 
 %type <stringValue> funcname
 %type <unsignedValue> funcbody
 %type <symNode> funcprefix funcdef
-%type <exprNode> lvalue tableitem primary assignexpr call term objectdef const expr
+%type <callNode> callsuffix normcall methodcall
+%type <exprNode> lvalue tableitem primary assignexpr call term objectdef const expr objectlist
 %token <realValue> REAL
 %token <intValue> INTEGER
 %token <stringValue> ID STRING
@@ -103,36 +105,13 @@ expr:		assignexpr				{	fprintf(fp, "expr: assignexpr at line %d --> %s\n", yylin
 			|term					{	fprintf(fp, "expr: term at line %d --> %s\n", yylineno, yytext);}
 			;
 
-term:		L_PAR 						{	fprintf(fp, "term: L_PAR at line %d --> %s\n", yylineno, yytext);}
-			expr 						{	fprintf(fp, "term: L_PAR expr at line %d --> %s\n", yylineno, yytext);}
-			R_PAR						{	fprintf(fp, "term: L_PAR expr R_PAR at line %d --> %s\n", yylineno, yytext);}
+term:		L_PAR expr R_PAR			{	fprintf(fp, "term: L_PAR expr R_PAR at line %d --> %s\n", yylineno, yytext);}
 			|MINUS expr %prec UMINUS	{	fprintf(fp, "term: MINUS expr at line %d --> %s\n", yylineno, yytext);}
 			|NOT expr					{	fprintf(fp, "term: NOT expr at line %d --> %s\n", yylineno, yytext);}
-			|INCR lvalue				{
-											fprintf(fp, "term: INCR lvalue at line %d --> %s\n", yylineno, yytext);
-											//type = $2->type;
-											if(type == Userfunc || type == Libfunc)
-												addError("Error, using function as an lvalue", "", yylineno);
-										}
-			|lvalue INCR				{
-											fprintf(fp, "term: lvalue INCR at line %d --> %s\n", yylineno, yytext);
-											//type = $1->type;
-											if(type == Userfunc || type == Libfunc)
-												addError("Error, using function as an lvalue", "", yylineno);
-
-										}
-			|DECR lvalue				{
-											fprintf(fp, "term: DECR lvalue at line %d --> %s\n", yylineno, yytext);
-											//type = $2->type;
-											if(type == Userfunc || type == Libfunc)
-												addError("Error, using function as an lvalue", "", yylineno);
-										}
-			|lvalue DECR				{	
-											fprintf(fp, "term: lvalue DECR at line %d --> %s\n", yylineno, yytext);
-											//type = $1->type;
-											if(type == Userfunc || type == Libfunc)
-												addError("Error, using function as an lvalue", "", yylineno);
-										}
+			|INCR lvalue				{	fprintf(fp, "term: INCR lvalue at line %d --> %s\n", yylineno, yytext);}
+			|lvalue INCR				{	fprintf(fp, "term: lvalue INCR at line %d --> %s\n", yylineno, yytext);}
+			|DECR lvalue				{	fprintf(fp, "term: DECR lvalue at line %d --> %s\n", yylineno, yytext);}
+			|lvalue DECR				{	fprintf(fp, "term: lvalue DECR at line %d --> %s\n", yylineno, yytext);}
 			|primary					{	fprintf(fp, "term: primary at line %d --> %s\n", yylineno, yytext);}
 			;
 
@@ -140,7 +119,7 @@ assignexpr:	lvalue ASSIGN expr		{
 										fprintf(fp, "assignexpr: lvalue ASSIGN expr at line %d --> %s\n", yylineno, yytext);
 
 										if($1->type == tableitem_e){
-											emit(tablesetelem, $1, $1->index, $3, -1, yylineno); //!SKAEI EDW!
+											emit(tablesetelem, $1, $1->index, $3, -1, yylineno);
 											$$ = emit_iftableitem($1, yylineno);
 											$$->type = assignexpr_e;
 										}
@@ -227,26 +206,57 @@ tableitem:	lvalue DOT ID 						{	fprintf(fp, "tableitem: lvalue.ID at line %d --
 			|call L_BR expr R_BR 				{	fprintf(fp, "tableitem: call[expr] at line %d --> %s\n", yylineno, yytext);}
 			;
 
-call:		call L_PAR objectlist R_PAR						{	fprintf(fp, "call: (objectlist) at line %d --> %s\n", yylineno, yytext);}
-			|lvalue callsuffix								{	fprintf(fp, "call: lvalue callsuffix at line %d --> %s\n", yylineno, yytext);}
-			|L_PAR funcdef R_PAR L_PAR objectlist R_PAR		{	fprintf(fp, "call: (funcdef) (objectlist) at line %d --> %s\n", yylineno, yytext);}
+call:		call L_PAR objectlist R_PAR						{	fprintf(fp, "call: (objectlist) at line %d --> %s\n", yylineno, yytext);
+																$$ = make_call($1, $3, yylineno);
+															}
+			|lvalue callsuffix								{	
+																fprintf(fp, "call: lvalue callsuffix at line %d --> %s\n", yylineno, yytext);
+
+																$1 = emit_iftableitem($1, yylineno); //In case it was a table item too
+																if($2->method){
+																	expr* t = $1;
+																	$1 = emit_iftableitem(member_item(t, $2->name, yylineno), yylineno);
+																	$2->elist->next = t; //Insert as first argument(reserved, so last)
+																}
+																$$ = make_call($1, $2->elist, yylineno);
+															}
+			|L_PAR funcdef R_PAR L_PAR objectlist R_PAR		{	fprintf(fp, "call: (funcdef) (objectlist) at line %d --> %s\n", yylineno, yytext);
+																expr* func = newexpr(programfunc_e);
+																func->sym = $2;
+																$$ = make_call(func, $5, yylineno);
+															}
 			;
 
-callsuffix:	normcall 						{	fprintf(fp, "callsuffix: normcall at line %d --> %s\n", yylineno, yytext);}
-			|methodcall						{	fprintf(fp, "callsuffix: methodcall at line %d --> %s\n", yylineno, yytext);}
+callsuffix:	normcall 						{	
+												fprintf(fp, "callsuffix: normcall at line %d --> %s\n", yylineno, yytext);
+												$$ = $1;
+											}
+			|methodcall						{	
+												fprintf(fp, "callsuffix: methodcall at line %d --> %s\n", yylineno, yytext);
+												$$ = $1;	
+											}
 			;
 
-normcall:	L_PAR objectlist R_PAR 				{	fprintf(fp, "normcall: (objectlist) at line %d --> %s\n", yylineno, yytext);}
+normcall:	L_PAR objectlist R_PAR 				{	
+													fprintf(fp, "normcall: (objectlist) at line %d --> %s\n", yylineno, yytext);
+													$$->elist = $2;
+													$$->method = 0;
+													$$->name = NULL;
+												}
 			;
 
-methodcall:		DDOT ID L_PAR objectlist R_PAR 	{	fprintf(fp, "methodcall: ..ID (objectlist) at line %d --> %s\n", yylineno, yytext);}
+methodcall:		DDOT ID L_PAR objectlist R_PAR 	{	fprintf(fp, "methodcall: ..ID (objectlist) at line %d --> %s\n", yylineno, yytext);
+													$$->elist = $4;
+													$$->method = 1;
+													$$->name = $2;
+												}
 				;
 
 objectlist:	expr 													{	fprintf(fp, "objectlist: expr at line %d --> %s\n", yylineno, yytext);}
 			|LCURLY_BR expr COLON expr RCURLY_BR					{	fprintf(fp, "objectlist: {expr:expr} at line %d --> %s\n", yylineno, yytext);}
 			|LCURLY_BR expr COLON expr RCURLY_BR COMMA objectlist	{	fprintf(fp, "objectlist: list {expr:expr}  at line %d --> %s\n", yylineno, yytext);}
-			|expr COMMA objectlist									{	fprintf(fp, "objectlist: list expr  at line %d --> %s\n", yylineno, yytext);}
-			|														{	fprintf(fp, "objectlist: empty  at line %d --> %s\n", yylineno, yytext);}
+			|expr COMMA objectlist									{	fprintf(fp, "objectlist: list expr at line %d --> %s\n", yylineno, yytext);}
+			|														{	fprintf(fp, "objectlist: empty at line %d --> %s\n", yylineno, yytext);}
 			;
 
 objectdef:	L_BR objectlist R_BR 			{	fprintf(fp, "objectdef: [objectlist] at line %d --> %s\n", yylineno, yytext);}
@@ -324,9 +334,7 @@ funcbody:		block	{
 						}
 				;
 
-const:		REAL 		{	fprintf(fp, "const: REAL at line %d --> %s\n", yylineno, yytext);
-							//$$ = 
-						}
+const:		REAL 		{	fprintf(fp, "const: REAL at line %d --> %s\n", yylineno, yytext);}
 			|INTEGER	{	fprintf(fp, "const: INTEGER at line %d --> %s\n", yylineno, yytext);}
 			|STRING 	{	fprintf(fp, "const: FLEX_STRING at line %d --> %s\n", yylineno, yytext);}
 			|NIL		{	fprintf(fp, "const: NIL at line %d --> %s\n", yylineno, yytext);}
