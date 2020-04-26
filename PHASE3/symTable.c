@@ -271,26 +271,17 @@ void printQuads(){
 	printf("\nQuad#\t\topcode\t\tresult\t\targ1\t\targ2\t\tlabel");
 	printf("\n-------------------------------------------------------------------------------------");
 	for (i = 0; i < currQuad; i++){
+
 		opcode = strdup(translateopcode((quads+i)->op));
 
-		if ((quads+i)->result == NULL ){
-			result = "";	
-		} 
-		else{
-			result = strdup((quads+i)->result->sym->name);
-		} 
-		if ((quads+i)->arg1 == NULL ) {
-			arg1 = "";
-		}
+		if ((quads+i)->result == NULL ) { result = "";} 
+		else { result = strdup((quads+i)->result->sym->name);} 
+		if ((quads+i)->arg1 == NULL ) { arg1 = "";}
+		else { arg1 = strdup((quads+i)->arg1->sym->name);}
+		if ((quads+i)->arg2 == NULL ) { arg2 = "";}
 		else {
-			arg1 = strdup((quads+i)->arg1->sym->name);
-		}
-		if ((quads+i)->arg2 == NULL ) {
-			arg2 = "";
-		}
-		else {
-			if ( (quads+i)->arg2->sym == NULL) {arg2 = strdup((quads+i)->arg2->strConst);}
-            else {arg2 = strdup((quads+i)->arg2->sym->name);}
+			if ( (quads+i)->arg2->sym == NULL) { arg2 = strdup((quads+i)->arg2->strConst);}
+            else { arg2 = strdup((quads+i)->arg2->sym->name);}
 		}
 		printf("\n%d:\t%14s\t%11s\t%11s\t%9s\t%10d", i+1, opcode, result, arg1, arg2, (quads+i)->label);
 	}
@@ -363,7 +354,10 @@ expr* emit_iftableitem(expr* e, unsigned int line){
 
 expr* make_call(expr* lv, expr* reserved_elist, unsigned int line){
 	expr* func = emit_iftableitem(lv, line);
+	printf("Entered make_call\n");
 	while(reserved_elist){
+		printf("Entered while in make_call\n");
+		printf("elist param = %s\n", reserved_elist->sym->name);
 		emit(param, reserved_elist, NULL, NULL, -1, line);
 		reserved_elist = reserved_elist->next;
 	}
