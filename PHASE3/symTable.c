@@ -88,14 +88,15 @@ void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, 
 	if(currQuad == total)
 		expand();
 
+	/*
 	printf("Entered emit\n");
 	printf("opcode = %d ", op);
 	printf("arg1: %s ", arg1->sym->name); 
-	printf("arg2: %s ", arg2->sym->name);
+	printf("arg2: %s ", arg2->index->strConst);
 	printf("result = %s ", result->sym->name);
 	printf("label = %d ", label);
 	printf("line = %d\n", line);
-
+	*/
 	quad* p = quads + currQuad++;
 	p->op = op;
 	p->arg1 = arg1;
@@ -267,38 +268,31 @@ void patchlabel(unsigned int quadNo, unsigned int label){
 void printQuads(){
 	int i;
 	char *arg1, *arg2, *result, *opcode;
-	printf("\nQuad#\t\topcode\t\tresult\t\targ1\t\targ2\t\tlabel");
+	printf("\nQuad#\topcode\t\t\tresult\t\targ1\t\targ2\t\tlabel");
 	printf("\n-------------------------------------------------------------------------------------");
 	for (i = 0; i < currQuad; i++){
-		printf("\nCurrquad = %d\n", i);
 		opcode = strdup(translateopcode((quads+i)->op));
-		printf("Opcode = %s\n", opcode);
 
 		if ((quads+i)->result == NULL ){
-			printf("result = null\n");
 			result = "";	
 		} 
 		else{
-			printf("Result not null\n");
 			result = strdup((quads+i)->result->sym->name);
 		} 
 		if ((quads+i)->arg1 == NULL ) {
-			printf("arg1 = null\n");
 			arg1 = "";
 		}
 		else {
-			printf("arg1 not null");
 			arg1 = strdup((quads+i)->arg1->sym->name);
 		}
 		if ((quads+i)->arg2 == NULL ) {
-			printf("arg2 = null\n");
 			arg2 = "";
 		}
 		else {
-			printf("arg2 not null\n");
-			arg2 = strdup((quads+i)->arg2->sym->name);
+			if ( (quads+i)->arg2->sym == NULL) {arg2 = strdup((quads+i)->arg2->strConst);}
+            else {arg2 = strdup((quads+i)->arg2->sym->name);}
 		}
-		printf("\n%d:\t\t%s\t\t%s\t\t%s\t\t%s\t\t%d", i+1, opcode, result, arg1, arg2, (quads+i)->label);
+		printf("\n%d:\t%10s \t%10s\t %10s \t%10s\t %10d", i+1, opcode, result, arg1, arg2, (quads+i)->label);
 	}
   	printf("\n");
 }
@@ -356,8 +350,9 @@ expr* newexpr_conststring(char* s){
 }
 
 expr* emit_iftableitem(expr* e, unsigned int line){
-	if(e->type != tableitem_e)
+	if(e->type != tableitem_e){
 		return e;
+	}
 	else{
 		expr* result = newexpr(var_e);
 		result->sym = newtemp();
