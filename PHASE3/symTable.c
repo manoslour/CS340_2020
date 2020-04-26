@@ -292,7 +292,7 @@ void printQuads(){
 			if ( (quads+i)->arg2->sym == NULL) {arg2 = strdup((quads+i)->arg2->strConst);}
             else {arg2 = strdup((quads+i)->arg2->sym->name);}
 		}
-		printf("\n%d:\t%10s \t%10s\t %10s \t%10s\t %10d", i+1, opcode, result, arg1, arg2, (quads+i)->label);
+		printf("\n%d:\t%12s \t%10s\t %10s \t%10s\t %10d", i+1, opcode, result, arg1, arg2, (quads+i)->label);
 	}
   	printf("\n");
 }
