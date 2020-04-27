@@ -259,7 +259,8 @@ void patchlabel(unsigned int quadNo, unsigned int label){
 void printQuads(){
 	int i;
 	char *arg1, *arg2, *result, *opcode;
-	printf("\nQuad#\t\topcode\t\tresult\t\targ1\t\targ2\t\tlabel");
+
+	printf("nQuad#\t\topcode\t\tresult\t\targ1\t\targ2\t\tlabel");
 	printf("\n-------------------------------------------------------------------------------------");
 	for (i = 0; i < currQuad; i++){
 
@@ -363,7 +364,7 @@ expr* make_call(expr* lv, expr* reserved_elist, unsigned int line){
 	return result;
 }
 
-void comperror(char* format, char* context){
+void comperror(char* format, const char* context){
 	// MUST SEE!
 	//printf("Entered Comperror\n");
 }
