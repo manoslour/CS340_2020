@@ -183,4 +183,7 @@ expr* make_call(expr* lv, expr* reserved_elist, unsigned int line);
 
 expr* newexpr_constnum(double i);
 
+void comperror(char* format, const char* context);
+
+void check_arith(expr* e, const char* context);
 #endif

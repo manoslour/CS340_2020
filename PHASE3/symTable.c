@@ -363,6 +363,22 @@ expr* make_call(expr* lv, expr* reserved_elist, unsigned int line){
 	return result;
 }
 
+void comperror(char* format, char* context){
+	// MUST SEE!
+	//printf("Entered Comperror\n");
+}
+
+void check_arith(expr* e, const char* context){
+	if(	e->type == constbool_e		||
+		e->type == conststring_e 	||
+		e->type == nil_e 			||
+		e->type == newtable_e 		||
+		e->type == programfunc_e 	||
+		e->type == libraryfunc_e 	||
+		e->type == boolexpr_e )
+		comperror("Illegal expr used in %s!", context);
+}
+
 //----------------------------------------------------------------------------------------------
 
 char* newtempfuncname(){
