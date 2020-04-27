@@ -122,10 +122,68 @@ term:		L_PAR expr R_PAR			{
 											$$->sym = newtemp();
 											emit(not, $2, NULL, $$, -1, yylineno);
 										}
-			|INCR lvalue				{	fprintf(fp, "term: INCR lvalue at line %d --> %s\n", yylineno, yytext);}
-			|lvalue INCR				{	fprintf(fp, "term: lvalue INCR at line %d --> %s\n", yylineno, yytext);}
-			|DECR lvalue				{	fprintf(fp, "term: DECR lvalue at line %d --> %s\n", yylineno, yytext);}
-			|lvalue DECR				{	fprintf(fp, "term: lvalue DECR at line %d --> %s\n", yylineno, yytext);}
+			|INCR lvalue				{	
+											fprintf(fp, "term: INCR lvalue at line %d --> %s\n", yylineno, yytext);
+											check_arith($2, "++lvalue");
+											if($2->type == tableitem_e){
+												$$ = emit_iftableitem($2, yylineno);
+												emit(add, $$, newexpr_constnum(1), $$, -1, yylineno);
+												emit(tablesetelem, $2, $2->index, $$, -1, yylineno);
+											}
+											else{
+												emit(add, $2, newexpr_constnum(1), $2, -1, yylineno);
+												$$ = newexpr(arithexpr_e);
+												$$->sym = newtemp();
+												emit(assign, $2, NULL, $$, -1, yylineno);
+											}	
+										}
+			|lvalue INCR				{	
+											fprintf(fp, "term: lvalue INCR at line %d --> %s\n", yylineno, yytext);
+											check_arith($1, "lvalue++");
+											$$ = newexpr(var_e);
+											$$->sym = newtemp();
+											if($1->type == tableitem_e){
+												expr* val = emit_iftableitem($1, yylineno);
+												emit(assign, val, NULL, $$, -1, yylineno);
+												emit(add, val, newexpr_constnum(1), val, -1, yylineno);
+												emit(tablesetelem, $1, $1->index, val, -1, yylineno);
+											}
+											else{
+												emit(assign, $1, NULL, $$, -1, yylineno);
+												emit(add, $1, newexpr_constnum(1), $1, -1, yylineno);
+											}
+										}
+			|DECR lvalue				{	
+											fprintf(fp, "term: DECR lvalue at line %d --> %s\n", yylineno, yytext);
+											check_arith($2, "--lvalue");
+											if($2->type == tableitem_e){
+												$$ = emit_iftableitem($2, yylineno);
+												emit(sub, $$, newexpr_constnum(1), $$, -1, yylineno);
+												emit(tablesetelem, $2, $2->index, $$, -1, yylineno);
+											}
+											else{
+												emit(sub, $2, newexpr_constnum(1), $2, -1, yylineno);
+												$$ = newexpr(arithexpr_e);
+												$$->sym = newtemp();
+												emit(assign, $2, NULL, $$, -1, yylineno);
+											}		
+										}
+			|lvalue DECR				{	
+											fprintf(fp, "term: lvalue DECR at line %d --> %s\n", yylineno, yytext);
+											check_arith($1, "lvalue--");
+											$$ = newexpr(var_e);
+											$$->sym = newtemp();
+											if($1->type == tableitem_e){
+												expr* val = emit_iftableitem($1, yylineno);
+												emit(assign, val, NULL, $$, -1, yylineno);
+												emit(sub, val, newexpr_constnum(1), val, -1, yylineno);
+												emit(tablesetelem, $1, $1->index, val, -1, yylineno);
+											}
+											else{
+												emit(assign, $1, NULL, $$, -1, yylineno);
+												emit(sub, $1, newexpr_constnum(1), $1, -1, yylineno);
+											}
+										}
 			|primary					{	
 											fprintf(fp, "term: primary at line %d --> %s\n", yylineno, yytext);
 											$$ = $1;	
