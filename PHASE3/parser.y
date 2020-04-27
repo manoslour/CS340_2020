@@ -224,8 +224,6 @@ call:		call L_PAR objectlist R_PAR						{	fprintf(fp, "call: (objectlist) at lin
 																		printf("tmp = %s\n", tmp->sym->name);
 																		tmp = tmp->next;
 																	}
-																	printf("Exited while\n");
-																	printf("tmp = %s\n", tmp->sym->name);
 																	tmp->next = t; //Insert as first argument(reserved, so last)
 																	tmp = $2->elist;
 																	while(tmp != NULL){
