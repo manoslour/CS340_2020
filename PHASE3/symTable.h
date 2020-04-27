@@ -181,4 +181,6 @@ void patchlabel(unsigned int quadNo, unsigned int label);
 
 expr* make_call(expr* lv, expr* reserved_elist, unsigned int line);
 
+expr* newexpr_constnum(double i);
+
 #endif

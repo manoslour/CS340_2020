@@ -87,16 +87,7 @@ void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, 
 
 	if(currQuad == total)
 		expand();
-
-	/*
-	printf("Entered emit\n");
-	printf("opcode = %d ", op);
-	printf("arg1: %s ", arg1->sym->name); 
-	printf("arg2: %s ", arg2->index->strConst);
-	printf("result = %s ", result->sym->name);
-	printf("label = %d ", label);
-	printf("line = %d\n", line);
-	*/
+		
 	quad* p = quads + currQuad++;
 	p->op = op;
 	p->arg1 = arg1;
@@ -340,6 +331,12 @@ expr* newexpr_conststring(char* s){
 	return e;
 }
 
+expr* newexpr_constnum(double i){
+	expr* e = newexpr(constnum_e);
+	e->numConst = i;
+	return e;
+}
+
 expr* emit_iftableitem(expr* e, unsigned int line){
 	if(e->type != tableitem_e){
 		return e;
@@ -365,6 +362,7 @@ expr* make_call(expr* lv, expr* reserved_elist, unsigned int line){
 	emit(getretval, NULL, NULL, result, -1, line);
 	return result;
 }
+
 //----------------------------------------------------------------------------------------------
 
 char* newtempfuncname(){
