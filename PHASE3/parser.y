@@ -138,7 +138,11 @@ primary:	lvalue					{	fprintf(fp, "primary: lvalue at line %d --> %s\n", yylinen
 									}
 			|call					{	fprintf(fp, "primary: call at line %d --> %s\n", yylineno, yytext);}
 			|objectdef				{	fprintf(fp, "primary: objectdef at line %d --> %s\n", yylineno, yytext);}
-			|L_PAR funcdef R_PAR	{	fprintf(fp, "primary: L_PAR funcdef R_PAR at line %d --> %s\n", yylineno, yytext);}
+			|L_PAR funcdef R_PAR	{	
+										fprintf(fp, "primary: L_PAR funcdef R_PAR at line %d --> %s\n", yylineno, yytext);
+										$$ = newexpr(programfunc_e);
+										$$->sym = $2;
+									}
 			|const					{	fprintf(fp, "primary: const at line %d --> %s\n", yylineno, yytext);}
 			;
 
@@ -224,6 +228,8 @@ call:		call L_PAR objectlist R_PAR						{	fprintf(fp, "call: (objectlist) at lin
 																		printf("tmp = %s\n", tmp->sym->name);
 																		tmp = tmp->next;
 																	}
+																	printf("Exited while\n");
+																	printf("tmp = %s\n", tmp->sym->name);
 																	tmp->next = t; //Insert as first argument(reserved, so last)
 																	tmp = $2->elist;
 																	while(tmp != NULL){
@@ -285,7 +291,10 @@ objectlist:	expr 													{
 																		printf("Entered objectlist: expr, objectlist\n");
 																		$1->next = $3;
 																	}
-			|														{	fprintf(fp, "objectlist: empty at line %d --> %s\n", yylineno, yytext);}
+			|														{	
+																		fprintf(fp, "objectlist: empty at line %d --> %s\n", yylineno, yytext);
+																		$$ = NULL;	
+																	}
 			;
 
 objectdef:	L_BR objectlist R_BR 			{	fprintf(fp, "objectdef: [objectlist] at line %d --> %s\n", yylineno, yytext);}
