@@ -105,14 +105,31 @@ expr:		assignexpr				{	fprintf(fp, "expr: assignexpr at line %d --> %s\n", yylin
 			|term					{	fprintf(fp, "expr: term at line %d --> %s\n", yylineno, yytext);}
 			;
 
-term:		L_PAR expr R_PAR			{	fprintf(fp, "term: L_PAR expr R_PAR at line %d --> %s\n", yylineno, yytext);}
-			|MINUS expr %prec UMINUS	{	fprintf(fp, "term: MINUS expr at line %d --> %s\n", yylineno, yytext);}
-			|NOT expr					{	fprintf(fp, "term: NOT expr at line %d --> %s\n", yylineno, yytext);}
+term:		L_PAR expr R_PAR			{	
+											fprintf(fp, "term: L_PAR expr R_PAR at line %d --> %s\n", yylineno, yytext);
+											$$ = $2;
+										}
+			|MINUS expr %prec UMINUS	{	
+											fprintf(fp, "term: MINUS expr at line %d --> %s\n", yylineno, yytext);
+											check_arith($2, "-expr");
+											$$ = newexpr(arithexpr_e);
+											$$->sym = newtemp();
+											emit(uminus, $2, NULL, $$, -1, yylineno);	
+										}
+			|NOT expr					{	
+											fprintf(fp, "term: NOT expr at line %d --> %s\n", yylineno, yytext);
+											$$ = newexpr(boolexpr_e);
+											$$->sym = newtemp();
+											emit(not, $2, NULL, $$, -1, yylineno);
+										}
 			|INCR lvalue				{	fprintf(fp, "term: INCR lvalue at line %d --> %s\n", yylineno, yytext);}
 			|lvalue INCR				{	fprintf(fp, "term: lvalue INCR at line %d --> %s\n", yylineno, yytext);}
 			|DECR lvalue				{	fprintf(fp, "term: DECR lvalue at line %d --> %s\n", yylineno, yytext);}
 			|lvalue DECR				{	fprintf(fp, "term: lvalue DECR at line %d --> %s\n", yylineno, yytext);}
-			|primary					{	fprintf(fp, "term: primary at line %d --> %s\n", yylineno, yytext);}
+			|primary					{	
+											fprintf(fp, "term: primary at line %d --> %s\n", yylineno, yytext);
+											$$ = $1;	
+										}
 			;
 
 assignexpr:	lvalue ASSIGN expr		{	
