@@ -1,2 +1,6 @@
-x = f(y)(a,b,c);
-sprite..move(dx, dy, dz, dw);
+//x = f(y)(a,b,c);
+//sprite..move(dx, dy, dz, dw);
+//x = (function(a,b){ return a; });
+//(function(){})();
+//x++;
+//t.x++;
