@@ -20,7 +20,7 @@
    unsigned int currentscope = 0;
 %}
 
-%defines
+//%defines
 
 %union{
   int intValue;
@@ -36,7 +36,7 @@
 %type <unsignedValue> funcbody
 %type <symNode> funcprefix funcdef
 %type <callNode> callsuffix normcall methodcall
-%type <exprNode> lvalue tableitem primary assignexpr call term tablemake const expr elist indexed
+%type <exprNode> lvalue tableitem primary assignexpr call term tablemake expr elist indexed const
 %token <realValue> REAL
 %token <intValue> INTEGER
 %token <stringValue> ID STRING
@@ -107,28 +107,34 @@ expr:     assignexpr            {	fprintf(fp, "expr: assignexpr at line %d --> %
 
 term:     L_PAR expr R_PAR			    {
                                       fprintf(fp, "term: L_PAR expr R_PAR at line %d --> %s\n", yylineno, yytext);
-                                      $$ = $2;
+                                      //$$ = $2;
                                     }
           |MINUS expr %prec UMINUS	{
                                       fprintf(fp, "term: MINUS expr at line %d --> %s\n", yylineno, yytext);
+                                      /*
                                       check_arith($2, "-expr");
                                       $$ = newexpr(arithexpr_e);
                                       $$->sym = newtemp();
                                       emit(uminus, $2, NULL, $$, -1, yylineno);
+                                      */
                                     }
           |NOT expr	                {
                                       fprintf(fp, "term: NOT expr at line %d --> %s\n", yylineno, yytext);
+                                      /*
                                       $$ = newexpr(boolexpr_e);
                                       $$->sym = newtemp();
                                       emit(not, $2, NULL, $$, -1, yylineno);
+                                      */
                                     }
           |INCR lvalue              {
                                       fprintf(fp, "term: INCR lvalue at line %d --> %s\n", yylineno, yytext);
+                                      /*
                                       check_arith($2, "++lvalue");
                                       if($2->type == tableitem_e){
                                         $$ = emit_iftableitem($2, yylineno);
                                         emit(add, $$, newexpr_constnum(1), $$, -1, yylineno);
                                         emit(tablesetelem, $2, $2->index, $$, -1, yylineno);
+
                                       }
                                       else{
                                         emit(add, $2, newexpr_constnum(1), $2, -1, yylineno);
@@ -136,9 +142,11 @@ term:     L_PAR expr R_PAR			    {
                                         $$->sym = newtemp();
                                         emit(assign, $2, NULL, $$, -1, yylineno);
                                       }
+                                      */
                                     }
           |lvalue INCR              {
                                       fprintf(fp, "term: lvalue INCR at line %d --> %s\n", yylineno, yytext);
+                                      /*
                                       check_arith($1, "lvalue++");
                                       $$ = newexpr(var_e);
                                       $$->sym = newtemp();
@@ -152,9 +160,11 @@ term:     L_PAR expr R_PAR			    {
                                         emit(assign, $1, NULL, $$, -1, yylineno);
                                         emit(add, $1, newexpr_constnum(1), $1, -1, yylineno);
                                       }
+                                      */
                                     }
           |DECR lvalue              {
                                       fprintf(fp, "term: DECR lvalue at line %d --> %s\n", yylineno, yytext);
+                                      /*
                                       check_arith($2, "--lvalue");
                                       if($2->type == tableitem_e){
                                         $$ = emit_iftableitem($2, yylineno);
@@ -167,9 +177,11 @@ term:     L_PAR expr R_PAR			    {
                                         $$->sym = newtemp();
                                         emit(assign, $2, NULL, $$, -1, yylineno);
                                       }
+                                      */
                                     }
           |lvalue DECR              {
                                       fprintf(fp, "term: lvalue DECR at line %d --> %s\n", yylineno, yytext);
+                                      /*
                                       check_arith($1, "lvalue--");
                                       $$ = newexpr(var_e);
                                       $$->sym = newtemp();
@@ -183,10 +195,11 @@ term:     L_PAR expr R_PAR			    {
                                         emit(assign, $1, NULL, $$, -1, yylineno);
                                         emit(sub, $1, newexpr_constnum(1), $1, -1, yylineno);
                                       }
+                                      */
                                     }
 			    |primary                  {
                                       fprintf(fp, "term: primary at line %d --> %s\n", yylineno, yytext);
-                                      $$ = $1;
+                                      //$$ = $1;
                                     }
 			    ;
 
@@ -293,12 +306,11 @@ call:	      call L_PAR elist R_PAR	  {
                                         fprintf(fp, "call: lvalue callsuffix at line %d --> %s\n", yylineno, yytext);
                                         $1 = emit_iftableitem($1, yylineno); //In case it was a table item too
                                         printf("Enterd call: lvalue callsufix\n");
-                                        expr* tmp = $2->elist;
                                         if($2->method){
                                           printf("Entered if check\n");
                                           expr* t = $1;
                                           $1 = emit_iftableitem(member_item(t, $2->name, yylineno), yylineno);
-                                          tmp = $2->elist;
+                                          expr* tmp = $2->elist;
                                           while( (tmp->next) != NULL){
                                             printf("tmp = %s\n", tmp->sym->name);
                                             tmp = tmp->next;
@@ -306,11 +318,6 @@ call:	      call L_PAR elist R_PAR	  {
                                           printf("Exited while\n");
                                           printf("tmp = %s\n", tmp->sym->name);
                                           tmp->next = t; //Insert as first argument(reserved, so last)
-                                          tmp = $2->elist;
-                                          while(tmp != NULL){
-                                            printf("elist = %s\n", tmp->sym->name);
-                                            tmp = tmp->next;
-                                          }
                                         }
                                         $$ = make_call($1, $2->elist, yylineno);
                                       }
@@ -332,7 +339,6 @@ callsuffix:	normcall          {
                                 fprintf(fp, "callsuffix: methodcall at line %d --> %s\n", yylineno, yytext);
                                 printf("Entered callsufix: methodcall\n");
                                 $$ = $1;
-                                expr* tmp = $1->elist;
                               }
 			      ;
 
@@ -347,8 +353,6 @@ normcall:	L_PAR elist R_PAR   {
 methodcall: DDOT ID L_PAR elist R_PAR {
                                         fprintf(fp, "methodcall: ..ID (elist) at line %d --> %s\n", yylineno, yytext);
                                         printf("methodcall: ..id(elist)\n");
-                                        expr* tmp = $4;
-                                        //printf("elist->next = %s\n", $4->next->sym->name);
                                         $$->elist = $4;
                                         $$->method = 1;
                                         $$->name = $2;
@@ -358,12 +362,18 @@ methodcall: DDOT ID L_PAR elist R_PAR {
 elist:      expr                {
                                   fprintf(fp, "elist: expr at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered elist: expr\n");
+                                  printf("$1 = %s\n", $1->sym->name);
                                   $$ = $1;
                                 }
 		        |expr COMMA elist 	{
 								                  fprintf(fp, "elist: expr, elist at line %d --> %s\n", yylineno, yytext);
-                                  printf("Entered elist: expr, elist\n");
-                                  $1->next = $3;
+                                  int i = 0;
+                                  expr* tmp = $3;
+                                  while(tmp->next != NULL){
+                                    tmp = tmp->next;
+                                  }
+                                  tmp->next = $1;
+                                  $$ = $3;
                                 }
  		        |					          {
 								                  fprintf(fp, "elist: empty at line %d --> %s\n", yylineno, yytext);
@@ -376,7 +386,9 @@ elist:      expr                {
                                  printf("Entered tablemake: [elist]\n");
                                  expr* t = newexpr(newtable_e);
                                  t->sym = newtemp();
+                                 printf("t->sym = %s\n", t->sym->name);
                                  emit(tablecreate, t, NULL, NULL, -1, yylineno);
+                                 printf("Elist = %s\n", $2->sym->name);
                                  for(int i = 0; $2; $2 = $2->next){
                                    emit(tablesetelem, t, newexpr_constnum(i++), $2, -1, yylineno);
                                  }

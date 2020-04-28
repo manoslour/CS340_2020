@@ -34,7 +34,7 @@ symbol* newtemp(){
 	symbol* sym;
 	char* name = strdup(newtempname());
 	sym = scopelookup(name, currscope());
-	
+
 	if(sym == NULL)
 		// !!! MUST SEE AGAIN !!!
 		return tempInsert(name, currscope());
@@ -43,23 +43,23 @@ symbol* newtemp(){
 }
 
 symbol* tempInsert(char *name, unsigned int scope){
-	
+
 	int pos = (int)*name % Buckets;
-	
+
 	ScopeListEntry *tmp = scope_head, *new_scope;
 	symbol *new_sym, *parse;
 
 	new_sym = (symbol*) malloc(sizeof(symbol));
-	new_sym->next =  NULL; 
-	new_sym->scope_next =  NULL; 
+	new_sym->next =  NULL;
+	new_sym->scope_next =  NULL;
 	new_sym->isActive = true;
-	
+
 	new_sym->name = strdup(name);
-	
+
 	scopeListInsert(new_sym,scope);
 	if (HashTable[pos] == NULL){
 		HashTable[pos] = new_sym;
-		return new_sym; 
+		return new_sym;
 	}
 	else {
 		parse = HashTable[pos];
@@ -87,7 +87,7 @@ void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, 
 
 	if(currQuad == total)
 		expand();
-		
+
 	quad* p = quads + currQuad++;
 	p->op = op;
 	p->arg1 = arg1;
@@ -129,9 +129,9 @@ symbol* lookup(char* name, unsigned int scope){
 		//printf("Currently at scope %d\n", tmpScope->scope);
 		tmpScope = tmpScope->next;
 	}
-	
+
 	found = scopelookup(name, tmpScope->scope);
-	
+
 	if(found != NULL){
 		//printf("Found in scope %d, sym_type = %d\n", tmpScope->scope, found->type);
 		return found;
@@ -161,7 +161,7 @@ symbol* scopelookup(char* name, unsigned int scope){
 		//printf("Currently at scope %d\n", tmpScope->scope);
 		tmpScope = tmpScope->next;
 	}
-	
+
 	//printf("Current scope [%d] | Given scope [%d]\n", tmpScope->scope, scope);
 	if(tmpScope->scope != scope){
 		//printf("Scope [%d] doesnt exist yet\n", scope);
@@ -220,7 +220,7 @@ void inccurrscopeoffset(){
 	}
 }
 
-void enterscopespace(){	
+void enterscopespace(){
 	++scopeSpaceCounter;
 }
 
@@ -260,14 +260,14 @@ void printQuads(){
 	int i;
 	char *arg1, *arg2, *result, *opcode;
 
-	printf("nQuad#\t\topcode\t\tresult\t\targ1\t\targ2\t\tlabel");
+	printf("\nQuad#\t\topcode\t\tresult\t\targ1\t\targ2\t\tlabel");
 	printf("\n-------------------------------------------------------------------------------------");
 	for (i = 0; i < currQuad; i++){
 
 		opcode = strdup(translateopcode((quads+i)->op));
 
-		if ((quads+i)->result == NULL ) { result = "";} 
-		else { result = strdup((quads+i)->result->sym->name);} 
+		if ((quads+i)->result == NULL ) { result = "";}
+		else { result = strdup((quads+i)->result->sym->name);}
 		if ((quads+i)->arg1 == NULL ) { arg1 = "";}
 		else { arg1 = strdup((quads+i)->arg1->sym->name);}
 		if ((quads+i)->arg2 == NULL ) { arg2 = "";}
@@ -427,13 +427,13 @@ void printErrorList(){
 }
 
 void hideScope(unsigned int scope){
-	
+
 	symbol *tmp;
 	ScopeListEntry *temp = scope_head;
-	
+
 	while (temp != NULL){
 		if (temp->scope == scope ){
-			tmp = temp->symbols; 
+			tmp = temp->symbols;
 			while (tmp != NULL) {
 				tmp->isActive = 0;
 				tmp = tmp->scope_next;
@@ -469,14 +469,14 @@ bool scopeListInsert (symbol *sym_node, unsigned int scope) {
 		new_scope->scope = scope ;
 		new_scope->next = new_scope->prev = NULL;
 		new_scope->symbols = sym_node;
-		scope_head = new_scope; 
+		scope_head = new_scope;
 		return 1;
 	}
 	else {
 		tmp = scope_head;
 		while(tmp != NULL){
 			if (tmp->scope == scope ){
-				parse = tmp->symbols; 
+				parse = tmp->symbols;
 				while(parse->scope_next != NULL) parse = parse->scope_next;
 				parse->scope_next = sym_node;
 				return 1;
@@ -488,23 +488,23 @@ bool scopeListInsert (symbol *sym_node, unsigned int scope) {
 		new_scope->scope = scope ;
 		new_scope->next = new_scope->prev = NULL;
 		new_scope->symbols = sym_node;
-		
+
 		tmp = scope_head;
 		while (tmp != NULL && tmp->scope < scope){
-			prev = tmp; 
-			tmp = tmp->next; 
+			prev = tmp;
+			tmp = tmp->next;
 		}
 		if (tmp == NULL && prev == scope_head){
-			prev->next = new_scope; 
+			prev->next = new_scope;
 			new_scope->prev = prev;
 		}
 		else if (tmp == NULL && prev != scope_head){
-			prev->next = new_scope; 
+			prev->next = new_scope;
 			new_scope->prev = prev;
 		}
 		else{
-			prev->next = new_scope; 
-			new_scope->prev = prev; 
+			prev->next = new_scope;
+			new_scope->prev = prev;
 			new_scope->next = tmp;
 			tmp->prev = new_scope;
 		}
@@ -513,28 +513,28 @@ bool scopeListInsert (symbol *sym_node, unsigned int scope) {
 }
 
 symbol* hashInsert(char *name, unsigned int scope, unsigned int line, symbol_t type, scopespace_t space, unsigned int offset){
-	
+
 	int pos = (int)*name % Buckets;
-	
+
 	ScopeListEntry *tmp = scope_head, *new_scope;
 	symbol *new_sym, *parse;
-	
+
 	new_sym = (symbol*) malloc(sizeof(symbol));
-	new_sym->next =  NULL; 
-	new_sym->scope_next =  NULL; 
+	new_sym->next =  NULL;
+	new_sym->scope_next =  NULL;
 	new_sym->isActive = true;
-	
+
 	new_sym->name = strdup(name);
 	new_sym->scope = scope;
-	new_sym->line = line; 
+	new_sym->line = line;
 	new_sym->type = type;
 	new_sym->space = space;
-	new_sym->offset = offset; 
-	
+	new_sym->offset = offset;
+
 	scopeListInsert(new_sym,scope);
 	if (HashTable[pos] == NULL){
 		HashTable[pos] = new_sym;
-		return new_sym; 
+		return new_sym;
 	}
 	else {
 		parse = HashTable[pos];
@@ -564,7 +564,7 @@ void printScopeList(){
 				,tmp->name,tmp->line,tmp->scope);
 
 			printf("\n");
-			tmp = tmp->scope_next; 
+			tmp = tmp->scope_next;
 		}
 		temp = temp->next;
 	}
