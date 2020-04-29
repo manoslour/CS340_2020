@@ -1,6 +1,19 @@
-//x = f(y)(a,b,c);
-//sprite..move(dx, dy, dz, dw);
+//y = q.a = x;
+//x = f(y)(a,b,c,d,e);
+//sprite..move(dx,dy,dz,dw,dq);
 //x = (function(a,b){ return a; });
 //(function(){})();
 //x++;
 //t.x++;
+//t = [-4, 13, 12.34, a+b];
+//t = [{"x":0}, {"y":1}];
+//t.a.b = c.d.e=f.g.h;
+//function foo (a,b) { };
+//f(1,2);
+//f(a(1), b(2, 3));
+//test().x = 1;
+//a = x--;
+//a = t.x++;
+//++x;
+//a = ++t.x;
+//a = --t.x.y
