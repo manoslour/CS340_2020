@@ -36,7 +36,7 @@
 %type <unsignedValue> funcbody
 %type <symNode> funcprefix funcdef
 %type <callNode> callsuffix normcall methodcall
-%type <exprNode> lvalue tableitem primary assignexpr call term tablemake expr elist indexed const
+%type <exprNode> lvalue tableitem primary assignexpr call term tablemake expr elist indexed indexedelem const
 %token <realValue> REAL
 %token <intValue> INTEGER
 %token <stringValue> ID STRING
@@ -397,14 +397,41 @@ elist:      expr                { fprintf(fp, "elist: expr at line %d --> %s\n",
                                }
  				      |L_BR indexed R_BR {
 					 							           fprintf(fp, "tablemake: [indexed] at line %d --> %s\n", yylineno, yytext);
+                                   printf("Entered tablemake[indexed]\n");
+                                   expr* t = newexpr(newtable_e);
+                                   t->sym = newtemp();
+                                   expr* tmp = $2;
+                                   emit(tablecreate, t, NULL, NULL, -1, yylineno);
+                                   while(tmp != NULL){
+                                     emit(tablesetelem, t, tmp->index, tmp, -1, yylineno);
+                                     tmp = tmp->next;
+                                   }
+                                   $$ = t;
                                  }
 				      ;
 
-indexed:	    indexedelem                 { fprintf(fp, "indexed: indexedelem at line %d --> %s\n", yylineno, yytext);}
-			        |indexedelem COMMA indexed  {	fprintf(fp, "indexed: indexedelem, indexed at line %d --> %s\n", yylineno, yytext);}
+indexed:	    indexedelem                 {
+                                            fprintf(fp, "indexed: indexedelem at line %d --> %s\n", yylineno, yytext);
+                                            printf("Entered indexed: indexelem\n");
+                                            //printf("indexedelem($1) = %s\n", $1->strConst);
+                                            //printf("index = %d\n",(int)$1->index->numConst);
+                                          }
+			        |indexedelem COMMA indexed  {
+                                            fprintf(fp, "indexed: indexedelem, indexed at line %d --> %s\n", yylineno, yytext);
+                                            printf("Entered indexed: indexelem, indexed\n");
+                                            //printf("indexedelem($1) = %s\n", $1->strConst);
+                                            $1->next = $3;
+                                          }
 			        ;
 
-indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR { fprintf(fp, "indexedelem: {expr:expr} at line %d --> %s\n", yylineno, yytext);}
+indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR {
+                                                    fprintf(fp, "indexedelem: {expr:expr} at line %d --> %s\n", yylineno, yytext);
+                                                    printf("Entered indexedelem: {expr:expr}\n");
+                                                    //printf("expr($2) = %s\n", $2->strConst);
+                                                    //printf("index($4) = %d\n", (int)$4->numConst);
+                                                    $2->index = $4;
+                                                    $$ = $2;
+                                                  }
 				      ;
 
 block:        LCURLY_BR	  {
@@ -491,7 +518,10 @@ const: REAL 		{
                   printf("REAL($1) = %d\n", $1);
                   $$ = newexpr_constnum($1);
                 }
-       |STRING 	{	fprintf(fp, "const: FLEX_STRING at line %d --> %s\n", yylineno, yytext);}
+       |STRING 	{
+                  fprintf(fp, "const: FLEX_STRING at line %d --> %s\n", yylineno, yytext);
+                  $$ = newexpr_conststring($1);
+                }
        |NIL		  {	fprintf(fp, "const: NIL at line %d --> %s\n", yylineno, yytext);}
        |TRUE		{	fprintf(fp, "const: TRUE at line %d --> %s\n", yylineno, yytext);}
        |FALSE 	{	fprintf(fp, "const: FALSE at line %d --> %s\n", yylineno, yytext);}
