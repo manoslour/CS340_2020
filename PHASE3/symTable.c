@@ -260,8 +260,6 @@ void printQuads(){
 	int i;
 	char *arg1, *arg2, *result, *opcode;
 
-	printf("currQuad = %d\n", currQuad);
-
 	printf("\nQuad#\t\topcode\t\tresult\t\targ1\t\targ2\t\tlabel");
 	printf("\n-------------------------------------------------------------------------------------");
 	for (i = 0; i < currQuad; i++){
@@ -298,8 +296,9 @@ void printQuads(){
 						printf("%9d\t", (int)(quads+i)->arg1->boolConst); break;
 					case conststring_e:
 						printf("%9s\t", (quads+i)->arg1->strConst); break;
+					default:
+						printf("Unknown case\n");
 				}
-				printf("arg1->sym = null\n");
 			}
 			else
 				printf("%11s\t", (quads+i)->arg1->sym->name);
@@ -312,10 +311,10 @@ void printQuads(){
 				switch ((quads+i)->arg2->type) {
 					case constnum_e:
 						printf("%9d\t", (int)(quads+i)->arg2->numConst); break;
-						case constbool_e:
-							printf("%9d\t", (int)(quads+i)->arg2->boolConst); break;
-						case conststring_e:
-							printf("%9s\t", (quads+i)->arg2->strConst); break;
+					case constbool_e:
+						printf("%9d\t", (int)(quads+i)->arg2->boolConst); break;
+					case conststring_e:
+						printf("%9s\t", (quads+i)->arg2->strConst); break;
 				}
 			}
 			else
@@ -326,7 +325,6 @@ void printQuads(){
 			printf("%10s", "");
 		else
 			printf("%10d", (quads+i)->label);
-
 		}
   printf("\n\n\n");
 }
