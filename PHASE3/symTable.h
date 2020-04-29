@@ -14,14 +14,17 @@
 #define Buckets 256
 #define EXPAND_SIZE 1024
 #define CURR_SIZE (total * sizeof(quad))
-#define NEW_SIZE (EXPAND_SIZE * sizeof(quad) + CURR_SIZE)	
+#define NEW_SIZE (EXPAND_SIZE * sizeof(quad) + CURR_SIZE)
 
-typedef enum { 
-	Global, 
-	Local, 
-	Formal, 
-	Userfunc, 
-	Libfunc 
+
+
+
+typedef enum {
+	Global,
+	Local,
+	Formal,
+	Userfunc,
+	Libfunc
 }SymbolType;
 
 typedef enum {
@@ -33,7 +36,7 @@ typedef enum {
 	if_greater,		call,			param,
 	ret,			getretval,		funcstart,
 	funcend,		tablecreate,	tablegetelem,
-	tablesetelem 
+	tablesetelem, jump
 }iopcode;
 
 typedef enum {
@@ -51,10 +54,10 @@ typedef enum {
     conststring_e,	nil_e
 }expr_t;
 
-typedef enum { 
-	var_s, 
-	programfunc_s, 
-	libraryfunc_s 
+typedef enum {
+	var_s,
+	programfunc_s,
+	libraryfunc_s
 }symbol_t;
 
 typedef struct expr {
@@ -74,22 +77,29 @@ typedef struct quad {
 	struct expr* arg2;
 	unsigned int label;
 	unsigned int line;
-	struct quad *next;
 }quad;
 
 
-//sthn insert ta vazw me auth th seira
+quad* quads; 
+
 typedef struct symbol {
 	char *name;
 	bool isActive;
 	unsigned int scope;
 	unsigned int line;
-	
+	unsigned int iaddress;
 	symbol_t type;
 	scopespace_t space;
 	unsigned int offset;
-	struct symbol *next, *scope_next; 
+	unsigned int totalLocals;
+	struct symbol *next, *scope_next;
 }symbol;
+
+typedef struct call {
+	expr* elist;
+	unsigned char method;
+	char* name;
+}callStr;
 
 typedef struct ScopeListEntry {
 	unsigned int scope;
@@ -107,10 +117,18 @@ struct errorToken {
 
 void expand();
 
+void resettemp();
+
+void printQuads();
+
+symbol* newtemp();
+
+char* newtempname();
+
 void initialize();
 
 void printScopeList();
- 
+
 void printErrorList();
 
 bool hide (int scope);
@@ -119,33 +137,65 @@ void exitscopespace();
 
 void enterscopespace();
 
+char* newtempfuncname();
+
+expr* newexpr(expr_t t);
+
 bool enable (int scope );
 
 void inccurrscopeoffset();
 
 scopespace_t currscopespace();
 
+expr* lvalue_expr(symbol* sym);
+
 unsigned int currscopeoffset();
 
-char* generateName(int nameCount);
+expr* newexpr_constbool (unsigned int b);
+
+void patchlabel (unsigned quadNo, unsigned label);
+
+expr* newexpr_conststring(char* s);
 
 void hideScope(unsigned int scope);
 
-int findInFunc(char *name, unsigned int scope);
-
-// int scopeLookUp(char *name, unsigned int scope);
-
-// int generalLookUp(char *name, unsigned int scope);
+char* translateopcode(iopcode opcode);
 
 symbol* lookup(char* name, unsigned int scope);
 
-void addError(char *output, char *content, unsigned int numLine);
+expr* emit_iftableitem(expr* e, unsigned int line);
+
+symbol* scopelookup(char* name, unsigned int scope);
 
 bool scopeListInsert (symbol *sym_node, unsigned int scope);
 
-// bool insertFormal(symbol *funcname, symbol *formalEntry);
+expr* member_item (expr* lv, char* name, unsigned int line);
+
+void addError(char *output, char *content, unsigned int numLine);
 
 void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, unsigned int line);
 
-symbol* hashInsert(char *name, unsigned int scope, unsigned int line, symbol_t extratype, scopespace_t space, unsigned int offset);
+symbol* tempInsert(char *name, unsigned int scope);
+
+symbol* hashInsert(char *name, unsigned int scope, unsigned int line, symbol_t type, scopespace_t space, unsigned int offset);
+
+void resetformalargsoffset();
+
+void resetfunctionlocalsoffset();
+
+void restorecurrscopeoffset(unsigned int n);
+
+unsigned nextquad (void);
+
+unsigned int nextquadlabel();
+
+void patchlabel(unsigned int quadNo, unsigned int label);
+
+expr* make_call(expr* lv, expr* reserved_elist, unsigned int line);
+
+expr* newexpr_constnum(double i);
+
+void comperror(char* format, const char* context);
+
+void check_arith(expr* e, const char* context);
 #endif

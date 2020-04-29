@@ -119,8 +119,8 @@ LINE_COMMENT "//".*
 {DOT}           {return DOT;}
 {DDOT}          {return DDOT;}
 
-{INTEGER}       {   
-                    yylval.intValue = atoi(yytext); 
+{INTEGER}       {
+                    yylval.intValue = atoi(yytext);
                     return INTEGER;
                 }
 
@@ -129,7 +129,7 @@ LINE_COMMENT "//".*
                     return REAL;
                 }
 
-{ID}            {   
+{ID}            {
                     yylval.stringValue = strdup(yytext);
                     return ID;
                 }
@@ -145,13 +145,13 @@ LINE_COMMENT "//".*
             BEGIN(COMMENT);
         }
 
-<COMMENT>[^/*]* 
+<COMMENT>[^/*]*
 <COMMENT>"/"+[^*/]*
 <COMMENT>"/"+"*"    {   nested++;
                         nestedStartLine = yylineno;
                     }
 <COMMENT>"*"+[^*/]*
-<COMMENT>"*"+"/"    {   
+<COMMENT>"*"+"/"    {
                         nested--;
 
                         char start[BUFFERSIZE];
@@ -162,14 +162,14 @@ LINE_COMMENT "//".*
 
                             snprintf(start, sizeof(start), "%d", startLine);
                             snprintf(end, sizeof(end), "%d", yylineno);
-                            
+
                             comm_content = strcat(start, "-");
                             comm_content = strcat(comm_content, end);
 
                             //addToken(startLine, ++tokenNum, comm_content, "COMMENT", "BLOCK COMMENT", "<-enumerated");
 
                             BEGIN(INITIAL);
-                            
+
                         }else{
 
                             snprintf(start, sizeof(start), "%d", nestedStartLine);
@@ -186,7 +186,7 @@ LINE_COMMENT "//".*
                         //return -1;
                     }
 
-"\""   {    
+"\""   {
             stringSize = strlen(yytext);
             buffer = (char *)malloc(stringSize * sizeof(char));
             strcpy(buffer, yytext);
@@ -199,11 +199,11 @@ LINE_COMMENT "//".*
                             buffer = realloc(buffer, stringSize);
                             strcat(buffer, yytext);
                         }
-<FLEX_STRING>"\n"            {   
+<FLEX_STRING>"\n"            {
                             flag=1;
                             stringSize = stringSize + strlen(yytext);
                             buffer = realloc(buffer, stringSize);
-                            strcat(buffer, "\n"); 
+                            strcat(buffer, "\n");
 
                         }
 <FLEX_STRING>"\\\""          {
@@ -211,12 +211,12 @@ LINE_COMMENT "//".*
                             buffer = realloc(buffer, stringSize);
                             strcat(buffer, "\"");
                         }
-<FLEX_STRING>"\\n"           {   
+<FLEX_STRING>"\\n"           {
                             stringSize = stringSize + strlen(yytext);
                             buffer = realloc(buffer, stringSize);
-                            strcat(buffer, "\n"); 
+                            strcat(buffer, "\n");
 
-                        }        
+                        }
 <FLEX_STRING>"\\t"           {
                             stringSize = stringSize + strlen(yytext);
                             buffer = realloc(buffer, stringSize);
@@ -229,7 +229,7 @@ LINE_COMMENT "//".*
                         }
 <FLEX_STRING>"\\".           {   addError(YEL"Warning\x1B[0m \tInvalid Escape Character", yytext, yylineno);}
 
-<FLEX_STRING>"\""            { 
+<FLEX_STRING>"\""            {
                             stringSize = stringSize + strlen(yytext);
                             buffer = realloc(buffer, stringSize);
                             strcat(buffer, yytext);
