@@ -107,28 +107,23 @@ expr:     assignexpr            {	fprintf(fp, "expr: assignexpr at line %d --> %
 
 term:     L_PAR expr R_PAR			    {
                                       fprintf(fp, "term: L_PAR expr R_PAR at line %d --> %s\n", yylineno, yytext);
-                                      //$$ = $2;
+                                      $$ = $2;
                                     }
           |MINUS expr %prec UMINUS	{
                                       fprintf(fp, "term: MINUS expr at line %d --> %s\n", yylineno, yytext);
-                                      /*
                                       check_arith($2, "-expr");
                                       $$ = newexpr(arithexpr_e);
                                       $$->sym = newtemp();
                                       emit(uminus, $2, NULL, $$, -1, yylineno);
-                                      */
                                     }
           |NOT expr	                {
                                       fprintf(fp, "term: NOT expr at line %d --> %s\n", yylineno, yytext);
-                                      /*
                                       $$ = newexpr(boolexpr_e);
                                       $$->sym = newtemp();
                                       emit(not, $2, NULL, $$, -1, yylineno);
-                                      */
                                     }
           |INCR lvalue              {
                                       fprintf(fp, "term: INCR lvalue at line %d --> %s\n", yylineno, yytext);
-                                      /*
                                       check_arith($2, "++lvalue");
                                       if($2->type == tableitem_e){
                                         $$ = emit_iftableitem($2, yylineno);
@@ -142,11 +137,9 @@ term:     L_PAR expr R_PAR			    {
                                         $$->sym = newtemp();
                                         emit(assign, $2, NULL, $$, -1, yylineno);
                                       }
-                                      */
                                     }
           |lvalue INCR              {
                                       fprintf(fp, "term: lvalue INCR at line %d --> %s\n", yylineno, yytext);
-                                      /*
                                       check_arith($1, "lvalue++");
                                       $$ = newexpr(var_e);
                                       $$->sym = newtemp();
@@ -160,11 +153,9 @@ term:     L_PAR expr R_PAR			    {
                                         emit(assign, $1, NULL, $$, -1, yylineno);
                                         emit(add, $1, newexpr_constnum(1), $1, -1, yylineno);
                                       }
-                                      */
                                     }
           |DECR lvalue              {
                                       fprintf(fp, "term: DECR lvalue at line %d --> %s\n", yylineno, yytext);
-                                      /*
                                       check_arith($2, "--lvalue");
                                       if($2->type == tableitem_e){
                                         $$ = emit_iftableitem($2, yylineno);
@@ -177,11 +168,9 @@ term:     L_PAR expr R_PAR			    {
                                         $$->sym = newtemp();
                                         emit(assign, $2, NULL, $$, -1, yylineno);
                                       }
-                                      */
                                     }
           |lvalue DECR              {
                                       fprintf(fp, "term: lvalue DECR at line %d --> %s\n", yylineno, yytext);
-                                      /*
                                       check_arith($1, "lvalue--");
                                       $$ = newexpr(var_e);
                                       $$->sym = newtemp();
@@ -195,11 +184,10 @@ term:     L_PAR expr R_PAR			    {
                                         emit(assign, $1, NULL, $$, -1, yylineno);
                                         emit(sub, $1, newexpr_constnum(1), $1, -1, yylineno);
                                       }
-                                      */
                                     }
 			    |primary                  {
                                       fprintf(fp, "term: primary at line %d --> %s\n", yylineno, yytext);
-                                      //$$ = $1;
+                                      $$ = $1;
                                     }
 			    ;
 
@@ -233,7 +221,7 @@ primary:    lvalue                { fprintf(fp, "primary: lvalue at line %d --> 
 			      |const					      {
                                     fprintf(fp, "primary: const at line %d --> %s\n", yylineno, yytext);
                                     printf("Enter primary: const\n");
-                                    printf("cosnt($1) %f\n", $1->numConst);
+                                    //printf("cosnt($1) %f\n", $1->numConst);
                                     $$ = $1;
                                   }
 			      ;
@@ -312,12 +300,12 @@ call:	      call L_PAR elist R_PAR	  {
                                         $1 = emit_iftableitem($1, yylineno); //In case it was a table item too
                                         printf("Enterd call: lvalue callsufix\n");
                                         if($2->method){
-                                          printf("Entered if check\n");
+                                          //printf("Entered if check\n");
                                           expr* t = $1;
                                           $1 = emit_iftableitem(member_item(t, $2->name, yylineno), yylineno);
                                           expr* tmp = $2->elist;
                                           while( (tmp->next) != NULL){
-                                            printf("tmp = %s\n", tmp->sym->name);
+                                            //printf("tmp = %s\n", tmp->sym->name);
                                             tmp = tmp->next;
                                           }
                                           tmp->next = t; //Insert as first argument(reserved, so last)
@@ -398,12 +386,13 @@ elist:      expr                { fprintf(fp, "elist: expr at line %d --> %s\n",
  				      |L_BR indexed R_BR {
 					 							           fprintf(fp, "tablemake: [indexed] at line %d --> %s\n", yylineno, yytext);
                                    printf("Entered tablemake[indexed]\n");
+                                   //printf("{%s:%d}\n", $2->strConst, (int)$2->index->numConst);
                                    expr* t = newexpr(newtable_e);
                                    t->sym = newtemp();
                                    expr* tmp = $2;
                                    emit(tablecreate, t, NULL, NULL, -1, yylineno);
                                    while(tmp != NULL){
-                                     emit(tablesetelem, t, tmp->index, tmp, -1, yylineno);
+                                     emit(tablesetelem, tmp, tmp->index, t, -1, yylineno);
                                      tmp = tmp->next;
                                    }
                                    $$ = t;
@@ -413,6 +402,7 @@ elist:      expr                { fprintf(fp, "elist: expr at line %d --> %s\n",
 indexed:	    indexedelem                 {
                                             fprintf(fp, "indexed: indexedelem at line %d --> %s\n", yylineno, yytext);
                                             printf("Entered indexed: indexelem\n");
+                                            $$ = $1;
                                             //printf("indexedelem($1) = %s\n", $1->strConst);
                                             //printf("index = %d\n",(int)$1->index->numConst);
                                           }
@@ -427,8 +417,7 @@ indexed:	    indexedelem                 {
 indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR {
                                                     fprintf(fp, "indexedelem: {expr:expr} at line %d --> %s\n", yylineno, yytext);
                                                     printf("Entered indexedelem: {expr:expr}\n");
-                                                    //printf("expr($2) = %s\n", $2->strConst);
-                                                    //printf("index($4) = %d\n", (int)$4->numConst);
+                                                    //printf("{%s:%d}\n", $2->strConst, (int)$4->numConst);
                                                     $2->index = $4;
                                                     $$ = $2;
                                                   }
