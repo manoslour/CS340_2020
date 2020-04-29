@@ -230,7 +230,12 @@ primary:    lvalue                { fprintf(fp, "primary: lvalue at line %d --> 
                                     $$ = newexpr(programfunc_e);
                                     $$->sym = $2;
                                   }
-			      |const					      { fprintf(fp, "primary: const at line %d --> %s\n", yylineno, yytext);}
+			      |const					      {
+                                    fprintf(fp, "primary: const at line %d --> %s\n", yylineno, yytext);
+                                    printf("Enter primary: const\n");
+                                    printf("cosnt($1) %f\n", $1->numConst);
+                                    $$ = $1;
+                                  }
 			      ;
 
 lvalue:     ID          {
@@ -315,8 +320,6 @@ call:	      call L_PAR elist R_PAR	  {
                                             printf("tmp = %s\n", tmp->sym->name);
                                             tmp = tmp->next;
                                           }
-                                          printf("Exited while\n");
-                                          printf("tmp = %s\n", tmp->sym->name);
                                           tmp->next = t; //Insert as first argument(reserved, so last)
                                         }
                                         $$ = make_call($1, $2->elist, yylineno);
@@ -359,21 +362,18 @@ methodcall: DDOT ID L_PAR elist R_PAR {
                                       }
 				    ;
 
-elist:      expr                {
-                                  fprintf(fp, "elist: expr at line %d --> %s\n", yylineno, yytext);
-                                  printf("Entered elist: expr\n");
-                                  printf("$1 = %s\n", $1->sym->name);
-                                  $$ = $1;
-                                }
+elist:      expr                { fprintf(fp, "elist: expr at line %d --> %s\n", yylineno, yytext);}
 		        |expr COMMA elist 	{
 								                  fprintf(fp, "elist: expr, elist at line %d --> %s\n", yylineno, yytext);
-                                  int i = 0;
+                                  $1->next = $3;
+                                  /*
                                   expr* tmp = $3;
                                   while(tmp->next != NULL){
                                     tmp = tmp->next;
                                   }
                                   tmp->next = $1;
                                   $$ = $3;
+                                  */
                                 }
  		        |					          {
 								                  fprintf(fp, "elist: empty at line %d --> %s\n", yylineno, yytext);
@@ -384,13 +384,14 @@ elist:      expr                {
  tablemake:		L_BR elist R_BR  {
                                  fprintf(fp, "tablemake: [elist] at line %d --> %s\n", yylineno, yytext);
                                  printf("Entered tablemake: [elist]\n");
+                                 int i = 0;
+                                 expr* tmp = $2;
                                  expr* t = newexpr(newtable_e);
                                  t->sym = newtemp();
-                                 printf("t->sym = %s\n", t->sym->name);
                                  emit(tablecreate, t, NULL, NULL, -1, yylineno);
-                                 printf("Elist = %s\n", $2->sym->name);
-                                 for(int i = 0; $2; $2 = $2->next){
-                                   emit(tablesetelem, t, newexpr_constnum(i++), $2, -1, yylineno);
+                                 while(tmp != NULL){
+                                   emit(tablesetelem, t, newexpr_constnum(i++), tmp, -1, yylineno);
+                                   tmp = tmp->next;
                                  }
                                  $$ = t;
                                }
@@ -478,8 +479,18 @@ funcbody:     block	{
                     }
 				      ;
 
-const: REAL 		{	fprintf(fp, "const: REAL at line %d --> %s\n", yylineno, yytext);}
-			 |INTEGER	{	fprintf(fp, "const: INTEGER at line %d --> %s\n", yylineno, yytext);}
+const: REAL 		{
+                  fprintf(fp, "const: REAL at line %d --> %s\n", yylineno, yytext);
+                  printf("const: REAL\n");
+                  printf("REAL($1) = %f\n", $1);
+                  $$ = newexpr_constnum($1);
+                }
+			 |INTEGER	{
+                  fprintf(fp, "const: INTEGER at line %d --> %s\n", yylineno, yytext);
+                  printf("const: INTEGER\n");
+                  printf("REAL($1) = %d\n", $1);
+                  $$ = newexpr_constnum($1);
+                }
        |STRING 	{	fprintf(fp, "const: FLEX_STRING at line %d --> %s\n", yylineno, yytext);}
        |NIL		  {	fprintf(fp, "const: NIL at line %d --> %s\n", yylineno, yytext);}
        |TRUE		{	fprintf(fp, "const: TRUE at line %d --> %s\n", yylineno, yytext);}
