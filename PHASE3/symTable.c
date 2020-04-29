@@ -260,24 +260,75 @@ void printQuads(){
 	int i;
 	char *arg1, *arg2, *result, *opcode;
 
+	printf("currQuad = %d\n", currQuad);
+
 	printf("\nQuad#\t\topcode\t\tresult\t\targ1\t\targ2\t\tlabel");
 	printf("\n-------------------------------------------------------------------------------------");
 	for (i = 0; i < currQuad; i++){
-
 		opcode = strdup(translateopcode((quads+i)->op));
+		printf("\n%d:\t%14s\t", i+1, opcode);
 
-		if ((quads+i)->result == NULL ) { result = "";}
-		else { result = strdup((quads+i)->result->sym->name);}
-		if ((quads+i)->arg1 == NULL ) { arg1 = "";}
-		else { arg1 = strdup((quads+i)->arg1->sym->name);}
-		if ((quads+i)->arg2 == NULL ) { arg2 = "";}
-		else {
-			if ( (quads+i)->arg2->sym == NULL) { arg2 = strdup((quads+i)->arg2->strConst);}
-            else { arg2 = strdup((quads+i)->arg2->sym->name);}
+		if ((quads+i)->result == NULL )
+			printf("%11s\t", "");
+		else{
+			if((quads+i)->result->sym == NULL){
+				switch((quads+i)->result->type){
+					case constnum_e:
+						printf("%11d\t", (int)(quads+i)->result->numConst); break;
+					case conststring_e:
+						printf("%11s\t", (quads+i)->result->strConst); break;
+					case constbool_e:
+						printf("%11c\t", (quads+i)->result->boolConst); break;
+					default:
+						printf("Unknown case\n");
+				}
+			}
+			else
+				printf("%11s\t", (quads+i)->result->sym->name);
 		}
-		printf("\n%d:\t%14s\t%11s\t%11s\t%9s\t%10d", i+1, opcode, result, arg1, arg2, (quads+i)->label);
-	}
-  	printf("\n\n\n");
+
+		if((quads+i)->arg1 ==  NULL)
+			printf("%11s\t", "");
+		else{
+			if((quads+i)->arg1->sym == NULL){
+				switch ((quads+i)->arg1->type) {
+					case constnum_e:
+						printf("%9d\t", (int)(quads+i)->arg1->numConst); break;
+					case constbool_e:
+						printf("%9d\t", (int)(quads+i)->arg1->boolConst); break;
+					case conststring_e:
+						printf("%9s\t", (quads+i)->arg1->strConst); break;
+				}
+				printf("arg1->sym = null\n");
+			}
+			else
+				printf("%11s\t", (quads+i)->arg1->sym->name);
+		}
+
+		if((quads+i)->arg2 ==  NULL)
+			printf("%11s\t", "");
+		else{
+			if((quads+i)->arg2->sym == NULL){
+				switch ((quads+i)->arg2->type) {
+					case constnum_e:
+						printf("%9d\t", (int)(quads+i)->arg2->numConst); break;
+						case constbool_e:
+							printf("%9d\t", (int)(quads+i)->arg2->boolConst); break;
+						case conststring_e:
+							printf("%9s\t", (quads+i)->arg2->strConst); break;
+				}
+			}
+			else
+				printf("arg2 = %11s\t", (quads+i)->arg2->sym->name);
+		}
+
+		if((quads+i)->label == -1)
+			printf("%10s", "");
+		else
+			printf("%10d", (quads+i)->label);
+
+		}
+  printf("\n\n\n");
 }
 
 char* translateopcode(iopcode opcode){
