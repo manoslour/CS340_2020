@@ -154,12 +154,90 @@ expr:     assignexpr            {	fprintf(fp, "expr: assignexpr at line %d --> %
                                     emit(mod, $1, $3, $$, -1, yylineno);
                                   }
                                 }
-          |expr GREATER expr		{	fprintf(fp, "expr: expr GREATER expr at line %d --> %s\n", yylineno, yytext);}
-          |expr GREATER_EQ expr	{	fprintf(fp, "expr: expr GREATER_EQ expr at line %d --> %s\n", yylineno, yytext);}
-          |expr LESS expr       {	fprintf(fp, "expr: expr LESS expr at line %d --> %s\n", yylineno, yytext);}
-          |expr LESS_EQ expr		{	fprintf(fp, "expr: expr LESS_EQ expr at line %d --> %s\n", yylineno, yytext);}
-          |expr EQUAL expr      {	fprintf(fp, "expr: expr EQUAL expr at line %d --> %s\n", yylineno, yytext);}
-          |expr NOT_EQUAL expr  {	fprintf(fp, "expr: expr NOT_EQUAL expr at line %d --> %s\n", yylineno, yytext);}
+          |expr GREATER expr		{
+                                  fprintf(fp, "expr: expr GREATER expr at line %d --> %s\n", yylineno, yytext);
+                                  if(illegalop($1, $3))
+                                    addError("Error, illegal boolean operation", "", yylineno);
+                                  else{
+                                    $$ = newexpr(boolexpr_e);
+                                    $$->sym = newtemp();
+
+                                    emit(if_greater, $1, $3, NULL, nextquad()+3, yylineno);
+                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                    emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
+                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
+                                  }
+                                }
+          |expr GREATER_EQ expr	{
+                                  fprintf(fp, "expr: expr GREATER_EQ expr at line %d --> %s\n", yylineno, yytext);
+                                  if(illegalop($1, $3))
+                                    addError("Error, illegal boolean operation", "", yylineno);
+                                  else{
+                                    $$ = newexpr(boolexpr_e);
+                                    $$->sym = newtemp();
+
+                                    emit(if_greatereq, $1, $3, NULL, nextquad()+3, yylineno);
+                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                    emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
+                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
+                                  }
+                                }
+          |expr LESS expr       {
+                                  fprintf(fp, "expr: expr LESS expr at line %d --> %s\n", yylineno, yytext);
+                                  if(illegalop($1, $3))
+                                    addError("Error, illegal boolean operation", "", yylineno);
+                                  else{
+                                    $$ = newexpr(boolexpr_e);
+                                    $$->sym = newtemp();
+
+                                    emit(if_less, $1, $3, NULL, nextquad()+3, yylineno);
+                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                    emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
+                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
+                                  }
+                                }
+          |expr LESS_EQ expr		{
+                                  fprintf(fp, "expr: expr LESS_EQ expr at line %d --> %s\n", yylineno, yytext);
+                                  if(illegalop($1, $3))
+                                    addError("Error, illegal boolean operation", "", yylineno);
+                                  else{
+                                    $$ = newexpr(boolexpr_e);
+                                    $$->sym = newtemp();
+
+                                    emit(if_lesseq, $1, $3, NULL, nextquad()+3, yylineno);
+                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                    emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
+                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
+                                  }
+                                }
+          |expr EQUAL expr      {
+                                  fprintf(fp, "expr: expr EQUAL expr at line %d --> %s\n", yylineno, yytext);
+                                  if(illegalop($1, $3))
+                                    addError("Error, illegal boolean operation", "", yylineno);
+                                  else{
+                                    $$ = newexpr(boolexpr_e);
+                                    $$->sym = newtemp();
+
+                                    emit(if_eq, $1, $3, NULL, nextquad()+3, yylineno);
+                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                    emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
+                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
+                                  }
+                                }
+          |expr NOT_EQUAL expr  {
+                                  fprintf(fp, "expr: expr NOT_EQUAL expr at line %d --> %s\n", yylineno, yytext);
+                                  if(illegalop($1, $3))
+                                    addError("Error, illegal boolean operation", "", yylineno);
+                                  else{
+                                    $$ = newexpr(boolexpr_e);
+                                    $$->sym = newtemp();
+
+                                    emit(if_noteq, $1, $3, NULL, nextquad()+3, yylineno);
+                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                    emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
+                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
+                                  }
+                                }
           |expr AND expr        {	fprintf(fp, "expr: expr AND expr at line %d --> %s\n", yylineno, yytext);}
           |expr OR expr			    {	fprintf(fp, "expr: expr OR expr at line %d --> %s\n", yylineno, yytext);}
           |term					        {	fprintf(fp, "expr: term at line %d --> %s\n", yylineno, yytext);}
