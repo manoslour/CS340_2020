@@ -21,3 +21,10 @@
 //a = (x+y)-(z*w);
 //a = x>=y;
 //b = f()>=g();
+//a = x || y && z;
+//if(x+y >= z-w)
+    //f(x,y,z);
+if(a || b)
+    x = y;
+else
+    y = z;

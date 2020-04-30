@@ -33,12 +33,12 @@
 }
 
 %type <stringValue> funcname
-%type <unsignedValue> funcbody
 %type <symNode> funcprefix funcdef
 %type <callNode> callsuffix normcall methodcall
+%type <unsignedValue> funcbody ifprefix elseprefix
 %type <exprNode> lvalue tableitem primary assignexpr call term tablemake expr elist indexed indexedelem const
 %token <realValue> REAL
-%token <intValue> INTEGER
+%token <intValue> INTEGER 
 %token <stringValue> ID STRING
 %token IF ELSE WHILE FOR FUNCTION RETURN BREAK CONTINUE AND NOT OR LOCAL TRUE FALSE NIL
 %token ASSIGN PLUS MINUS MULT DIV MOD EQUAL NOT_EQUAL INCR DECR GREATER LESS GREATER_EQ LESS_EQ
@@ -240,23 +240,25 @@ expr:     assignexpr            {	fprintf(fp, "expr: assignexpr at line %d --> %
                                   }
                                 }
           |expr AND expr        {
-            	                    fprintf(fp, "expr: expr AND expr at line %d --> %s\n", yylineno, yytext);
+                                  fprintf(fp, "expr: expr AND expr at line %d --> %s\n", yylineno, yytext);
                                   if(illegalop($1, $3))
-                                    addError("Error, illegal boolean operation", "", yylineno);
+                                    //MUST FIX FOR BOOLOP!
+                                    addError("Error, illegal real operation", "", yylineno);
                                   else{
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = newtemp();
-                                    emit(and, $1, $3, $$, -1, yylineno );
+                                    emit(and, $1, $3, $$, -1, yylineno);
                                   }
                                 }
           |expr OR expr			    {
                                   fprintf(fp, "expr: expr OR expr at line %d --> %s\n", yylineno, yytext);
                                   if(illegalop($1, $3))
-                                    addError("Error, illegal boolean operation", "", yylineno);
+                                    //MUST FIX FOR BOOLOP!
+                                    addError("Error, illegal real operation", "", yylineno);
                                   else{
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = newtemp();
-                                    emit(or, $1, $3, $$, -1, yylineno );
+                                    emit(or, $1, $3, $$, -1, yylineno);
                                   }
                                 }
           |term					        {	fprintf(fp, "expr: term at line %d --> %s\n", yylineno, yytext);}
@@ -526,34 +528,34 @@ elist:      expr                { fprintf(fp, "elist: expr at line %d --> %s\n",
                                 }
  		        ;
 
- tablemake:		L_BR elist R_BR  {
-                                 fprintf(fp, "tablemake: [elist] at line %d --> %s\n", yylineno, yytext);
-                                 printf("Entered tablemake: [elist]\n");
-                                 int i = 0;
-                                 expr* tmp = $2;
-                                 expr* t = newexpr(newtable_e);
-                                 t->sym = newtemp();
-                                 emit(tablecreate, t, NULL, NULL, -1, yylineno);
-                                 while(tmp != NULL){
-                                   emit(tablesetelem, t, newexpr_constnum(i++), tmp, -1, yylineno);
-                                   tmp = tmp->next;
-                                 }
-                                 $$ = t;
-                               }
- 				      |L_BR indexed R_BR {
-					 							           fprintf(fp, "tablemake: [indexed] at line %d --> %s\n", yylineno, yytext);
-                                   printf("Entered tablemake[indexed]\n");
-                                   //printf("{%s:%d}\n", $2->strConst, (int)$2->index->numConst);
-                                   expr* t = newexpr(newtable_e);
-                                   t->sym = newtemp();
-                                   expr* tmp = $2;
-                                   emit(tablecreate, t, NULL, NULL, -1, yylineno);
-                                   while(tmp != NULL){
-                                     emit(tablesetelem, t, tmp, tmp->index, -1, yylineno);
-                                     tmp = tmp->next;
-                                   }
-                                   $$ = t;
-                                 }
+tablemake:	L_BR elist R_BR     {
+                                  fprintf(fp, "tablemake: [elist] at line %d --> %s\n", yylineno, yytext);
+                                  printf("Entered tablemake: [elist]\n");
+                                  int i = 0;
+                                  expr* tmp = $2;
+                                  expr* t = newexpr(newtable_e);
+                                  t->sym = newtemp();
+                                  emit(tablecreate, t, NULL, NULL, -1, yylineno);
+                                  while(tmp != NULL){
+                                    emit(tablesetelem, t, newexpr_constnum(i++), tmp, -1, yylineno);
+                                    tmp = tmp->next;
+                                  }
+                                  $$ = t;
+                                }
+ 				    |L_BR indexed R_BR {
+					 							          fprintf(fp, "tablemake: [indexed] at line %d --> %s\n", yylineno, yytext);
+                                  printf("Entered tablemake[indexed]\n");
+                                  //printf("{%s:%d}\n", $2->strConst, (int)$2->index->numConst);
+                                  expr* t = newexpr(newtable_e);
+                                  t->sym = newtemp();
+                                  expr* tmp = $2;
+                                  emit(tablecreate, t, NULL, NULL, -1, yylineno);
+                                  while(tmp != NULL){
+                                    emit(tablesetelem, t, tmp, tmp->index, -1, yylineno);
+                                    tmp = tmp->next;
+                                  }
+                                  $$ = t;
+                                }
 				      ;
 
 indexed:	    indexedelem                 {
@@ -702,9 +704,33 @@ idlist:		ID	{
 			    |
           ;
 
-ifstmt:   IF L_PAR expr R_PAR stmt              { fprintf(fp, "ifstmt: IF L_PAR expr R_PAR stmt at line %d --> %s\n", yylineno, yytext);}
-          |IF L_PAR expr R_PAR stmt ELSE stmt 	{	fprintf(fp, "ifstmt: IF L_PAR expr R_PAR stmt ELSE stmt line %d --> %s\n", yylineno, yytext);}
-			    ;
+ifprefix: IF L_PAR expr R_PAR           {
+                                          fprintf(fp, "ifprefix: if(expr) at line %d --> %s\n", yylineno, yytext);
+                                          emit(if_eq, $3, newexpr_constbool(1), NULL, nextquad()+2, yylineno);
+                                          $$ = nextquad();
+                                          emit(jump, NULL, NULL, NULL, 0, yylineno);
+                                        }
+
+elseprefix: ELSE                        {
+                                          fprintf(fp, "elseprefix: else at line %d --> %s\n", yylineno, yytext);
+                                          $$ = nextquad();
+                                          emit(jump, NULL, NULL, NULL, 0, yylineno);
+                                        }
+
+ifstmt: ifprefix stmt                   {
+                                          fprintf(fp, "ifstmt: ifprefix stmt at line %d --> %s\n", yylineno, yytext);
+                                          patchlabel($1, nextquad());
+                                        }
+        |ifprefix stmt elseprefix stmt  {
+                                          fprintf(fp, "ifstmt: ifprefix stmt elseprefix stmt at line %d --> %s\n", yylineno, yytext);
+                                          patchlabel($1, $3+1);
+                                          patchlabel($3, nextquad());
+                                        }
+
+        ;
+
+
+
 
 whilestmt:  WHILE L_PAR expr R_PAR  {	inLoop = 1;}
 			      stmt 	                  {	fprintf(fp, "whilestmt: WHILE L_PAR expr R_PAR stmt at line %d --> %s\n", yylineno, yytext);}
