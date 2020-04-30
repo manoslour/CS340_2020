@@ -328,7 +328,7 @@ void printQuads(){
 		if((quads+i)->label == -1)
 			printf("%10s", "");
 		else
-			printf("%9d", (quads+i)->label);
+			printf("%10d", ((quads+i)->label)+1);
 		}
   printf("\n\n\n");
 }
