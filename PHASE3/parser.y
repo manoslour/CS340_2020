@@ -79,8 +79,8 @@ stmtlist: stmt              {
           ;
 
 stmt:     expr SEMICOLON        {	fprintf(fp, "stmt: expr SEMICOLON at line %d --> %s\n", yylineno, yytext);}
-          |if                   { fprintf(fp, "stmt: ifstmt at line %d --> %s\n", yylineno, yytext);}
-          |while                {	fprintf(fp, "stmt: whilestmt at line %d --> %s\n", yylineno, yytext);}
+          |ifstmt                   { fprintf(fp, "stmt: ifstmt at line %d --> %s\n", yylineno, yytext);}
+          |whilestmt                {	fprintf(fp, "stmt: whilestmt at line %d --> %s\n", yylineno, yytext);}
           |forstmt				      {	fprintf(fp, "stmt: forstmt at line %d --> %s\n", yylineno, yytext);}
           |returnstmt			      {	fprintf(fp, "stmt: returnstmt at line %d --> %s\n", yylineno, yytext);}
           |BREAK SEMICOLON		  {
@@ -725,7 +725,7 @@ elseprefix: ELSE                        {
                                           emit(jump, NULL, NULL, NULL, 0, yylineno);
                                         }
 
-if:     ifprefix stmt                   {
+ifstmt:     ifprefix stmt                   {
                                           fprintf(fp, "ifstmt: ifprefix stmt at line %d --> %s\n", yylineno, yytext);
                                           patchlabel($1, nextquad());
                                         }
@@ -753,7 +753,7 @@ whilesecond: L_PAR expr R_PAR         {
                                       printf("Second emit done\n");
                                     }
 
-while: whilestart whilesecond stmt  {
+whilestmt: whilestart whilesecond stmt  {
                                       printf("Entered while\n");
                                       emit(jump, NULL, NULL, NULL, $1, yylineno);
                                       printf("Emit done\n");
