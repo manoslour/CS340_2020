@@ -392,7 +392,7 @@ elist:      expr                { fprintf(fp, "elist: expr at line %d --> %s\n",
                                    expr* tmp = $2;
                                    emit(tablecreate, t, NULL, NULL, -1, yylineno);
                                    while(tmp != NULL){
-                                     emit(tablesetelem, tmp, tmp->index, t, -1, yylineno);
+                                     emit(tablesetelem, t, tmp, tmp->index, -1, yylineno);
                                      tmp = tmp->next;
                                    }
                                    $$ = t;
