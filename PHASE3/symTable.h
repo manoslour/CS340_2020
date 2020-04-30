@@ -149,6 +149,8 @@ unsigned int currscopeoffset();
 
 expr* newexpr_conststring(char* s);
 
+int illegalop(expr* arg1, expr* arg2);
+
 expr* newexpr_constbool(unsigned int b);
 
 void hideScope(unsigned int scope);

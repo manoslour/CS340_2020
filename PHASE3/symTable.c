@@ -439,6 +439,28 @@ void check_arith(expr* e, const char* context){
 		comperror("Illegal expr used in %s!", context);
 }
 
+int illegalop(expr* arg1, expr* arg2){
+	if(arg1->type == programfunc_e	||
+		arg1->type == libraryfunc_e		||
+		arg1->type == boolexpr_e			||
+		arg1->type == newtable_e			||
+		arg1->type == constbool_e			||
+		arg1->type == conststring_e		||
+		arg1->type == nil_e)
+			return 1;
+
+	if(arg2->type == programfunc_e	||
+		arg2->type == libraryfunc_e		||
+		arg2->type == boolexpr_e			||
+		arg2->type == newtable_e			||
+		arg2->type == constbool_e			||
+		arg2->type == conststring_e		||
+		arg2->type == nil_e)
+			return 1;
+
+		return 0;
+}
+
 //----------------------------------------------------------------------------------------------
 
 char* newtempfuncname(){
