@@ -89,11 +89,36 @@ stmt:     expr SEMICOLON        {	fprintf(fp, "stmt: expr SEMICOLON at line %d -
           ;
 
 expr:     assignexpr            {	fprintf(fp, "expr: assignexpr at line %d --> %s\n", yylineno, yytext);}
-          |expr PLUS expr       {	fprintf(fp, "expr: expr PLUS expr at line %d --> %s\n", yylineno, yytext);}
-          |expr MINUS expr      {	fprintf(fp, "expr: MINUS op expr at line %d --> %s\n", yylineno, yytext);}
-          |expr MULT expr       {	fprintf(fp, "expr: expr MULT expr at line %d --> %s\n", yylineno, yytext);}
-          |expr DIV expr        {	fprintf(fp, "expr: expr DIV expr at line %d --> %s\n", yylineno, yytext);}
-          |expr MOD expr        {	fprintf(fp, "expr: expr MOD expr at line %d --> %s\n", yylineno, yytext);}
+          |expr PLUS expr       {
+                                  fprintf(fp, "expr: expr PLUS expr at line %d --> %s\n", yylineno, yytext);
+                                  $$ = newexpr(arithexpr_e);
+                                  $$->sym = newtemp();
+                                  emit(add, $1, $3, $$, -1, yylineno);
+                                }
+          |expr MINUS expr      {
+                                  fprintf(fp, "expr: MINUS op expr at line %d --> %s\n", yylineno, yytext);
+                                  $$ = newexpr(arithexpr_e);
+                                  $$->sym = newtemp();
+                                  emit(sub, $1, $3, $$, -1, yylineno);
+                                }
+          |expr MULT expr       {
+                                  fprintf(fp, "expr: expr MULT expr at line %d --> %s\n", yylineno, yytext);
+                                  $$ = newexpr(arithexpr_e);
+                                  $$->sym = newtemp();
+                                  emit(mul, $1, $3, $$, -1, yylineno);
+                                }
+          |expr DIV expr        {
+                                  fprintf(fp, "expr: expr DIV expr at line %d --> %s\n", yylineno, yytext);
+                                  $$ = newexpr(arithexpr_e);
+                                  $$->sym = newtemp();
+                                  emit(divide, $1, $3, $$, -1, yylineno);
+                                }
+          |expr MOD expr        {
+                                  fprintf(fp, "expr: expr MOD expr at line %d --> %s\n", yylineno, yytext);
+                                  $$ = newexpr(arithexpr_e);
+                                  $$->sym = newtemp();
+                                  emit(mod, $1, $3, $$, -1, yylineno);
+                                }
           |expr GREATER expr		{	fprintf(fp, "expr: expr GREATER expr at line %d --> %s\n", yylineno, yytext);}
           |expr GREATER_EQ expr	{	fprintf(fp, "expr: expr GREATER_EQ expr at line %d --> %s\n", yylineno, yytext);}
           |expr LESS expr       {	fprintf(fp, "expr: expr LESS expr at line %d --> %s\n", yylineno, yytext);}
