@@ -328,7 +328,7 @@ void printQuads(){
 		if((quads+i)->label == -1)
 			printf("%10s", "");
 		else
-			printf("%10d", (quads+i)->label);
+			printf("%9d", (quads+i)->label);
 		}
   printf("\n\n\n");
 }
@@ -361,6 +361,7 @@ char* translateopcode(iopcode opcode){
 		case 22:	name = "tablecreate"; break;
 		case 23:	name = "tablegetelem"; break;
 		case 24:	name = "tablesetelem"; break;
+		case 25:	name = "jump"; break;
 	}
 }
 
