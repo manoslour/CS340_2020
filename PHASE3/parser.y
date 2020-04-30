@@ -30,10 +30,13 @@
   struct symbol* symNode;
 	struct expr* exprNode;
 	struct call* callNode;
+  struct stmt_t* stmtNode;
 }
 
+%type <stmtNode> stmt
 %type <stringValue> funcname
 %type <symNode> funcprefix funcdef
+%type <intValue> whilestart whilesecond
 %type <callNode> callsuffix normcall methodcall
 %type <unsignedValue> funcbody ifprefix elseprefix
 %type <exprNode> lvalue tableitem primary assignexpr call term tablemake expr elist indexed indexedelem const
@@ -69,8 +72,8 @@ stmtlist: stmt              { fprintf(fp, "stmtlist: stmt at line %d --> %s\n", 
           ;
 
 stmt:     expr SEMICOLON        {	fprintf(fp, "stmt: expr SEMICOLON at line %d --> %s\n", yylineno, yytext);}
-          |ifstmt               { fprintf(fp, "stmt: ifstmt at line %d --> %s\n", yylineno, yytext);}
-          |whilestmt            {	fprintf(fp, "stmt: whilestmt at line %d --> %s\n", yylineno, yytext);}
+          |if                   { fprintf(fp, "stmt: ifstmt at line %d --> %s\n", yylineno, yytext);}
+          |while                {	fprintf(fp, "stmt: whilestmt at line %d --> %s\n", yylineno, yytext);}
           |forstmt				      {	fprintf(fp, "stmt: forstmt at line %d --> %s\n", yylineno, yytext);}
           |returnstmt			      {	fprintf(fp, "stmt: returnstmt at line %d --> %s\n", yylineno, yytext);}
           |BREAK SEMICOLON		  {
@@ -717,7 +720,7 @@ elseprefix: ELSE                        {
                                           emit(jump, NULL, NULL, NULL, 0, yylineno);
                                         }
 
-ifstmt: ifprefix stmt                   {
+if:     ifprefix stmt                   {
                                           fprintf(fp, "ifstmt: ifprefix stmt at line %d --> %s\n", yylineno, yytext);
                                           patchlabel($1, nextquad());
                                         }
@@ -729,12 +732,24 @@ ifstmt: ifprefix stmt                   {
 
         ;
 
+whilestart: WHILE                   {
+                                      fprintf(fp, "whilestart: WHILE at line %d --> %s\n", yylineno, yytext);
+                                      $$ = nextquad();
+                                    }
 
+whilesecond: L_BR expr R_BR         {
+                                      fprintf(fp, "whilesecond: (expr) at line %d --> %s\n", yylineno, yytext);
+                                      emit(if_eq, $2, newexpr_constbool(1), NULL, nextquad()+2, yylineno);
+                                      $$ = nextquad();
+                                      emit(jump, NULL, NULL, NULL, 0, yylineno);
+                                    }
 
-
-whilestmt:  WHILE L_PAR expr R_PAR  {	inLoop = 1;}
-			      stmt 	                  {	fprintf(fp, "whilestmt: WHILE L_PAR expr R_PAR stmt at line %d --> %s\n", yylineno, yytext);}
-			      ;
+while: whilestart whilesecond stmt  {
+                                      emit(jump, NULL, NULL, NULL, $1, yylineno);
+                                      patchlabel($2, nextquad());
+                                      patchlist($3->breaklist, nextquad());
+                                      patchlist($3->contlist, $1);
+                                    }
 
 forstmt:  	FOR L_PAR elist SEMICOLON expr SEMICOLON elist R_PAR 	{	inLoop = 1;}
 			      stmt { fprintf(fp, "forstm: for(elist; expr; elist) stmt at line %d --> %s\n", yylineno, yytext);}
