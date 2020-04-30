@@ -240,24 +240,24 @@ expr:     assignexpr            {	fprintf(fp, "expr: assignexpr at line %d --> %
                                   }
                                 }
           |expr AND expr        {
-            	                     fprintf(fp, "expr: expr AND expr at line %d --> %s\n", yylineno, yytext);
-
-
+            	                    fprintf(fp, "expr: expr AND expr at line %d --> %s\n", yylineno, yytext);
+                                  if(illegalop($1, $3))
+                                    addError("Error, illegal boolean operation", "", yylineno);
+                                  else{
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = newtemp();
                                     emit(and, $1, $3, $$, -1, yylineno );
-                                  
-
-
+                                  }
                                 }
           |expr OR expr			    {
                                   fprintf(fp, "expr: expr OR expr at line %d --> %s\n", yylineno, yytext);
-
+                                  if(illegalop($1, $3))
+                                    addError("Error, illegal boolean operation", "", yylineno);
+                                  else{
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = newtemp();
                                     emit(or, $1, $3, $$, -1, yylineno );
-
-
+                                  }
                                 }
           |term					        {	fprintf(fp, "expr: term at line %d --> %s\n", yylineno, yytext);}
           ;
