@@ -33,7 +33,7 @@ typedef enum {
 	if_greater,		call,			param,
 	ret,			getretval,		funcstart,
 	funcend,		tablecreate,	tablegetelem,
-	tablesetelem
+	tablesetelem, jump
 }iopcode;
 
 typedef enum {
