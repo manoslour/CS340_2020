@@ -14,14 +14,14 @@
 #define Buckets 256
 #define EXPAND_SIZE 1024
 #define CURR_SIZE (total * sizeof(quad))
-#define NEW_SIZE (EXPAND_SIZE * sizeof(quad) + CURR_SIZE)	
+#define NEW_SIZE (EXPAND_SIZE * sizeof(quad) + CURR_SIZE)
 
-typedef enum { 
-	Global, 
-	Local, 
-	Formal, 
-	Userfunc, 
-	Libfunc 
+typedef enum {
+	Global,
+	Local,
+	Formal,
+	Userfunc,
+	Libfunc
 }SymbolType;
 
 typedef enum {
@@ -33,7 +33,7 @@ typedef enum {
 	if_greater,		call,			param,
 	ret,			getretval,		funcstart,
 	funcend,		tablecreate,	tablegetelem,
-	tablesetelem 
+	tablesetelem
 }iopcode;
 
 typedef enum {
@@ -51,10 +51,10 @@ typedef enum {
     conststring_e,	nil_e
 }expr_t;
 
-typedef enum { 
-	var_s, 
-	programfunc_s, 
-	libraryfunc_s 
+typedef enum {
+	var_s,
+	programfunc_s,
+	libraryfunc_s
 }symbol_t;
 
 typedef struct expr {
@@ -86,7 +86,7 @@ typedef struct symbol {
 	scopespace_t space;
 	unsigned int offset;
 	unsigned int totalLocals;
-	struct symbol *next, *scope_next; 
+	struct symbol *next, *scope_next;
 }symbol;
 
 typedef struct call {
@@ -117,12 +117,14 @@ void printQuads();
 
 symbol* newtemp();
 
-char* newtempname();
-
 void initialize();
 
+char* newtempname();
+
+unsigned nextquad();
+
 void printScopeList();
- 
+
 void printErrorList();
 
 bool hide (int scope);
@@ -146,6 +148,8 @@ expr* lvalue_expr(symbol* sym);
 unsigned int currscopeoffset();
 
 expr* newexpr_conststring(char* s);
+
+expr* newexpr_constbool(unsigned int b);
 
 void hideScope(unsigned int scope);
 

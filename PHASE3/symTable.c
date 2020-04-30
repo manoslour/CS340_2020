@@ -252,8 +252,12 @@ void restorecurrscopeoffset(unsigned int n){
 unsigned int nextquadlabel() {return currQuad;}
 
 void patchlabel(unsigned int quadNo, unsigned int label){
-	assert(quadNo < currQuad);
+	assert(quadNo < currQuad && !quads[quadNo].label);
 	quads[quadNo].label = label;
+}
+
+unsigned nextquad(){
+	return currQuad;
 }
 
 void printQuads(){
@@ -318,7 +322,7 @@ void printQuads(){
 				}
 			}
 			else
-				printf("arg2 = %11s\t", (quads+i)->arg2->sym->name);
+				printf("%11s\t", (quads+i)->arg2->sym->name);
 		}
 
 		if((quads+i)->label == -1)
@@ -384,6 +388,12 @@ expr* newexpr_conststring(char* s){
 expr* newexpr_constnum(double i){
 	expr* e = newexpr(constnum_e);
 	e->numConst = i;
+	return e;
+}
+
+expr* newexpr_constbool(unsigned int b){
+	expr* e = newexpr(constbool_e);
+	e->boolConst = !!b;
 	return e;
 }
 
