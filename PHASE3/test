@@ -24,7 +24,9 @@
 //a = x || y && z;
 //if(x+y >= z-w)
     //f(x,y,z);
-if(a || b)
-    x = y;
-else
-    y = z;
+//if(a || b)
+   // x = y;
+//else
+   // y = z;
+while(x>y)
+	x = y;
