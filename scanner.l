@@ -1,16 +1,23 @@
+%{
+    #include "parser.h"
+    #include "symTable.h"
+    #include <stdlib.h>
+    #include <string.h>
+
+    #define BUFFERSIZE 256
+
+    extern YYSTYPE yylval;
+
+    char *buffer;
+    int flag = 0;
+    int startLine, nestedStartLine;
+    int nested = 0;
+    int tokenNum = 0;
+    size_t stringSize;
+%}
 
 %option noyywrap
 %option yylineno
-
-%{
-    #include "scanner.h"
-    unsigned int tokenNum = 0;
-    int nested;
-    int startLine;
-    char* buffer;
-    size_t stringSize;
-    int flaf = 0;
-%}
 
 IF      "if"
 ELSE    "else"
@@ -35,249 +42,209 @@ MULT    "*"
 DIV     "/"
 MOD     "%"
 EQUAL   "=="
-N_EQUAL     "!="
+NOT_EQUAL     "!="
 INCR    "++"
 DECR    "--"
-GREATER     ">"
+GREATER ">"
 LESS    "<"
 GREATER_EQ    ">="
 LESS_EQ     "<="
 
-LC_BRC  "{"
-RC_BRC  "}"
-L_BRCK  "["
-R_BRCK  "]"
+LCURLY_BR  "{"
+RCURLY_BR  "}"
+L_BR  "["
+R_BR  "]"
 L_PAR   "("
 R_PAR   ")"
-SEMICOL ";"
+SEMICOLON ";"
 COMMA   ","
 COLON   ":"
 DCOLON  "::"
 DOT     "."
 DDOT    ".."
 
-ID          [a-zA-Z][a-zA-Z_0-9]*
-DIGIT       [0-9]+
-INTEGER     (0[xX][0-9A-Fa-f]+)|([0-9]+)
-REAL        [0-9]*\.[0-9](e|E)?[0-9]*
-NEWLINE         [\n]
-WHITESPACE      [\r\t \v]+
-LINE_COMMENT    "//".*
+INTEGER [0-9]+
+REAL [0-9]+\.[0-9]+
+NEWLINE [\n]+
+WHITESPACE [\t\r ]+
+ID [a-zA-Z][a-zA-Z_0-9]*
+LINE_COMMENT "//".*
 
 %x COMMENT
-%x STRING
+%x FLEX_STRING
 
 %%
 
-            
-"\""   {    
+{IF}        {return IF;}
+{ELSE}      {return ELSE;}
+{WHILE}     {return WHILE;}
+{FOR}       {return FOR;}
+{FUNCTION}  {return FUNCTION;}
+{RETURN}    {return RETURN;}
+{BREAK}     {return BREAK;}
+{CONTINUE}  {return CONTINUE;}
+{AND}       {return AND;}
+{NOT}       {return NOT;}
+{OR}        {return OR;}
+{LOCAL}     {return LOCAL;}
+{TRUE}      {return TRUE;}
+{FALSE}     {return FALSE;}
+{NIL}       {return NIL;}
+
+{ASSIGN}    {return ASSIGN;}
+{PLUS}      {return PLUS;}
+{MINUS}     {return MINUS;}
+{MULT}      {return MULT;}
+{DIV}       {return DIV;}
+{MOD}       {return MOD;}
+{EQUAL}     {return EQUAL;}
+{NOT_EQUAL}   {return NOT_EQUAL;}
+{INCR}      {return INCR;}
+{DECR}      {return DECR;}
+{GREATER}   {return GREATER;}
+{LESS}      {return LESS;}
+{GREATER_EQ}    {return GREATER_EQ;}
+{LESS_EQ}       {return LESS_EQ;}
+
+{LCURLY_BR}        {return LCURLY_BR;}
+{RCURLY_BR}        {return RCURLY_BR;}
+{L_BR}        {return L_BR;}
+{R_BR}        {return R_BR;}
+{L_PAR}         {return L_PAR;}
+{R_PAR}         {return R_PAR;}
+{SEMICOLON}       {return SEMICOLON;}
+{COMMA}         {return COMMA;}
+{COLON}         {return COLON;}
+{DCOLON}        {return DCOLON;}
+{DOT}           {return DOT;}
+{DDOT}          {return DDOT;}
+
+{INTEGER}       {
+                    yylval.intValue = atoi(yytext);
+                    return INTEGER;
+                }
+
+{REAL}          {
+                    yylval.realValue = atof(yytext);
+                    return REAL;
+                }
+
+{ID}            {
+                    yylval.stringValue = strdup(yytext);
+                    return ID;
+                }
+
+{WHITESPACE}    {}
+{NEWLINE}       {}
+{LINE_COMMENT}  {}
+
+
+"/*"    {
+            nested++;
+            startLine = yylineno;
+            BEGIN(COMMENT);
+        }
+
+<COMMENT>[^/*]*
+<COMMENT>"/"+[^*/]*
+<COMMENT>"/"+"*"    {   nested++;
+                        nestedStartLine = yylineno;
+                    }
+<COMMENT>"*"+[^*/]*
+<COMMENT>"*"+"/"    {
+                        nested--;
+
+                        char start[BUFFERSIZE];
+                        char end[BUFFERSIZE];
+                        char* comm_content = malloc(sizeof(char) * BUFFERSIZE);
+
+                        if(nested == 0){
+
+                            snprintf(start, sizeof(start), "%d", startLine);
+                            snprintf(end, sizeof(end), "%d", yylineno);
+
+                            comm_content = strcat(start, "-");
+                            comm_content = strcat(comm_content, end);
+
+                            //addToken(startLine, ++tokenNum, comm_content, "COMMENT", "BLOCK COMMENT", "<-enumerated");
+
+                            BEGIN(INITIAL);
+
+                        }else{
+
+                            snprintf(start, sizeof(start), "%d", nestedStartLine);
+                            snprintf(end, sizeof(end), "%d", yylineno);
+
+                            comm_content = strcat(start, "-");
+                            comm_content = strcat(comm_content, end);
+
+                            //addToken(startLine, ++tokenNum, comm_content, "COMMENT", "NESTED COMMENT", "<-enumerated");
+                        }
+                    }
+<COMMENT><<EOF>>    {
+                        addError(RED"Error"RESET, "Unclosed COMMENT BLOCK at EOF", startLine);
+                        //return -1;
+                    }
+
+"\""   {
             stringSize = strlen(yytext);
             buffer = (char *)malloc(stringSize * sizeof(char));
             strcpy(buffer, yytext);
 
-            BEGIN(STRING);
+            BEGIN(FLEX_STRING);
         }
 
-<STRING>[^\n\t\\\"]*    {
+<FLEX_STRING>[^\n\t\\\"]*    {
                             stringSize = stringSize + strlen(yytext);
                             buffer = realloc(buffer, stringSize);
                             strcat(buffer, yytext);
                         }
-<STRING>"\n"            {   
-                            
+<FLEX_STRING>"\n"            {
                             flag=1;
                             stringSize = stringSize + strlen(yytext);
                             buffer = realloc(buffer, stringSize);
-                            strcat(buffer, "\n"); 
+                            strcat(buffer, "\n");
 
                         }
-<STRING>"\\\""          {
+<FLEX_STRING>"\\\""          {
                             stringSize = stringSize + strlen(yytext);
                             buffer = realloc(buffer, stringSize);
                             strcat(buffer, "\"");
                         }
-<STRING>"\\n"           {   
+<FLEX_STRING>"\\n"           {
                             stringSize = stringSize + strlen(yytext);
                             buffer = realloc(buffer, stringSize);
-                            strcat(buffer, "\n"); 
+                            strcat(buffer, "\n");
 
-                        }        
-<STRING>"\\t"           {
+                        }
+<FLEX_STRING>"\\t"           {
                             stringSize = stringSize + strlen(yytext);
                             buffer = realloc(buffer, stringSize);
                             strcat(buffer, "\t");
                         }
-<STRING>"\\\\"          {
+<FLEX_STRING>"\\\\"          {
                             stringSize = stringSize + strlen(yytext);
                             buffer = realloc(buffer, stringSize);
                             strcat(buffer, "\\");
-}
-<STRING>"\\".           {printf("Warning: Invalid Escape Character %s\n", yytext);}                        
-<STRING>"\""            { 
-                            
+                        }
+<FLEX_STRING>"\\".           {   addError(YEL"Warning\x1B[0m \tInvalid Escape Character", yytext, yylineno);}
+
+<FLEX_STRING>"\""            {
                             stringSize = stringSize + strlen(yytext);
                             buffer = realloc(buffer, stringSize);
                             strcat(buffer, yytext);
-                            if(flag==1) {
-                                int line=yylineno-1;
-                                insertToken(line, ++tokenNum, buffer, "STRING", "");
-                            }
-                            else{
-                               insertToken(yylineno, ++tokenNum, buffer, "STRING", ""); 
-                            }
-                            BEGIN(INITIAL);
-<STRING><<EOF>>         {
-                            printf("String Error: UNCLOSED STRING at EOF in line: %d \n",yylineno);
-                            return -1;
-                        }
 
-
-
-"/*"    {
-            nested = 1;
-            startLine = yylineno;
-            BEGIN(COMMENT);
-        }
-<COMMENT>[^/*]* 
-<COMMENT>"/"+[^*/]*
-<COMMENT>"/"+"*"    { nested++; }
-<COMMENT>"*"+[^*/]*
-<COMMENT>"*"+"/"    {   
-                        nested--;
-                        if(nested == 0){
-                            
-                            char start[100];
-                            char end[100];
-                            snprintf(start, sizeof(start), "%d", startLine);
-                            snprintf(end, sizeof(end), "%d", yylineno);
-                            char* comm_content = strcat(start, "-");
-                            comm_content = strcat(comm_content, end);
-                            insertToken(startLine, ++tokenNum, comm_content, "COMMENT", "BLOCK COMMENT");
+                            yylval.stringValue = strdup(buffer);
 
                             BEGIN(INITIAL);
+
+                            return STRING;
                         }
-                    }
-<COMMENT><<EOF>>    {
-                        printf("Comment Error: UNCLOSED COMMENT BLOCK at EOF in line: %d \n",yylineno);
-                        return -1;
-                    }
+<FLEX_STRING><<EOF>>         {
+                            addError(RED"Error"RESET, "Unclosed STRING at EOF", yylineno);
+                            //return -1;
+                        }
 
-{IF}        {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "IF");}
-{ELSE}      {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "ELSE");}
-{WHILE}     {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "WHILE");}
-{FOR}       {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "FOR");}
-{FUNCTION}  {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "FUNCTION");}
-{RETURN}    {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "RETURN");}
-{BREAK}     {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "BREAK");}
-{CONTINUE}  {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "CONTINUE");}
-{AND}       {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "AND");}
-{NOT}       {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "NOT");}
-{OR}        {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "OR");}
-{LOCAL}     {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "LOCAL");}
-{TRUE}      {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "TRUE");}
-{FALSE}     {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "FALSE");}
-{NIL}       {insertToken(yylineno, ++tokenNum, yytext, "KEYWORD", "NIL");}
+.                       {   addError(YEL"Warning\x1B[0m \tUndefined character", yytext, yylineno);}
 
-{ASSIGN}    {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "ASSIGN");}
-{PLUS}      {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "PLUS");}
-{MINUS}     {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "MINUS");}
-{MULT}      {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "MULT");}
-{DIV}       {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "DIV");}
-{MOD}       {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "MOD");}
-{EQUAL}     {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "EQUAL");}
-{N_EQUAL}   {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "N_EQUAL");}
-{INCR}      {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "INCR");}
-{DECR}      {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "DECR");}
-{GREATER}   {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "GREATER");}
-{LESS}      {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "LESS");}
-{GREATER_EQ}    {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "GREATER_EQ");}
-{LESS_EQ}       {insertToken(yylineno, ++tokenNum, yytext, "OPERATOR", "LESS_EQ");}
-
-{LC_BRC}        {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "LC_BRC");}
-{RC_BRC}        {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "RC_BRC");}
-{L_BRCK}        {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "L_BRCK");}
-{R_BRCK}        {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "R_BRCK");}
-{L_PAR}         {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "L_PAR");}
-{R_PAR}         {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "R_PAR");}
-{SEMICOL}       {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "SEMICOL");}
-{COMMA}         {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "COMMA");}
-{COLON}         {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "COLON");}
-{DCOLON}        {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "DCOLON");}
-{DOT}           {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "DOT");}
-{DDOT}          {insertToken(yylineno, ++tokenNum, yytext, "PUNCTUATION", "DDOT");}
-
-{ID}        {insertToken(yylineno, ++tokenNum, yytext, "ID", "");}
-{DIGIT}     {insertToken(yylineno, ++tokenNum, yytext, "DIGIT", "");}
-{INTEGER}   {insertToken(yylineno, ++tokenNum, yytext, "INTEGER", "");}
-{REAL}      {insertToken(yylineno, ++tokenNum, yytext, "REAL", "");}
-{LINE_COMMENT}  {insertToken(yylineno, ++tokenNum, "\"\"", "COMMENT", "LINE COMMENT");}
-{WHITESPACE}    {}
-{NEWLINE}       {}
-.           {printf("Undefined Character: %s in line: %d\n", yytext, yylineno);}
 %%
-
-void insertToken(unsigned int numline, unsigned int numToken, char* content, char* type, char* extraType){
-
-    struct alpha_token_t *last;
-    struct alpha_token_t *newNode = (struct alpha_token_t*)malloc(sizeof(struct alpha_token_t));
-    char* tmpContent;
-    tmpContent = strdup(content);
-
-    newNode->numline = numline;
-    newNode->numToken = numToken;
-    newNode->content = tmpContent;
-    newNode->type = type;
-    newNode->extraType = extraType;
-    newNode->next = NULL;
-
-    last = HEAD;
-
-    if(HEAD == NULL){
-        HEAD = newNode;
-    }
-    else{
-
-        while(last->next != NULL){
-            last = last->next;
-        }
-
-        last->next = newNode;
-    }
-}
-
-void printTokenList(){
-
-    printf("\n------------ LEXICAL ANALYSIS ------------\n\n");
-
-    struct alpha_token_t *tmp;
-    tmp = HEAD;
-
-    while(tmp != NULL){
-
-        printf("%d:\t", tmp->numline);
-        printf("#%d\t", tmp->numToken);
-        printf("%s\t ", tmp->content);
-        printf("%s\t", tmp->type);
-        printf("%s\n", tmp->extraType);
-
-        tmp = tmp->next;
-    }
-}
-
-int main(int argc, char** argv)
-{
-    if(argc > 1){
-        if(!(yyin = fopen(argv[1], "r"))){
-            fprintf(stderr,"Cannot read file: %s\n", argv[1]);
-            return 1;
-        }
-    }
-    else{
-        yyin = stdin;
-    }
-
-    alpha_yylex(HEAD);
-    printTokenList();
-
-    return 0;
-}
