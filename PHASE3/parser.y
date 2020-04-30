@@ -33,10 +33,10 @@
   struct stmt_t* stmtNode;
 }
 
-%type <stmtNode> stmt
 %type <stringValue> funcname
 %type <symNode> funcprefix funcdef
 %type <intValue> whilestart whilesecond
+%type <stmtNode> stmt stmtlist break continue
 %type <callNode> callsuffix normcall methodcall
 %type <unsignedValue> funcbody ifprefix elseprefix
 %type <exprNode> lvalue tableitem primary assignexpr call term tablemake expr elist indexed indexedelem const
@@ -67,8 +67,15 @@ program:  stmtlist  {	fprintf(fp, "promgram: stmtlist at line %d --> %s\n", yyli
 			|
 			;
 
-stmtlist: stmt              { fprintf(fp, "stmtlist: stmt at line %d --> %s\n", yylineno, yytext);}
-          |stmtlist stmt		{	fprintf(fp, "stmtlist: stmtlist stmt at line %d --> %s\n", yylineno, yytext);}
+stmtlist: stmt              { 
+                              fprintf(fp, "stmtlist: stmt at line %d --> %s\n", yylineno, yytext);
+                              $$ = $1;
+                            }
+          |stmtlist stmt		{	
+                              fprintf(fp, "stmtlist: stmtlist stmt at line %d --> %s\n", yylineno, yytext);
+                              $$->breaklist = mergelist($1->breaklist, $2->breaklist);
+                              $$->contlist = mergelist($1->contlist, $2->contlist);
+                            }
           ;
 
 stmt:     expr SEMICOLON        {	fprintf(fp, "stmt: expr SEMICOLON at line %d --> %s\n", yylineno, yytext);}
@@ -162,10 +169,8 @@ expr:     assignexpr            {	fprintf(fp, "expr: assignexpr at line %d --> %
                                   if(illegalop($1, $3))
                                     addError("Error, illegal boolean operation", "", yylineno);
                                   else{
-                                    printf("naiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = newtemp();
-
                                     emit(if_greater, $1, $3, NULL, nextquad()+3, yylineno);
                                     emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
                                     emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
@@ -730,25 +735,35 @@ if:     ifprefix stmt                   {
                                           patchlabel($3, nextquad());
                                         }
 
-        ;
-
 whilestart: WHILE                   {
                                       fprintf(fp, "whilestart: WHILE at line %d --> %s\n", yylineno, yytext);
+                                      printf("Entered whilestart\n");
                                       $$ = nextquad();
+                                      printf("$$ = %d\n", $$);
                                     }
 
-whilesecond: L_BR expr R_BR         {
+whilesecond: L_PAR expr R_PAR         {
                                       fprintf(fp, "whilesecond: (expr) at line %d --> %s\n", yylineno, yytext);
+                                      printf("Entered whilesecond\n");
                                       emit(if_eq, $2, newexpr_constbool(1), NULL, nextquad()+2, yylineno);
+                                      printf("First emit done\n");
                                       $$ = nextquad();
+                                      printf("$$ = %d\n", $$);
                                       emit(jump, NULL, NULL, NULL, 0, yylineno);
+                                      printf("Second emit done\n");
                                     }
 
 while: whilestart whilesecond stmt  {
+                                      printf("Entered while\n");
                                       emit(jump, NULL, NULL, NULL, $1, yylineno);
+                                      printf("Emit done\n");
                                       patchlabel($2, nextquad());
+                                      printf("Patch label done\n");
+                                      /*
                                       patchlist($3->breaklist, nextquad());
+                                      printf("First patchlist done\n");
                                       patchlist($3->contlist, $1);
+                                      */
                                     }
 
 forstmt:  	FOR L_PAR elist SEMICOLON expr SEMICOLON elist R_PAR 	{	inLoop = 1;}
@@ -766,6 +781,18 @@ returnstmt:	RETURN SEMICOLON    {
                                           addError("Use of return while not in function", "", yylineno);
                                       }
 			      ;
+
+break: BREAK  {
+                make_stmt(&$$);
+                $$->breaklist = newlist(nextquad());
+                emit(jump, NULL, NULL, NULL, 0, yylineno);
+              }
+
+continue: CONTINUE  {
+                      make_stmt(&$$);
+                      $$->contlist = newlist(nextquad());
+                      emit(jump, NULL, NULL, NULL, 0, yylineno);
+                    }
 
 %%
 
