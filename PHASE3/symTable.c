@@ -252,8 +252,12 @@ void restorecurrscopeoffset(unsigned int n){
 unsigned int nextquadlabel() {return currQuad;}
 
 void patchlabel(unsigned int quadNo, unsigned int label){
-	assert(quadNo < currQuad);
+	assert(quadNo < currQuad && !quads[quadNo].label);
 	quads[quadNo].label = label;
+}
+
+unsigned nextquad(){
+	return currQuad;
 }
 
 void printQuads(){
@@ -318,13 +322,13 @@ void printQuads(){
 				}
 			}
 			else
-				printf("arg2 = %11s\t", (quads+i)->arg2->sym->name);
+				printf("%11s\t", (quads+i)->arg2->sym->name);
 		}
 
 		if((quads+i)->label == -1)
 			printf("%10s", "");
 		else
-			printf("%10d", (quads+i)->label);
+			printf("%9d", (quads+i)->label);
 		}
   printf("\n\n\n");
 }
@@ -357,6 +361,7 @@ char* translateopcode(iopcode opcode){
 		case 22:	name = "tablecreate"; break;
 		case 23:	name = "tablegetelem"; break;
 		case 24:	name = "tablesetelem"; break;
+		case 25:	name = "jump"; break;
 	}
 }
 
@@ -384,6 +389,12 @@ expr* newexpr_conststring(char* s){
 expr* newexpr_constnum(double i){
 	expr* e = newexpr(constnum_e);
 	e->numConst = i;
+	return e;
+}
+
+expr* newexpr_constbool(unsigned int b){
+	expr* e = newexpr(constbool_e);
+	e->boolConst = !!b;
 	return e;
 }
 
@@ -427,6 +438,28 @@ void check_arith(expr* e, const char* context){
 		e->type == libraryfunc_e 	||
 		e->type == boolexpr_e )
 		comperror("Illegal expr used in %s!", context);
+}
+
+int illegalop(expr* arg1, expr* arg2){
+	if(arg1->type == programfunc_e	||
+		arg1->type == libraryfunc_e		||
+		arg1->type == boolexpr_e			||
+		arg1->type == newtable_e			||
+		arg1->type == constbool_e			||
+		arg1->type == conststring_e		||
+		arg1->type == nil_e)
+			return 1;
+
+	if(arg2->type == programfunc_e	||
+		arg2->type == libraryfunc_e		||
+		arg2->type == boolexpr_e			||
+		arg2->type == newtable_e			||
+		arg2->type == constbool_e			||
+		arg2->type == conststring_e		||
+		arg2->type == nil_e)
+			return 1;
+
+		return 0;
 }
 
 //----------------------------------------------------------------------------------------------
