@@ -159,7 +159,6 @@ expr:     assignexpr            {	fprintf(fp, "expr: assignexpr at line %d --> %
                                   if(illegalop($1, $3))
                                     addError("Error, illegal boolean operation", "", yylineno);
                                   else{
-                                    printf("naiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = newtemp();
 
