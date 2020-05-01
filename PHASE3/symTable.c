@@ -463,6 +463,7 @@ int illegalop(expr* arg1, expr* arg2){
 }
 
 void make_stmt(stmt_t* s){
+	printf("Entered make_stmt\n");
 	s->breaklist = s->contlist = 0;
 }
 
@@ -486,6 +487,8 @@ int mergelist(int l1, int l2){
 }
 
 void patchlist(int list, int label){
+	printf("Entered patchlist\n");
+	printf("list = %d, label = %d\n", list, label);
 	while(list){
 		int next = quads[list].label;
 		quads[list].label = label;

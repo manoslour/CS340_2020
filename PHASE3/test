@@ -30,12 +30,5 @@ if(a || b)
 else
     y = z;
 */
-/*
-while (x-y > z-w)
-    if(b)
-        x = a;
-    else
-        x = x - z;
-*/
-if(1>2)
-    x = 1;
+while (x < y)
+    x = z;

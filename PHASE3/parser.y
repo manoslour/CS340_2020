@@ -69,6 +69,7 @@ program:  stmtlist  {	fprintf(fp, "promgram: stmtlist at line %d --> %s\n", yyli
 
 stmtlist: stmt              { 
                               fprintf(fp, "stmtlist: stmt at line %d --> %s\n", yylineno, yytext);
+                              printf("Entered stmtlist: stmt\n");
                               $$ = $1;
                             }
           |stmtlist stmt		{	
@@ -78,27 +79,35 @@ stmtlist: stmt              {
                             }
           ;
 
-stmt:     expr SEMICOLON        {	fprintf(fp, "stmt: expr SEMICOLON at line %d --> %s\n", yylineno, yytext);}
+stmt:     expr SEMICOLON        {	
+                                  fprintf(fp, "stmt: expr SEMICOLON at line %d --> %s\n", yylineno, yytext);
+                                  printf("Entered stmt: expr;\n");  
+                                }
           |ifstmt                   { fprintf(fp, "stmt: ifstmt at line %d --> %s\n", yylineno, yytext);}
           |whilestmt                {	fprintf(fp, "stmt: whilestmt at line %d --> %s\n", yylineno, yytext);}
           |forstmt				      {	fprintf(fp, "stmt: forstmt at line %d --> %s\n", yylineno, yytext);}
           |returnstmt			      {	fprintf(fp, "stmt: returnstmt at line %d --> %s\n", yylineno, yytext);}
-          |BREAK SEMICOLON		  {
+          |break SEMICOLON		  {
 										              fprintf(fp, "stmt: BREAK SEMICOLON at line %d --> %s\n", yylineno, yytext);
                                   if (inLoop == 0)
-                                  addError("Use of break while not in loop", "", yylineno);
+                                    addError("Use of break while not in loop", "", yylineno);
+                                  //$$ = $1;
                                 }
-          |CONTINUE SEMICOLON		{
+          |continue SEMICOLON		{
 										              fprintf(fp, "stmt: CONTINUE SEMICOLON at line %d --> %s\n", yylineno, yytext);
                                   if (inLoop == 0)
                                     addError("Use of continue while not in loop", "", yylineno);
+                                  //$$ = $1;
                                 }
           |block                {	fprintf(fp, "stmt: block at line %d --> %s\n", yylineno, yytext);}
           |funcdef              {	fprintf(fp, "stmt: funcdef at line %d --> %s\n", yylineno, yytext);}
           |SEMICOLON            {	fprintf(fp, "stmt: SEMICOLON at line %d --> %s\n", yylineno, yytext);}
           ;
 
-expr:     assignexpr            {	fprintf(fp, "expr: assignexpr at line %d --> %s\n", yylineno, yytext);}
+expr:     assignexpr            {	
+                                  fprintf(fp, "expr: assignexpr at line %d --> %s\n", yylineno, yytext);
+                                  printf("Entered expr: assignexpr;\n");  
+                                }
           |expr PLUS expr       {
                                   fprintf(fp, "expr: expr PLUS expr at line %d --> %s\n", yylineno, yytext);
                                   if(illegalop($1, $3))
@@ -360,6 +369,7 @@ term:     L_PAR expr R_PAR			    {
 
 assignexpr: lvalue ASSIGN expr  {
                                   fprintf(fp, "assignexpr: lvalue ASSIGN expr at line %d --> %s\n", yylineno, yytext);
+                                  printf("Entered assignexpr: lvalue = expr\n");
                                   if($1->type == tableitem_e){
                                     emit(tablesetelem, $1, $1->index, $3, -1, yylineno);
                                     $$ = emit_iftableitem($1, yylineno);
@@ -746,24 +756,19 @@ whilesecond: L_PAR expr R_PAR         {
                                       fprintf(fp, "whilesecond: (expr) at line %d --> %s\n", yylineno, yytext);
                                       printf("Entered whilesecond\n");
                                       emit(if_eq, $2, newexpr_constbool(1), NULL, nextquad()+2, yylineno);
-                                      printf("First emit done\n");
                                       $$ = nextquad();
-                                      printf("$$ = %d\n", $$);
                                       emit(jump, NULL, NULL, NULL, 0, yylineno);
-                                      printf("Second emit done\n");
                                     }
 
 whilestmt: whilestart whilesecond stmt  {
-                                      printf("Entered while\n");
+                                      printf("Entered whilestmt\n");
                                       emit(jump, NULL, NULL, NULL, $1, yylineno);
                                       printf("Emit done\n");
                                       patchlabel($2, nextquad());
                                       printf("Patch label done\n");
-                                      /*
                                       patchlist($3->breaklist, nextquad());
                                       printf("First patchlist done\n");
                                       patchlist($3->contlist, $1);
-                                      */
                                     }
 
 forstmt:  	FOR L_PAR elist SEMICOLON expr SEMICOLON elist R_PAR 	{	inLoop = 1;}
@@ -783,13 +788,14 @@ returnstmt:	RETURN SEMICOLON    {
 			      ;
 
 break: BREAK  {
-                make_stmt(&$$);
+                printf("Entered break\n");
+                make_stmt($$);
                 $$->breaklist = newlist(nextquad());
                 emit(jump, NULL, NULL, NULL, 0, yylineno);
               }
 
 continue: CONTINUE  {
-                      make_stmt(&$$);
+                      make_stmt($$);
                       $$->contlist = newlist(nextquad());
                       emit(jump, NULL, NULL, NULL, 0, yylineno);
                     }
