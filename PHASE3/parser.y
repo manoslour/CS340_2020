@@ -74,6 +74,7 @@ stmtlist: stmt              {
                             }
           |stmtlist stmt		{	
                               fprintf(fp, "stmtlist: stmtlist stmt at line %d --> %s\n", yylineno, yytext);
+                              printf("Entered stmtlist: stmtlist stmt\n");
                               $$->breaklist = mergelist($1->breaklist, $2->breaklist);
                               $$->contlist = mergelist($1->contlist, $2->contlist);
                             }
@@ -81,7 +82,8 @@ stmtlist: stmt              {
 
 stmt:     expr SEMICOLON        {	
                                   fprintf(fp, "stmt: expr SEMICOLON at line %d --> %s\n", yylineno, yytext);
-                                  printf("Entered stmt: expr;\n");  
+                                  printf("Entered stmt: expr;\n");
+                                  printf("$$->breaklist = %d\n", $$->breaklist);  
                                 }
           |ifstmt                   { fprintf(fp, "stmt: ifstmt at line %d --> %s\n", yylineno, yytext);}
           |whilestmt                {	fprintf(fp, "stmt: whilestmt at line %d --> %s\n", yylineno, yytext);}
@@ -763,12 +765,11 @@ whilesecond: L_PAR expr R_PAR         {
 whilestmt: whilestart whilesecond stmt  {
                                       printf("Entered whilestmt\n");
                                       emit(jump, NULL, NULL, NULL, $1, yylineno);
-                                      printf("Emit done\n");
                                       patchlabel($2, nextquad());
-                                      printf("Patch label done\n");
+                                      /*
                                       patchlist($3->breaklist, nextquad());
-                                      printf("First patchlist done\n");
                                       patchlist($3->contlist, $1);
+                                      */
                                     }
 
 forstmt:  	FOR L_PAR elist SEMICOLON expr SEMICOLON elist R_PAR 	{	inLoop = 1;}
@@ -795,6 +796,7 @@ break: BREAK  {
               }
 
 continue: CONTINUE  {
+                      printf("Entered continue\n");
                       make_stmt($$);
                       $$->contlist = newlist(nextquad());
                       emit(jump, NULL, NULL, NULL, 0, yylineno);

@@ -441,20 +441,20 @@ void check_arith(expr* e, const char* context){
 }
 
 int illegalop(expr* arg1, expr* arg2){
-	if(arg1->type == programfunc_e	||
+	if(arg1->type == programfunc_e		||
 		arg1->type == libraryfunc_e		||
-		arg1->type == boolexpr_e			||
-		arg1->type == newtable_e			||
-		arg1->type == constbool_e			||
+		arg1->type == boolexpr_e		||
+		arg1->type == newtable_e		||
+		arg1->type == constbool_e		||
 		arg1->type == conststring_e		||
 		arg1->type == nil_e)
 			return 1;
 
-	if(arg2->type == programfunc_e	||
+	if(arg2->type == programfunc_e		||
 		arg2->type == libraryfunc_e		||
-		arg2->type == boolexpr_e			||
-		arg2->type == newtable_e			||
-		arg2->type == constbool_e			||
+		arg2->type == boolexpr_e		||
+		arg2->type == newtable_e		||
+		arg2->type == constbool_e		||
 		arg2->type == conststring_e		||
 		arg2->type == nil_e)
 			return 1;
@@ -490,8 +490,11 @@ void patchlist(int list, int label){
 	printf("Entered patchlist\n");
 	printf("list = %d, label = %d\n", list, label);
 	while(list){
+		printf("Entered while\n");
 		int next = quads[list].label;
+		printf("Next = %d\n", next);
 		quads[list].label = label;
+		printf(" quads[%d].label = %d\n", list, label);
 		list = next;
 	}
 }
