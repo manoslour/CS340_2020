@@ -305,7 +305,7 @@ void printQuads(){
 				}
 			}
 			else
-				printf("%11s\t", (quads+i)->arg1->sym->name);
+				printf("%9s\t", (quads+i)->arg1->sym->name);
 		}
 
 		if((quads+i)->arg2 ==  NULL)
@@ -322,13 +322,13 @@ void printQuads(){
 				}
 			}
 			else
-				printf("%11s\t", (quads+i)->arg2->sym->name);
+				printf("%9s\t", (quads+i)->arg2->sym->name);
 		}
 
 		if((quads+i)->label == -1)
-			printf("%10s", "");
+			printf("%9s", "");
 		else
-			printf("%10d", ((quads+i)->label)+1);
+			printf("%9d", ((quads+i)->label)+1);
 		}
   printf("\n\n\n");
 }
