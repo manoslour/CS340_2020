@@ -57,6 +57,11 @@ typedef enum {
 	libraryfunc_s
 }symbol_t;
 
+typedef struct forprefix_t{
+	unsigned int test;
+	unsigned int enter;
+}forprefix_t;
+
 typedef struct stmt_t{
 	int breaklist;
 	int contlist;
