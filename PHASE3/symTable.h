@@ -57,6 +57,16 @@ typedef enum {
 	libraryfunc_s
 }symbol_t;
 
+typedef struct forprefix_t{
+	unsigned int test;
+	unsigned int enter;
+}forprefix_t;
+
+typedef struct stmt_t{
+	int breaklist;
+	int contlist;
+}stmt_t;
+
 typedef struct expr {
 	expr_t type;
 	struct symbol* sym;
@@ -188,6 +198,14 @@ void patchlabel(unsigned int quadNo, unsigned int label);
 expr* make_call(expr* lv, expr* reserved_elist, unsigned int line);
 
 expr* newexpr_constnum(double i);
+
+void make_stmt(stmt_t* s);
+
+int newlist(int i);
+
+int mergelist(int l1, int l2);
+
+void patchlist(int list, int label);
 
 void comperror(char* format, const char* context);
 

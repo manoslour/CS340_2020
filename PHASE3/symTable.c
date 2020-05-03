@@ -305,7 +305,7 @@ void printQuads(){
 				}
 			}
 			else
-				printf("%11s\t", (quads+i)->arg1->sym->name);
+				printf("%9s\t", (quads+i)->arg1->sym->name);
 		}
 
 		if((quads+i)->arg2 ==  NULL)
@@ -322,13 +322,13 @@ void printQuads(){
 				}
 			}
 			else
-				printf("%11s\t", (quads+i)->arg2->sym->name);
+				printf("%9s\t", (quads+i)->arg2->sym->name);
 		}
 
 		if((quads+i)->label == -1)
-			printf("%10s", "");
+			printf("%9s", "");
 		else
-			printf("%10d", ((quads+i)->label)+1);
+			printf("%9d", ((quads+i)->label)+1);
 		}
   printf("\n\n\n");
 }
@@ -441,25 +441,62 @@ void check_arith(expr* e, const char* context){
 }
 
 int illegalop(expr* arg1, expr* arg2){
-	if(arg1->type == programfunc_e	||
+	if(arg1->type == programfunc_e		||
 		arg1->type == libraryfunc_e		||
-		arg1->type == boolexpr_e			||
-		arg1->type == newtable_e			||
-		arg1->type == constbool_e			||
+		arg1->type == boolexpr_e		||
+		arg1->type == newtable_e		||
+		arg1->type == constbool_e		||
 		arg1->type == conststring_e		||
 		arg1->type == nil_e)
 			return 1;
 
-	if(arg2->type == programfunc_e	||
+	if(arg2->type == programfunc_e		||
 		arg2->type == libraryfunc_e		||
-		arg2->type == boolexpr_e			||
-		arg2->type == newtable_e			||
-		arg2->type == constbool_e			||
+		arg2->type == boolexpr_e		||
+		arg2->type == newtable_e		||
+		arg2->type == constbool_e		||
 		arg2->type == conststring_e		||
 		arg2->type == nil_e)
 			return 1;
 
 		return 0;
+}
+
+void make_stmt(stmt_t* s){
+	printf("Entered make_stmt\n");
+	s->breaklist = s->contlist = 0;
+}
+
+int newlist(int i){
+	quads[i].label = 0;
+	return i;
+}
+
+int mergelist(int l1, int l2){
+	if(!l1)
+		return l2;
+	else if(!l2)
+		return l1;
+	else{
+		int i = l1;
+		while(quads[i].label)
+			i = quads[i].label;
+		quads[i].label = l2;
+		return l1;
+	}
+}
+
+void patchlist(int list, int label){
+	printf("Entered patchlist\n");
+	printf("list = %d, label = %d\n", list, label);
+	while(list > 0){
+		printf("Entered while\n");
+		int next = quads[list].label;
+		printf("Next = %d\n", next);
+		quads[list].label = label;
+		printf(" quads[%d].label = %d\n", list, label);
+		list = next;
+	}
 }
 
 //----------------------------------------------------------------------------------------------
