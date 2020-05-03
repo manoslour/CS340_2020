@@ -37,5 +37,8 @@ while (x-y > z-w)
     else
         x = x - z;
 */
+/*
 for(i = 0; i < N; ++i);
     print("*");
+*/
+a = x >= y;
