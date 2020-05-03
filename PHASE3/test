@@ -30,5 +30,12 @@ if(a || b)
 else
     y = z;
 */
-while (x < y)
-    x = z;
+/*
+while (x-y > z-w)
+    if(b)
+        break;
+    else
+        x = x - z;
+*/
+for(i = 0; i < N; ++i);
+    print("*");
