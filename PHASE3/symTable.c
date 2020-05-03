@@ -489,7 +489,7 @@ int mergelist(int l1, int l2){
 void patchlist(int list, int label){
 	printf("Entered patchlist\n");
 	printf("list = %d, label = %d\n", list, label);
-	while(list){
+	while(list > 0){
 		printf("Entered while\n");
 		int next = quads[list].label;
 		printf("Next = %d\n", next);
