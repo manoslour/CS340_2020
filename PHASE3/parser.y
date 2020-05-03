@@ -25,20 +25,21 @@
 %union{
   int intValue;
   double realValue;
-	unsigned int unsignedValue;
   char* stringValue;
+	unsigned int unsignedValue;
   struct symbol* symNode;
 	struct expr* exprNode;
 	struct call* callNode;
   struct stmt_t* stmtNode;
+  struct forprefix_t* forprefixNode;
 }
 
 %type <stringValue> funcname
+%type <forprefixNode> forprefix
 %type <symNode> funcprefix funcdef
-%type <intValue> whilestart whilesecond
 %type <stmtNode> stmt stmtlist break continue
 %type <callNode> callsuffix normcall methodcall
-%type <unsignedValue> funcbody ifprefix elseprefix
+%type <unsignedValue> funcbody ifprefix elseprefix whilestart whilesecond N M
 %type <exprNode> lvalue tableitem primary assignexpr call term tablemake expr elist indexed indexedelem const
 %token <realValue> REAL
 %token <intValue> INTEGER 
@@ -766,15 +767,46 @@ whilestmt: whilestart whilesecond stmt  {
                                       printf("Entered whilestmt\n");
                                       emit(jump, NULL, NULL, NULL, $1, yylineno);
                                       patchlabel($2, nextquad());
-                                      /*
                                       patchlist($3->breaklist, nextquad());
                                       patchlist($3->contlist, $1);
-                                      */
                                     }
 
-forstmt:  	FOR L_PAR elist SEMICOLON expr SEMICOLON elist R_PAR 	{	inLoop = 1;}
-			      stmt { fprintf(fp, "forstm: for(elist; expr; elist) stmt at line %d --> %s\n", yylineno, yytext);}
-			      ;
+N:          {
+              printf("Entered N: ");
+              $$ = nextquad();
+              printf("$$ = %d\n", $$);
+              emit(jump,NULL, NULL, NULL, 0, yylineno);
+            }
+
+M:          {
+              printf("Entered M: ");
+              $$ = nextquad();
+              printf("$$ = %d\n", $$);
+            }
+
+forprefix:  FOR L_PAR elist SEMICOLON M expr SEMICOLON  {
+                                                          printf("Enterd forprefix\n");
+                                                          printf("$5 = %d\n", $5);
+                                                          forprefix_t* tmp = (forprefix_t*) malloc(sizeof(forprefix_t));
+                                                          tmp->test = $5;
+                                                          printf("$$->test = %d\n", tmp->test);
+                                                          tmp->enter = nextquad();
+                                                          printf("$$->enter = %d\n", tmp->enter);
+                                                          emit(if_eq, $6, newexpr_constbool(1), NULL, 0, yylineno);
+                                                          $$ = tmp;
+                                                        }
+
+forstmt:  forprefix N elist R_PAR N stmt N  { 
+                                              fprintf(fp, "forstm: for(elist; expr; elist) stmt at line %d --> %s\n", yylineno, yytext);
+                                              printf("Enterd forstm\n");
+                                              patchlabel($1->enter, $5+1); //true jump
+                                              patchlabel($2, nextquad()); //false jump
+                                              patchlabel($5, $1->test); //loop jump
+                                              patchlabel($7, $2+1); //closure jump
+
+                                              patchlist($6->breaklist, nextquad());
+                                              patchlist($6->contlist, $2+1);
+                                            }
 
 returnstmt:	RETURN SEMICOLON    {
                                   fprintf(fp, "returnstmt: RETURN SEMICOLON at line %d --> %s\n", yylineno, yytext);
