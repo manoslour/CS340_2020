@@ -203,7 +203,7 @@ void make_stmt(stmt_t* s);
 
 int newlist(int i);
 
-int mergelist(int l1, int l2);
+int mergelist(unsigned int l1, unsigned int l2);
 
 void patchlist(int list, int label);
 

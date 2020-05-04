@@ -31,7 +31,7 @@ else
     y = z;
 */
 
-while (x > y){
+while (x-y > z-w){
     if(b)
         break;
     else
@@ -44,3 +44,4 @@ for(i = 0; i < N; ++i){
         break;
 }
 */
+//function x(){};

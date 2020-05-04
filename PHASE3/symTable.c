@@ -472,19 +472,19 @@ int newlist(int i){
 	return i;
 }
 
-int mergelist(int l1, int l2){
+int mergelist(unsigned int l1, unsigned int l2){
 	printf("Entered mergelist\n");
 	if(l1 == 0)
 		return l2;
 	else if(l2 == 0)
 		return l1;
 	else{
-		printf("Not empty lists\n");
 		int i = l1;
-		while(quads[i].label)
+		while(quads[i].label > 0){
 			i = quads[i].label;
-		quads[i].label = l2;
-		return l1;
+		}
+        quads[i].label = l2;
+        return l1;
 	}
 }
 

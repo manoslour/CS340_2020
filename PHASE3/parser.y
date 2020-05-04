@@ -77,8 +77,10 @@ stmtlist: stmt              {
           |stmtlist stmt		{	
                               fprintf(fp, "stmtlist: stmtlist stmt at line %d --> %s\n", yylineno, yytext);
                               printf("Entered stmtlist: stmtlist stmt\n");
-                              $$->breaklist = mergelist($1->breaklist, $2->breaklist);
-                              $$->contlist = mergelist($1->contlist, $2->contlist);
+                              if(loopcounter != 0){
+                                $$->breaklist = mergelist($1->breaklist, $2->breaklist);
+                                $$->contlist = mergelist($1->contlist, $2->contlist);
+                              }
                             }
           ;
 
@@ -757,9 +759,12 @@ ifstmt: ifprefix stmt                   {
                                           patchlabel($1, $3+1);
                                           patchlabel($3, nextquad());
                                           printf("$2->breakist = %d | $4->breaklist = %d\n", $2->breaklist, $4->breaklist);
-                                          // Edw den prepei na mpei mergelist?
-                                          $$->breaklist = mergelist($2->breaklist, $4->breaklist);
-                                          $$->contlist = mergelist($2->contlist, $4->contlist);
+
+                                          stmt_t* tmp = (stmt_t*) malloc(sizeof(stmt_t));
+                                          printf("Entering mergelist\n");
+                                          tmp->breaklist = mergelist($2->breaklist, $4->breaklist);
+                                          tmp->contlist = mergelist($2->contlist, $4->contlist);
+                                          $$ = tmp;
                                         }
 
 whilestart: WHILE                       {
