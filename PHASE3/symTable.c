@@ -473,11 +473,13 @@ int newlist(int i){
 }
 
 int mergelist(int l1, int l2){
-	if(!l1)
+	printf("Entered mergelist\n");
+	if(l1 == 0)
 		return l2;
-	else if(!l2)
+	else if(l2 == 0)
 		return l1;
 	else{
+		printf("Not empty lists\n");
 		int i = l1;
 		while(quads[i].label)
 			i = quads[i].label;

@@ -35,10 +35,12 @@ while (x > y){
     if(b)
         break;
     else
-        x = x + z;
+        x = x - z;
 }
 
 /*
-for(i = 0; i < N; ++i);
-    print("*");
+for(i = 0; i < N; ++i){
+    if(b)
+        break;
+}
 */

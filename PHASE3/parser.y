@@ -758,6 +758,8 @@ ifstmt: ifprefix stmt                   {
                                           patchlabel($3, nextquad());
                                           printf("$2->breakist = %d | $4->breaklist = %d\n", $2->breaklist, $4->breaklist);
                                           // Edw den prepei na mpei mergelist?
+                                          $$->breaklist = mergelist($2->breaklist, $4->breaklist);
+                                          $$->contlist = mergelist($2->contlist, $4->contlist);
                                         }
 
 whilestart: WHILE                       {
@@ -805,7 +807,7 @@ forprefix:  FOR L_PAR elist SEMICOLON M expr SEMICOLON  {
                                                           $$ = tmp;
                                                         }
 
-forstmt:  forprefix N elist R_PAR N stmt N              { 
+forstmt:  forprefix N elist R_PAR N block N              { 
                                                           fprintf(fp, "forstm: for(elist; expr; elist) stmt at line %d --> %s\n", yylineno, yytext);
                                                           printf("Enterd forstm\n");
                                                           patchlabel($1->enter, $5+1); //true jump
