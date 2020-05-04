@@ -39,7 +39,7 @@
 %type <forprefixNode> forprefix
 %type <symNode> funcprefix funcdef
 %type <callNode> callsuffix normcall methodcall
-%type <stmtNode> stmt stmtlist break continue block
+%type <stmtNode> stmt stmtlist break continue block ifstmt
 %type <unsignedValue> funcbody ifprefix elseprefix whilestart whilecond N M
 %type <exprNode> lvalue tableitem primary assignexpr call term tablemake expr elist indexed indexedelem const
 %token <realValue> REAL
@@ -89,6 +89,7 @@ stmt:     expr SEMICOLON        {
                                 }
           |ifstmt               { fprintf(fp, "stmt: ifstmt at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered stmt: ifstmt\n");
+                                  $$ = $1;
                                 }
           |whilestmt            { fprintf(fp, "stmt: whilestmt at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered stmt: whilestmt\n");
@@ -748,24 +749,26 @@ ifstmt: ifprefix stmt                   {
                                           fprintf(fp, "ifstmt: ifprefix stmt at line %d --> %s\n", yylineno, yytext);
                                           printf("Entered ifstmt: ifprefix stmt\n");
                                           patchlabel($1, nextquad());
+                                          $$ = $2;
                                         }
         |ifprefix stmt elseprefix stmt  {
                                           fprintf(fp, "ifstmt: ifprefix stmt elseprefix stmt at line %d --> %s\n", yylineno, yytext);
                                           printf("Entered ifstmt: ifprefix stmt elseprefix stmt\n");
                                           patchlabel($1, $3+1);
                                           patchlabel($3, nextquad());
+                                          printf("$2->breakist = %d | $4->breaklist = %d\n", $2->breaklist, $4->breaklist);
+                                          // Edw den prepei na mpei mergelist?
                                         }
 
 whilestart: WHILE                       {
                                           fprintf(fp, "whilestart: WHILE at line %d --> %s\n", yylineno, yytext);
                                           printf("Entered whilestart\n");
                                           $$ = nextquad();
-                                          printf("$$ = %d\n", $$);
                                         }
 
 whilecond: L_PAR expr R_PAR           {
                                           fprintf(fp, "whilesecond: (expr) at line %d --> %s\n", yylineno, yytext);
-                                          printf("Entered whilesecond\n");
+                                          printf("Entered whilecond\n");
                                           emit(if_eq, $2, newexpr_constbool(1), NULL, nextquad()+2, yylineno);
                                           $$ = nextquad();
                                           emit(jump, NULL, NULL, NULL, 0, yylineno);
@@ -776,7 +779,6 @@ whilestmt: whilestart whilecond block {
                                           printf("Entered whilestmt\n");
                                           emit(jump, NULL, NULL, NULL, $1, yylineno);
                                           patchlabel($2, nextquad());
-                                          printf("loopcounter = %d\n", loopcounter);
                                           patchlist($3->breaklist, nextquad());
                                           patchlist($3->contlist, $1);
                                         }
