@@ -32,13 +32,9 @@ else
 */
 /*
 while (x-y > z-w)
-    if(b)
-        break;
-    else
-        x = x - z;
+    x = x - z;
 */
-/*
+
 for(i = 0; i < N; ++i);
     print("*");
-*/
-a = x >= y;
+
