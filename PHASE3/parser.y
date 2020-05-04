@@ -40,7 +40,7 @@
 %type <symNode> funcprefix funcdef
 %type <callNode> callsuffix normcall methodcall
 %type <stmtNode> stmt stmtlist break continue block
-%type <unsignedValue> funcbody ifprefix elseprefix whilestart whilesecond N M
+%type <unsignedValue> funcbody ifprefix elseprefix whilestart whilecond N M
 %type <exprNode> lvalue tableitem primary assignexpr call term tablemake expr elist indexed indexedelem const
 %token <realValue> REAL
 %token <intValue> INTEGER 
@@ -87,8 +87,12 @@ stmt:     expr SEMICOLON        {
                                   printf("Entered stmt: expr;\n");
                                   printf("$$->breaklist = %d\n", $$->breaklist);  
                                 }
-          |ifstmt               { fprintf(fp, "stmt: ifstmt at line %d --> %s\n", yylineno, yytext);}
-          |whilestmt            { fprintf(fp, "stmt: whilestmt at line %d --> %s\n", yylineno, yytext);}
+          |ifstmt               { fprintf(fp, "stmt: ifstmt at line %d --> %s\n", yylineno, yytext);
+                                  printf("Entered stmt: ifstmt\n");
+                                }
+          |whilestmt            { fprintf(fp, "stmt: whilestmt at line %d --> %s\n", yylineno, yytext);
+                                  printf("Entered stmt: whilestmt\n");
+                                }
           |forstmt				      {	fprintf(fp, "stmt: forstmt at line %d --> %s\n", yylineno, yytext);}
           |returnstmt			      {	fprintf(fp, "stmt: returnstmt at line %d --> %s\n", yylineno, yytext);}
           |break SEMICOLON		  {
@@ -601,33 +605,30 @@ indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR {
                                                   }
 				      ;
 
-block:        LCURLY_BR	  {
-                            fprintf(fp, "block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
-                            loopcounter++;
-                            currentscope++;
-                          }
-              RCURLY_BR   {
-                            fprintf(fp, "block: LCURLY_BR RCURLY_BR at line %d --> %s\n", yylineno, yytext);
-                            hideScope(currentscope);
-                            loopcounter--;
-                            currentscope--;
-                          }
-              |LCURLY_BR	{
-                            fprintf(fp, "block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
-                            loopcounter++;
-                            currentscope++;
-                          }
-              stmtlist  	{	
-                            fprintf(fp, "block: LCURLY_BR  stmtlist at line %d --> %s\n", yylineno, yytext);
-                            $$ = $2;  
-                          }
-			        RCURLY_BR	  {
-                            fprintf(fp, "block: LCURLY_BR stmtlist RCURLY_BR at line %d --> %s\n", yylineno, yytext);
-                            hideScope(currentscope);
-                            loopcounter--;
-                            currentscope--;
-                          }
-			        ;
+block:  blockstart blockend           { fprintf(fp, "block: blockstart blockend at line %d --> %s\n", yylineno, yytext);}
+        |blockstart stmtlist blockend {
+                                        fprintf(fp, "block: blockstart stmtlist blockend at line %d --> %s\n", yylineno, yytext);
+                                        printf("Entered block\n");
+                                        $$ = $2;
+                                      }
+        ;
+
+blockstart: LCURLY_BR { 
+                        fprintf(fp, "blockstart: { at line %d --> %s\n", yylineno, yytext);
+                        printf("Entered blockstart\n");
+                        ++loopcounter;
+                        currentscope++;
+                        printf("loopcounter = %d\n", loopcounter);
+                      }
+
+blockend: RCURLY_BR { 
+                      fprintf(fp, "blockend: } at line %d --> %s\n", yylineno, yytext);
+                      printf("Entered blockend\n");
+                      hideScope(currentscope);
+                      --loopcounter;
+                      currentscope--;
+                      printf("loopcounter = %d\n", loopcounter);
+                    }
 
 funcdef:      funcprefix funcargs funcbody	{
                                               fprintf(fp, "funcdef: funcprefix funcargs funcbody at line %d --> %s\n", yylineno, yytext);
@@ -762,7 +763,7 @@ whilestart: WHILE                       {
                                           printf("$$ = %d\n", $$);
                                         }
 
-whilesecond: L_PAR expr R_PAR           {
+whilecond: L_PAR expr R_PAR           {
                                           fprintf(fp, "whilesecond: (expr) at line %d --> %s\n", yylineno, yytext);
                                           printf("Entered whilesecond\n");
                                           emit(if_eq, $2, newexpr_constbool(1), NULL, nextquad()+2, yylineno);
@@ -770,11 +771,12 @@ whilesecond: L_PAR expr R_PAR           {
                                           emit(jump, NULL, NULL, NULL, 0, yylineno);
                                         }
 
-whilestmt: whilestart whilesecond block {
+whilestmt: whilestart whilecond block {
                                           fprintf(fp, "whilestmt: while(expr) stmt at line %d --> %s\n", yylineno, yytext);
                                           printf("Entered whilestmt\n");
                                           emit(jump, NULL, NULL, NULL, $1, yylineno);
                                           patchlabel($2, nextquad());
+                                          printf("loopcounter = %d\n", loopcounter);
                                           patchlist($3->breaklist, nextquad());
                                           patchlist($3->contlist, $1);
                                         }
