@@ -1,25 +1,24 @@
  %{
-   #include <stdio.h>
-   #include "stack.h"
-   #include "symTable.h"
-
-   int yyerror(char* yaccProvidedMessage);
-   extern int yylex(void);
-
-   FILE *fp;
-   symbol *tmp;
-   SymbolType type;
-   extern FILE *yyin;
-   extern int yylineno;
-   extern char *yytext;
-   unsigned int inFunc = 0;
-   unsigned int inLoop = 0;
-   unsigned int funcprefix = 0;
-   offsetStack *scopeoffsetStack = NULL;
-   unsigned int betweenFunc = 0;
-   unsigned int loopcounter = 0;
-   unsigned int currentscope = 0;
-   unsigned int breakcount = 0;
+  #include <stdio.h>
+  #include "stack.h"
+  #include "symTable.h"
+  int yyerror(char* yaccProvidedMessage);
+  extern int yylex(void);
+  FILE *fp;
+  symbol *tmp;
+  SymbolType type;
+  extern FILE *yyin;
+  extern int yylineno;
+  extern char *yytext;
+  unsigned int inFunc = 0;
+  unsigned int inLoop = 0;
+  unsigned int funcprefix = 0;
+  unsigned int breakcount = 0;
+  unsigned int betweenFunc = 0;
+  unsigned int loopcounter = 0;
+  unsigned int currentscope = 0;
+  offsetStack *scopeoffsetStack = NULL;
+  counterStack *loopcounterStack = NULL;
 %}
 
 //%defines
@@ -637,7 +636,7 @@ funcdef:      funcprefix funcargs funcbody	{
                                               fprintf(fp, "funcdef: funcprefix funcargs funcbody at line %d --> %s\n", yylineno, yytext);
                                               exitscopespace();
                                               $1->totalLocals = $3;
-                                              int offset = pop(scopeoffsetStack); // pop and get pre scope offset
+                                              int offset = popOffset(scopeoffsetStack); // pop and get pre scope offset
                                               restorecurrscopeoffset(offset);
                                               $$ = $1;
                                               emit(funcend, NULL, NULL, lvalue_expr($1), -1, yylineno);
@@ -649,7 +648,7 @@ funcprefix:		FUNCTION funcname	            {
                                               $$ = hashInsert($2, currentscope, yylineno, programfunc_s, currscopespace(), currscopeoffset());
                                               $$->iaddress = nextquadlabel();
                                               emit(funcstart, NULL, NULL, lvalue_expr($$), -1, yylineno);
-                                              push(scopeoffsetStack, currscopeoffset()); // Save current offset
+                                              pushOffset(scopeoffsetStack, currscopeoffset()); // Save current offset
                                               enterscopespace();
                                               resetformalargsoffset();
                                             }
@@ -893,7 +892,8 @@ int main(int argc, char** argv){
     else{
         yyin = stdin;
     }
-    scopeoffsetStack = initStack();
+    scopeoffsetStack = initOffsetStack();
+    loopcounterStack = initCounterStack();
     initialize();
     yyparse();
     printQuads();
