@@ -1,27 +1,27 @@
 #include "stack.h"
 
-StackNode* initStack(){
-    StackNode *tmp = (StackNode*) malloc(sizeof(StackNode));
+offsetStack* initStack(){
+    offsetStack *tmp = (offsetStack*) malloc(sizeof(offsetStack));
     tmp->next = NULL;
     return tmp;
 }
 
-int isEmpty(StackNode *root){
+int isEmpty(offsetStack *root){
     if(root == NULL)
         return 1;
     else
         return 0;
 }
 
-unsigned int peek(StackNode *root){
+unsigned int peek(offsetStack *root){
     if(isEmpty(root))
         return -1;
     else
         return root->numoflocals;
 }
 
-void push(StackNode *root, unsigned int offset){
-    StackNode *newNode = (StackNode*) malloc(sizeof(StackNode));
+void push(offsetStack *root, unsigned int offset){
+    offsetStack *newNode = (offsetStack*) malloc(sizeof(offsetStack));
     newNode->numoflocals = offset;
     newNode->next = root;
     root = newNode;
@@ -29,7 +29,7 @@ void push(StackNode *root, unsigned int offset){
     printf("Pushed node to stack\n");
 }
 
-unsigned int pop(StackNode *root){
+unsigned int pop(offsetStack *root){
     unsigned int offset;
     if(isEmpty(root)){
         return -1;
@@ -44,7 +44,7 @@ unsigned int pop(StackNode *root){
 /*
 int main(){
 
-    StackNode *root = NULL;
+    offsetStack *root = NULL;
 
     push(&root, 10);
     push(&root, 20);
