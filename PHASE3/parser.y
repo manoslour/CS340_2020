@@ -15,10 +15,11 @@
    unsigned int inFunc = 0;
    unsigned int inLoop = 0;
    unsigned int funcprefix = 0;
-   StackNode *scopeoffsetStack = NULL;
+   offsetStack *scopeoffsetStack = NULL;
    unsigned int betweenFunc = 0;
    unsigned int loopcounter = 0;
    unsigned int currentscope = 0;
+   unsigned int breakcount = 0;
 %}
 
 //%defines
@@ -43,7 +44,7 @@
 %type <unsignedValue> funcbody ifprefix elseprefix whilestart whilecond N M
 %type <exprNode> lvalue tableitem primary assignexpr call term tablemake expr elist indexed indexedelem const
 %token <realValue> REAL
-%token <intValue> INTEGER 
+%token <intValue> INTEGER
 %token <stringValue> ID STRING
 %token IF ELSE WHILE FOR FUNCTION RETURN BREAK CONTINUE AND NOT OR LOCAL TRUE FALSE NIL
 %token ASSIGN PLUS MINUS MULT DIV MOD EQUAL NOT_EQUAL INCR DECR GREATER LESS GREATER_EQ LESS_EQ
@@ -69,25 +70,25 @@ program:  stmtlist  {	fprintf(fp, "promgram: stmtlist at line %d --> %s\n", yyli
 			|
 			;
 
-stmtlist: stmt              { 
+stmtlist: stmt              {
                               fprintf(fp, "stmtlist: stmt at line %d --> %s\n", yylineno, yytext);
                               printf("Entered stmtlist: stmt\n");
                               $$ = $1;
                             }
-          |stmtlist stmt		{	
+          |stmtlist stmt		{
                               fprintf(fp, "stmtlist: stmtlist stmt at line %d --> %s\n", yylineno, yytext);
                               printf("Entered stmtlist: stmtlist stmt\n");
-                              if(loopcounter != 0){
+                              if(loopcounter != 0 ){
                                 $$->breaklist = mergelist($1->breaklist, $2->breaklist);
                                 $$->contlist = mergelist($1->contlist, $2->contlist);
                               }
                             }
           ;
 
-stmt:     expr SEMICOLON        {	
+stmt:     expr SEMICOLON        {
                                   fprintf(fp, "stmt: expr SEMICOLON at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered stmt: expr;\n");
-                                  printf("$$->breaklist = %d\n", $$->breaklist);  
+                                  printf("$$->breaklist = %d\n", $$->breaklist);
                                 }
           |ifstmt               { fprintf(fp, "stmt: ifstmt at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered stmt: ifstmt\n");
@@ -112,9 +113,9 @@ stmt:     expr SEMICOLON        {
           |SEMICOLON            {	fprintf(fp, "stmt: SEMICOLON at line %d --> %s\n", yylineno, yytext);}
           ;
 
-expr:     assignexpr            {	
+expr:     assignexpr            {
                                   fprintf(fp, "expr: assignexpr at line %d --> %s\n", yylineno, yytext);
-                                  printf("Entered expr: assignexpr;\n");  
+                                  printf("Entered expr: assignexpr;\n");
                                 }
           |expr PLUS expr       {
                                   fprintf(fp, "expr: expr PLUS expr at line %d --> %s\n", yylineno, yytext);
@@ -312,7 +313,7 @@ term:     L_PAR expr R_PAR			    {
                                       if($2->type == tableitem_e){
                                         $$ = emit_iftableitem($2, yylineno);
                                         emit(add, $$, newexpr_constnum(1), $$, -1, yylineno);
-                                        emit(tablesetelem, $2, $2->index, $$, -1, yylineno);
+                                        emit(tablesetelem, $2->index, $$, $2, -1, yylineno);
 
                                       }
                                       else{
@@ -331,7 +332,7 @@ term:     L_PAR expr R_PAR			    {
                                         expr* val = emit_iftableitem($1, yylineno);
                                         emit(assign, val, NULL, $$, -1, yylineno);
                                         emit(add, val, newexpr_constnum(1), val, -1, yylineno);
-                                        emit(tablesetelem, $1, $1->index, val, -1, yylineno);
+                                        emit(tablesetelem, $1->index, val, $1, -1, yylineno);
                                       }
                                       else{
                                         emit(assign, $1, NULL, $$, -1, yylineno);
@@ -344,7 +345,7 @@ term:     L_PAR expr R_PAR			    {
                                       if($2->type == tableitem_e){
                                         $$ = emit_iftableitem($2, yylineno);
                                         emit(sub, $$, newexpr_constnum(1), $$, -1, yylineno);
-                                        emit(tablesetelem, $2, $2->index, $$, -1, yylineno);
+                                        emit(tablesetelem, $2->index, $$, $2, -1, yylineno);
                                       }
                                       else{
                                         emit(sub, $2, newexpr_constnum(1), $2, -1, yylineno);
@@ -362,7 +363,7 @@ term:     L_PAR expr R_PAR			    {
                                         expr* val = emit_iftableitem($1, yylineno);
                                         emit(assign, val, NULL, $$, -1, yylineno);
                                         emit(sub, val, newexpr_constnum(1), val, -1, yylineno);
-                                        emit(tablesetelem, $1, $1->index, val, -1, yylineno);
+                                        emit(tablesetelem, $1->index, val, $1, -1, yylineno);
                                       }
                                       else{
                                         emit(assign, $1, NULL, $$, -1, yylineno);
@@ -379,7 +380,7 @@ assignexpr: lvalue ASSIGN expr  {
                                   fprintf(fp, "assignexpr: lvalue ASSIGN expr at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered assignexpr: lvalue = expr\n");
                                   if($1->type == tableitem_e){
-                                    emit(tablesetelem, $1, $1->index, $3, -1, yylineno);
+                                    emit(tablesetelem, $1->index, $3, $1, -1, yylineno);
                                     $$ = emit_iftableitem($1, yylineno);
                                     $$->type = assignexpr_e;
                                   }
@@ -389,7 +390,6 @@ assignexpr: lvalue ASSIGN expr  {
                                     $$->sym = newtemp();
                                     emit(assign, $1, NULL, $$, -1, yylineno);
                                   }
-                                  //printf("Exiting assignexpr\n");
                                 }
             ;
 
@@ -616,7 +616,7 @@ block:  blockstart blockend           { fprintf(fp, "block: blockstart blockend 
                                       }
         ;
 
-blockstart: LCURLY_BR { 
+blockstart: LCURLY_BR {
                         fprintf(fp, "blockstart: { at line %d --> %s\n", yylineno, yytext);
                         printf("Entered blockstart\n");
                         ++loopcounter;
@@ -624,7 +624,7 @@ blockstart: LCURLY_BR {
                         printf("loopcounter = %d\n", loopcounter);
                       }
 
-blockend: RCURLY_BR { 
+blockend: RCURLY_BR {
                       fprintf(fp, "blockend: } at line %d --> %s\n", yylineno, yytext);
                       printf("Entered blockend\n");
                       hideScope(currentscope);
@@ -760,11 +760,15 @@ ifstmt: ifprefix stmt                   {
                                           patchlabel($3, nextquad());
                                           printf("$2->breakist = %d | $4->breaklist = %d\n", $2->breaklist, $4->breaklist);
 
-                                          stmt_t* tmp = (stmt_t*) malloc(sizeof(stmt_t));
-                                          printf("Entering mergelist\n");
-                                          tmp->breaklist = mergelist($2->breaklist, $4->breaklist);
-                                          tmp->contlist = mergelist($2->contlist, $4->contlist);
-                                          $$ = tmp;
+                                          if (loopcounter != 0 && breakcount != 0)
+                                          {
+                                            stmt_t* tmp = (stmt_t*) malloc(sizeof(stmt_t));
+                                            printf("Entering mergelist\n");
+                                            tmp->breaklist = mergelist($2->breaklist, $4->breaklist);
+                                            tmp->contlist = mergelist($2->contlist, $4->contlist);
+                                            $$ = tmp;
+                                            breakcount--;
+                                          }
                                         }
 
 whilestart: WHILE                       {
@@ -812,7 +816,7 @@ forprefix:  FOR L_PAR elist SEMICOLON M expr SEMICOLON  {
                                                           $$ = tmp;
                                                         }
 
-forstmt:  forprefix N elist R_PAR N block N              { 
+forstmt:  forprefix N elist R_PAR N block N              {
                                                           fprintf(fp, "forstm: for(elist; expr; elist) stmt at line %d --> %s\n", yylineno, yytext);
                                                           printf("Enterd forstm\n");
                                                           patchlabel($1->enter, $5+1); //true jump
@@ -839,6 +843,7 @@ returnstmt:	RETURN SEMICOLON    {
 break: BREAK        {
                       fprintf(fp, "break: BREAK at line %d --> %s\n", yylineno, yytext);
                       printf("Entered break\n");
+                      breakcount++;
                       if(loopcounter == 0)
                         addError("Use of break while not in loop", "", yylineno);
                       else{
@@ -852,6 +857,7 @@ break: BREAK        {
 continue: CONTINUE  {
                       fprintf(fp, "continue: CONTINUE at line %d --> %s\n", yylineno, yytext);
                       printf("Entered continue\n");
+                      breakcount++;
                       if(loopcounter == 0)
                         addError("Use of break while not in loop", "", yylineno);
                       else{
