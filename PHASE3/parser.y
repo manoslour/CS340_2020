@@ -617,6 +617,7 @@ block:  blockstart blockend           { fprintf(fp, "block: blockstart blockend 
 blockstart: LCURLY_BR {
                         fprintf(fp, "blockstart: { at line %d --> %s\n", yylineno, yytext);
                         printf("Entered blockstart\n");
+                        inFunc++;
                         ++loopcounter;
                         currentscope++;
                         printf("loopcounter = %d\n", loopcounter);
@@ -626,6 +627,7 @@ blockend: RCURLY_BR {
                       fprintf(fp, "blockend: } at line %d --> %s\n", yylineno, yytext);
                       printf("Entered blockend\n");
                       hideScope(currentscope);
+                      inFunc--;
                       --loopcounter;
                       currentscope--;
                       printf("loopcounter = %d\n", loopcounter);
@@ -831,18 +833,17 @@ forstmt:  forprefix N elist R_PAR N block N              {
 
 returnstmt:	RETURN SEMICOLON    {
                                   fprintf(fp, "returnstmt: RETURN SEMICOLON at line %d --> %s\n", yylineno, yytext);
-                                  //if (inFunc == 0)
-                                    //addError("Use of return while not in function", "", yylineno);
-                                  //else
+                                  if (inFunc == 0)
+                                    addError("Use of return while not in function", "", yylineno);
+                                  else
                                     emit(ret, NULL, NULL, NULL, -1, yylineno);
                                 }
 			      |RETURN expr SEMICOLON   {
                                         fprintf(fp, "returnstmt: RETURN expr SEMICOLON at line %d --> %s\n", yylineno, yytext);
-                                        //if (inFunc == 0)
-                                          //addError("Use of return while not in function", "", yylineno);
-                                        printf("Entered returnstmt: return expr\n");
-                                        //printf("expr = %s\n", $2->sym->name);
-                                        emit(ret, NULL, NULL, $2, -1, yylineno);
+                                        if (inFunc == 0)
+                                          addError("Use of return while not in function", "", yylineno);
+                                        else
+                                          emit(ret, NULL, NULL, $2, -1, yylineno);
                                       }
 			      ;
 
