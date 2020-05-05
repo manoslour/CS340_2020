@@ -16,9 +16,6 @@
 #define CURR_SIZE (total * sizeof(quad))
 #define NEW_SIZE (EXPAND_SIZE * sizeof(quad) + CURR_SIZE)
 
-
-
-
 typedef enum {
 	Global,
 	Local,
@@ -60,6 +57,16 @@ typedef enum {
 	libraryfunc_s
 }symbol_t;
 
+typedef struct forprefix_t{
+	unsigned int test;
+	unsigned int enter;
+}forprefix_t;
+
+typedef struct stmt_t{
+	int breaklist;
+	int contlist;
+}stmt_t;
+
 typedef struct expr {
 	expr_t type;
 	struct symbol* sym;
@@ -78,9 +85,6 @@ typedef struct quad {
 	unsigned int label;
 	unsigned int line;
 }quad;
-
-
-quad* quads; 
 
 typedef struct symbol {
 	char *name;
@@ -123,9 +127,11 @@ void printQuads();
 
 symbol* newtemp();
 
+void initialize();
+
 char* newtempname();
 
-void initialize();
+unsigned nextquad();
 
 void printScopeList();
 
@@ -151,11 +157,11 @@ expr* lvalue_expr(symbol* sym);
 
 unsigned int currscopeoffset();
 
-expr* newexpr_constbool (unsigned int b);
-
-void patchlabel (unsigned quadNo, unsigned label);
-
 expr* newexpr_conststring(char* s);
+
+int illegalop(expr* arg1, expr* arg2);
+
+expr* newexpr_constbool(unsigned int b);
 
 void hideScope(unsigned int scope);
 
@@ -185,8 +191,6 @@ void resetfunctionlocalsoffset();
 
 void restorecurrscopeoffset(unsigned int n);
 
-unsigned nextquad (void);
-
 unsigned int nextquadlabel();
 
 void patchlabel(unsigned int quadNo, unsigned int label);
@@ -194,6 +198,14 @@ void patchlabel(unsigned int quadNo, unsigned int label);
 expr* make_call(expr* lv, expr* reserved_elist, unsigned int line);
 
 expr* newexpr_constnum(double i);
+
+void make_stmt(stmt_t* s);
+
+int newlist(int i);
+
+int mergelist(unsigned int l1, unsigned int l2);
+
+void patchlist(int list, int label);
 
 void comperror(char* format, const char* context);
 

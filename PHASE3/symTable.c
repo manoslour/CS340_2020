@@ -305,7 +305,7 @@ void printQuads(){
 				}
 			}
 			else
-				printf("%11s\t", (quads+i)->arg1->sym->name);
+				printf("%9s\t", (quads+i)->arg1->sym->name);
 		}
 
 		if((quads+i)->arg2 ==  NULL)
@@ -322,13 +322,13 @@ void printQuads(){
 				}
 			}
 			else
-				printf("%11s\t", (quads+i)->arg2->sym->name);
+				printf("%9s\t", (quads+i)->arg2->sym->name);
 		}
 
 		if((quads+i)->label == -1)
-			printf("%10s", "");
+			printf("%9s", "");
 		else
-			printf("%10d", ((quads+i)->label)+1);
+			printf("%9d", ((quads+i)->label)+1);
 		}
   printf("\n\n\n");
 }
@@ -472,28 +472,29 @@ int newlist(int i){
 	return i;
 }
 
-int mergelist(int l1, int l2){
-	if(!l1)
+int mergelist(unsigned int l1, unsigned int l2){
+	printf("Entered mergelist\n");
+	if(l1 == 0)
 		return l2;
-	else if(!l2)
+	else if(l2 == 0)
 		return l1;
 	else{
 		int i = l1;
-		while(quads[i].label)
+		while(quads[i].label){
 			i = quads[i].label;
-		quads[i].label = l2;
-		return l1;
+		}
+				printf("EDWWWW\n" );
+        quads[i].label = l2;
+        return l1;
 	}
 }
 
 void patchlist(int list, int label){
 	printf("Entered patchlist\n");
-	printf("list = %d, label = %d\n", quads[list].label, label);
-	//printQuads();
-
-	while(list>0){
-		printf("Entered while with list = %d \n",list);
-		unsigned int next = quads[list].label;
+	printf("list = %d, label = %d\n", list, label);
+	while(list > 0){
+		printf("Entered while\n");
+		int next = quads[list].label;
 		printf("Next = %d\n", next);
 		quads[list].label = label;
 		printf(" quads[%d].label = %d\n", list, label);
