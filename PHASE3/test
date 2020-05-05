@@ -1,1 +1,5 @@
-t =[ {“x”: 0},{“y”: a+b},{-1: 0} ];
+function f() {
+    return;
+    return local x;
+    return nil;
+}
