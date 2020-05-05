@@ -17,7 +17,9 @@
    unsigned int funcprefix = 0;
    StackNode *scopeoffsetStack = NULL;
    unsigned int betweenFunc = 0;
+   unsigned int loopcounter = 0;
    unsigned int currentscope = 0;
+   unsigned int breakcount = 0;
 %}
 
 //%defines
@@ -25,20 +27,21 @@
 %union{
   int intValue;
   double realValue;
-	unsigned int unsignedValue;
   char* stringValue;
+	unsigned int unsignedValue;
   struct symbol* symNode;
 	struct expr* exprNode;
 	struct call* callNode;
   struct stmt_t* stmtNode;
+  struct forprefix_t* forprefixNode;
 }
 
 %type <stringValue> funcname
+%type <forprefixNode> forprefix
 %type <symNode> funcprefix funcdef
-%type <intValue> whilestart whilecond N M
-%type <stmtNode> stmt stmtlist break continue forprefix
 %type <callNode> callsuffix normcall methodcall
-%type <unsignedValue> funcbody ifprefix elseprefix
+%type <stmtNode> stmt stmtlist break continue block ifstmt
+%type <unsignedValue> funcbody ifprefix elseprefix whilestart whilecond N M
 %type <exprNode> lvalue tableitem primary assignexpr call term tablemake expr elist indexed indexedelem const
 %token <realValue> REAL
 %token <intValue> INTEGER
@@ -75,8 +78,10 @@ stmtlist: stmt              {
           |stmtlist stmt		{
                               fprintf(fp, "stmtlist: stmtlist stmt at line %d --> %s\n", yylineno, yytext);
                               printf("Entered stmtlist: stmtlist stmt\n");
-                              $$->breaklist = mergelist($1->breaklist, $2->breaklist);
-                              $$->contlist = mergelist($1->contlist, $2->contlist);
+                              if(loopcounter != 0 ){
+                                $$->breaklist = mergelist($1->breaklist, $2->breaklist);
+                                $$->contlist = mergelist($1->contlist, $2->contlist);
+                              }
                             }
           ;
 
@@ -85,21 +90,23 @@ stmt:     expr SEMICOLON        {
                                   printf("Entered stmt: expr;\n");
                                   printf("$$->breaklist = %d\n", $$->breaklist);
                                 }
-          |ifstmt                   { fprintf(fp, "stmt: ifstmt at line %d --> %s\n", yylineno, yytext);}
-          |whilestmt                {	fprintf(fp, "stmt: whilestmt at line %d --> %s\n", yylineno, yytext);}
+          |ifstmt               { fprintf(fp, "stmt: ifstmt at line %d --> %s\n", yylineno, yytext);
+                                  printf("Entered stmt: ifstmt\n");
+                                  $$ = $1;
+                                }
+          |whilestmt            { fprintf(fp, "stmt: whilestmt at line %d --> %s\n", yylineno, yytext);
+                                  printf("Entered stmt: whilestmt\n");
+                                }
           |forstmt				      {	fprintf(fp, "stmt: forstmt at line %d --> %s\n", yylineno, yytext);}
           |returnstmt			      {	fprintf(fp, "stmt: returnstmt at line %d --> %s\n", yylineno, yytext);}
           |break SEMICOLON		  {
 										              fprintf(fp, "stmt: BREAK SEMICOLON at line %d --> %s\n", yylineno, yytext);
-                                  if (inLoop == 0)
-                                    addError("Use of break while not in loop", "", yylineno);
-                                  //$$ = $1;
+                                  printf("Entered stmt: break;\n");
+                                  $$ = $1;
                                 }
           |continue SEMICOLON		{
 										              fprintf(fp, "stmt: CONTINUE SEMICOLON at line %d --> %s\n", yylineno, yytext);
-                                  if (inLoop == 0)
-                                    addError("Use of continue while not in loop", "", yylineno);
-                                  //$$ = $1;
+                                  $$ = $1;
                                 }
           |block                {	fprintf(fp, "stmt: block at line %d --> %s\n", yylineno, yytext);}
           |funcdef              {	fprintf(fp, "stmt: funcdef at line %d --> %s\n", yylineno, yytext);}
@@ -602,26 +609,30 @@ indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR {
                                                   }
 				      ;
 
-block:        LCURLY_BR	  {
-                            fprintf(fp, "block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
-                            currentscope++;
-                          }
-              RCURLY_BR   {
-                            fprintf(fp, "block: LCURLY_BR RCURLY_BR at line %d --> %s\n", yylineno, yytext);
-                            hideScope(currentscope);
-                            currentscope--;
-                          }
-              |LCURLY_BR	{
-                            fprintf(fp, "block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
-                            currentscope++;
-                          }
-              stmtlist  	{	fprintf(fp, "block: LCURLY_BR  stmtlist at line %d --> %s\n", yylineno, yytext);}
-			        RCURLY_BR	{
-                          fprintf(fp, "block: LCURLY_BR stmtlist RCURLY_BR at line %d --> %s\n", yylineno, yytext);
-                          hideScope(currentscope);
-                          currentscope--;
-                        }
-			        ;
+block:  blockstart blockend           { fprintf(fp, "block: blockstart blockend at line %d --> %s\n", yylineno, yytext);}
+        |blockstart stmtlist blockend {
+                                        fprintf(fp, "block: blockstart stmtlist blockend at line %d --> %s\n", yylineno, yytext);
+                                        printf("Entered block\n");
+                                        $$ = $2;
+                                      }
+        ;
+
+blockstart: LCURLY_BR {
+                        fprintf(fp, "blockstart: { at line %d --> %s\n", yylineno, yytext);
+                        printf("Entered blockstart\n");
+                        ++loopcounter;
+                        currentscope++;
+                        printf("loopcounter = %d\n", loopcounter);
+                      }
+
+blockend: RCURLY_BR {
+                      fprintf(fp, "blockend: } at line %d --> %s\n", yylineno, yytext);
+                      printf("Entered blockend\n");
+                      hideScope(currentscope);
+                      --loopcounter;
+                      currentscope--;
+                      printf("loopcounter = %d\n", loopcounter);
+                    }
 
 funcdef:      funcprefix funcargs funcbody	{
                                               fprintf(fp, "funcdef: funcprefix funcargs funcbody at line %d --> %s\n", yylineno, yytext);
@@ -657,15 +668,15 @@ funcname:     ID	                          {
                                             }
 				      ;
 
-funcargs:		   L_PAR	                      {	currentscope++;}
-				       idlist
-				       R_PAR	                      {
+funcargs:		  L_PAR	                        {	currentscope++;}
+				      idlist
+				      R_PAR	                        {
                                               fprintf(fp, "funcargs: (idlist) at line %d --> %s\n", yylineno, yytext);
                                               currentscope--;
                                               enterscopespace();
                                               resetfunctionlocalsoffset();
                                             }
-				;
+				      ;
 
 funcbody:     block	{
                       fprintf(fp, "funcbody: block at line %d --> %s\n", yylineno, yytext);
@@ -737,68 +748,87 @@ elseprefix: ELSE                        {
                                           emit(jump, NULL, NULL, NULL, 0, yylineno);
                                         }
 
-ifstmt:     ifprefix stmt                   {
+ifstmt: ifprefix stmt                   {
                                           fprintf(fp, "ifstmt: ifprefix stmt at line %d --> %s\n", yylineno, yytext);
+                                          printf("Entered ifstmt: ifprefix stmt\n");
                                           patchlabel($1, nextquad());
+                                          $$ = $2;
                                         }
         |ifprefix stmt elseprefix stmt  {
                                           fprintf(fp, "ifstmt: ifprefix stmt elseprefix stmt at line %d --> %s\n", yylineno, yytext);
+                                          printf("Entered ifstmt: ifprefix stmt elseprefix stmt\n");
                                           patchlabel($1, $3+1);
                                           patchlabel($3, nextquad());
+                                          printf("$2->breakist = %d | $4->breaklist = %d\n", $2->breaklist, $4->breaklist);
+
+                                          stmt_t* tmp = (stmt_t*) malloc(sizeof(stmt_t));
+                                          printf("Entering mergelist\n");
+                                          if (loopcounter != 0 && breakcount != 0)
+                                          {
+                                            printf("EDWWWWWWW\n");
+                                            tmp->breaklist = mergelist($2->breaklist, $4->breaklist);
+                                            tmp->contlist = mergelist($2->contlist, $4->contlist);
+                                            breakcount--;
+                                          }
+                                          $$ = tmp;
                                         }
 
-whilestart: WHILE                   {
-                                      fprintf(fp, "whilestart: WHILE at line %d --> %s\n", yylineno, yytext);
-                                      printf("Entered whilestart\n");
-                                      $$ = nextquad();
-                                      printf("$$ = %d\n", $$);
-                                    }
+whilestart: WHILE                       {
+                                          fprintf(fp, "whilestart: WHILE at line %d --> %s\n", yylineno, yytext);
+                                          printf("Entered whilestart\n");
+                                          $$ = nextquad();
+                                        }
 
-whilecond: L_PAR expr R_PAR         {
-                                      fprintf(fp, "whilecond: (expr) at line %d --> %s\n", yylineno, yytext);
-                                      printf("Entered whilecond\n");
-                                      emit(if_eq, $2, newexpr_constbool(1), NULL, nextquad()+2, yylineno);
-                                      $$ = nextquad();
-                                      emit(jump, NULL, NULL, NULL, 0, yylineno);
-                                    }
+whilecond: L_PAR expr R_PAR           {
+                                          fprintf(fp, "whilesecond: (expr) at line %d --> %s\n", yylineno, yytext);
+                                          printf("Entered whilecond\n");
+                                          emit(if_eq, $2, newexpr_constbool(1), NULL, nextquad()+2, yylineno);
+                                          $$ = nextquad();
+                                          emit(jump, NULL, NULL, NULL, 0, yylineno);
+                                        }
 
-whilestmt: whilestart whilecond stmt  {
-                                        printf("Entered whilestmt\n");
-                                        emit(jump, NULL, NULL, NULL, $1, yylineno);
-                                        patchlabel($2, nextquad());
+whilestmt: whilestart whilecond block {
+                                          fprintf(fp, "whilestmt: while(expr) stmt at line %d --> %s\n", yylineno, yytext);
+                                          printf("Entered whilestmt\n");
+                                          emit(jump, NULL, NULL, NULL, $1, yylineno);
+                                          patchlabel($2, nextquad());
+                                          patchlist($3->breaklist, nextquad());
+                                          patchlist($3->contlist, $1);
+                                        }
 
-                                        patchlist($3->breaklist, nextquad());
-                                        patchlist($3->contlist, $1);
+N:          {
+              printf("Entered N: ");
+              $$ = nextquad();
+              printf("$$ = %d\n", $$);
+              emit(jump,NULL, NULL, NULL, 0, yylineno);
+            }
 
-                                    }
-
-
-
-
-N:          {$$ = nextquad(); emit(jump,NULL, NULL, NULL, 0, yylineno);}
-M:          {$$ = nextquad();}
+M:          {
+              printf("Entered M: ");
+              $$ = nextquad();
+              printf("$$ = %d\n", $$);
+            }
 
 forprefix:  FOR L_PAR elist SEMICOLON M expr SEMICOLON  {
                                                           printf("Enterd forprefix\n");
-                                                        //  $$->breaklist = $5;
-                                                          //$$->contlist = nextquad();
-                                                        emit(if_eq, $6, newexpr_constbool(1), NULL, 0, yylineno);
+                                                          forprefix_t* tmp = (forprefix_t*) malloc(sizeof(forprefix_t));
+                                                          tmp->test = $5;
+                                                          tmp->enter = nextquad();
+                                                          emit(if_eq, $6, newexpr_constbool(1), NULL, 0, yylineno);
+                                                          $$ = tmp;
                                                         }
 
+forstmt:  forprefix N elist R_PAR N block N              {
+                                                          fprintf(fp, "forstm: for(elist; expr; elist) stmt at line %d --> %s\n", yylineno, yytext);
+                                                          printf("Enterd forstm\n");
+                                                          patchlabel($1->enter, $5+1); //true jump
+                                                          patchlabel($2, nextquad()); //false jump
+                                                          patchlabel($5, $1->test); //loop jump
+                                                          patchlabel($7, $2+1); //closure jump
 
-forstmt:  	forprefix N elist R_PAR N stmt N
-			      { fprintf(fp, "forstm: for(elist; expr; elist) stmt at line %d --> %s\n", yylineno, yytext);
-              printf("Enterd forstm\n");
-              patchlabel($1->contlist, $5+1);
-              patchlabel($2, nextquad());
-              patchlabel($5, $1->breaklist);
-              patchlabel($7, $2+1);
-
-              patchlist($6->breaklist, nextquad());
-              patchlist($6->contlist, $2+1);
-
-            }
-			      ;
+                                                          patchlist($6->breaklist, nextquad());
+                                                          patchlist($6->contlist, $2+1);
+                                                        }
 
 returnstmt:	RETURN SEMICOLON    {
                                   fprintf(fp, "returnstmt: RETURN SEMICOLON at line %d --> %s\n", yylineno, yytext);
@@ -812,18 +842,32 @@ returnstmt:	RETURN SEMICOLON    {
                                       }
 			      ;
 
-break: BREAK  {
-                printf("Entered break\n");
-                make_stmt($$);
-                $$->breaklist = newlist(nextquad());
-                emit(jump, NULL, NULL, NULL, 0, yylineno);
-              }
+break: BREAK        {
+                      fprintf(fp, "break: BREAK at line %d --> %s\n", yylineno, yytext);
+                      printf("Entered break\n");
+                      breakcount++;
+                      if(loopcounter == 0)
+                        addError("Use of break while not in loop", "", yylineno);
+                      else{
+                        make_stmt(    $$);
+                        printf("breaklist = %d | contlist = %d\n", $$->breaklist, $$->contlist);
+                        $$->breaklist = newlist(nextquad());
+                        emit(jump, NULL, NULL, NULL, 0, yylineno);
+                      }
+                    }
 
 continue: CONTINUE  {
+                      fprintf(fp, "continue: CONTINUE at line %d --> %s\n", yylineno, yytext);
                       printf("Entered continue\n");
-                      make_stmt($$);
-                      $$->contlist = newlist(nextquad());
-                      emit(jump, NULL, NULL, NULL, 0, yylineno);
+                      breakcount++;
+                      if(loopcounter == 0)
+                        addError("Use of break while not in loop", "", yylineno);
+                      else{
+                        make_stmt($$);
+                        printf("breaklist = %d | contlist = %d\n", $$->breaklist, $$->contlist);
+                        $$->contlist = newlist(nextquad());
+                        emit(jump, NULL, NULL, NULL, 0, yylineno);
+                      }
                     }
 
 %%
@@ -849,7 +893,7 @@ int main(int argc, char** argv){
     initialize();
     yyparse();
     printQuads();
-  //  printScopeList();
+    printScopeList();
     printErrorList();
 
     fclose(fp);
