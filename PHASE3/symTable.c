@@ -301,7 +301,7 @@ void printQuads(){
 					case conststring_e:
 						printf("%9s\t", (quads+i)->arg1->strConst); break;
 					default:
-						printf("Unknown case\n");
+						printf("Unknown case");
 				}
 			}
 			else
