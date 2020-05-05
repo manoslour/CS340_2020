@@ -6,17 +6,27 @@ typedef struct offsetStack{
     struct offsetStack* next;
 }offsetStack;
 
-typedef struct loopStack{
-    unsigned int counter;
-    struct loopStack* next;
-}loopStack;
+typedef struct counterStack{
+    unsigned int loopcounter;
+    struct counterStack* next;
+}counterStack;
 
-offsetStack* initStack();
+offsetStack* initOffsetStack();
 
-int isEmpty(offsetStack *root);
+int isEmptyOffset(offsetStack *root);
 
-unsigned int peek(offsetStack *root);
+unsigned int peekOffset(offsetStack *root);
 
-void push(offsetStack *root, unsigned int offset);
+void pushOffset(offsetStack *root, unsigned int offset);
 
-unsigned int pop(offsetStack *root);
+unsigned int popOffset(offsetStack *root);
+
+counterStack* initCounterStack();
+
+int isEmptyCounter(counterStack *root);
+
+unsigned int peekCounter(counterStack *root);
+
+void pushCounter(counterStack *root, unsigned int counter);
+
+unsigned int popCounter(counterStack *root);
