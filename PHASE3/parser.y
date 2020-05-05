@@ -563,7 +563,7 @@ tablemake:	L_BR elist R_BR     {
                                   t->sym = newtemp();
                                   emit(tablecreate, t, NULL, NULL, -1, yylineno);
                                   while(tmp != NULL){
-                                    emit(tablesetelem, t, newexpr_constnum(i++), tmp, -1, yylineno);
+                                    emit(tablesetelem, newexpr_constnum(i++), tmp, t, -1, yylineno);
                                     tmp = tmp->next;
                                   }
                                   $$ = t;
@@ -571,7 +571,6 @@ tablemake:	L_BR elist R_BR     {
  				    |L_BR indexed R_BR {
 					 							          fprintf(fp, "tablemake: [indexed] at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered tablemake[indexed]\n");
-                                  //printf("{%s:%d}\n", $2->strConst, (int)$2->index->numConst);
                                   expr* t = newexpr(newtable_e);
                                   t->sym = newtemp();
                                   expr* tmp = $2;
