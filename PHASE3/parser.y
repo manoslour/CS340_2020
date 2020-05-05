@@ -78,10 +78,12 @@ stmtlist: stmt              {
           |stmtlist stmt		{
                               fprintf(fp, "stmtlist: stmtlist stmt at line %d --> %s\n", yylineno, yytext);
                               printf("Entered stmtlist: stmtlist stmt\n");
+                              /*
                               if(loopcounter != 0 ){
                                 $$->breaklist = mergelist($1->breaklist, $2->breaklist);
                                 $$->contlist = mergelist($1->contlist, $2->contlist);
                               }
+                              */
                             }
           ;
 
@@ -436,15 +438,12 @@ lvalue:     ID          {
                             else{
                               sym = hashInsert(yytext, currentscope, yylineno, var_s, currscopespace(), currscopeoffset());
                               inccurrscopeoffset();
-                              //printf("Inserted local symbol %s\n", yylval.stringValue);
                             }
                           }
-                          else{
-                            if(sym->type == programfunc_s){
+                          else
+                            if(sym->type == programfunc_s)
                               printf("Warning sym is a function\n");
-                              $$ = lvalue_expr(sym);
-                            }
-                          }
+                          $$ = lvalue_expr(sym);
                         }
 
 			|DCOLON ID		    {
@@ -699,7 +698,10 @@ const: REAL 		{
                   fprintf(fp, "const: FLEX_STRING at line %d --> %s\n", yylineno, yytext);
                   $$ = newexpr_conststring($1);
                 }
-       |NIL		  {	fprintf(fp, "const: NIL at line %d --> %s\n", yylineno, yytext);}
+       |NIL		  {	
+                  fprintf(fp, "const: NIL at line %d --> %s\n", yylineno, yytext);
+                  $$ = newexpr_conststring("nil");
+                }
        |TRUE		{	fprintf(fp, "const: TRUE at line %d --> %s\n", yylineno, yytext);}
        |FALSE 	{	fprintf(fp, "const: FALSE at line %d --> %s\n", yylineno, yytext);}
        ;
@@ -829,13 +831,18 @@ forstmt:  forprefix N elist R_PAR N block N              {
 
 returnstmt:	RETURN SEMICOLON    {
                                   fprintf(fp, "returnstmt: RETURN SEMICOLON at line %d --> %s\n", yylineno, yytext);
-                                  if (inFunc == 0)
-                                    addError("Use of return while not in function", "", yylineno);
+                                  //if (inFunc == 0)
+                                    //addError("Use of return while not in function", "", yylineno);
+                                  //else
+                                    emit(ret, NULL, NULL, NULL, -1, yylineno);
                                 }
 			      |RETURN expr SEMICOLON   {
                                         fprintf(fp, "returnstmt: RETURN expr SEMICOLON at line %d --> %s\n", yylineno, yytext);
-                                        if (inFunc == 0)
-                                          addError("Use of return while not in function", "", yylineno);
+                                        //if (inFunc == 0)
+                                          //addError("Use of return while not in function", "", yylineno);
+                                        printf("Entered returnstmt: return expr\n");
+                                        //printf("expr = %s\n", $2->sym->name);
+                                        emit(ret, NULL, NULL, $2, -1, yylineno);
                                       }
 			      ;
 
@@ -866,7 +873,6 @@ continue: CONTINUE  {
                         emit(jump, NULL, NULL, NULL, 0, yylineno);
                       }
                     }
-
 %%
 
 int yyerror(char* yaccProvidedMessage){
