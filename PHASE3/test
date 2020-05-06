@@ -1,4 +1,8 @@
-while(x)
-    function g(){
-        break;
-    }
+//a = b = c = d = e = f = 1;
+
+//x = a < b or c > d and e < f;
+
+//y = not x and x or a;
+
+
+//x = x and (function (){ return false;})(2) or (function(){return true;});
