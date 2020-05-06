@@ -12,6 +12,7 @@
   extern char *yytext;
   unsigned int inFunc = 0;
   unsigned int inLoop = 0;
+  unsigned int contcount = 0;
   unsigned int funcprefix = 0;
   unsigned int breakcount = 0;
   unsigned int betweenFunc = 0;
@@ -273,7 +274,7 @@ expr:     assignexpr            {
                                     //addError("Error, illegal real operation", "", yylineno);
                                   //else{
                                     $$ = newexpr(boolexpr_e);
-                                    $$->sym = newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
                                     emit(and, $1, $3, $$, -1, yylineno);
                                   //}
                                 }
@@ -284,7 +285,7 @@ expr:     assignexpr            {
                                     //addError("Error, illegal real operation", "", yylineno);
                                   //else{
                                     $$ = newexpr(boolexpr_e);
-                                    $$->sym = newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
                                     emit(or, $1, $3, $$, -1, yylineno);
                                   //}
                                 }
@@ -388,7 +389,8 @@ assignexpr: lvalue ASSIGN expr  {
                                   else{
                                     emit(assign, $3, NULL, $1, -1, yylineno);
                                     $$ = newexpr(assignexpr_e);
-                                    $$->sym = newtemp();
+                                    $$->sym = istempexpr($3) ? $3->sym : newtemp();
+                                    //$$->sym = newtemp();
                                     emit(assign, $1, NULL, $$, -1, yylineno);
                                   }
                                 }
@@ -587,7 +589,7 @@ tablemake:	L_BR elist R_BR     {
                                   expr* tmp = $2;
                                   emit(tablecreate, t, NULL, NULL, -1, yylineno);
                                   while(tmp != NULL){
-                                    emit(tablesetelem, t, tmp, tmp->index, -1, yylineno);
+                                    emit(tablesetelem, tmp, tmp->index, t, -1, yylineno);
                                     tmp = tmp->next;
                                   }
                                   $$ = t;
@@ -823,6 +825,7 @@ M:          {
             }
 
 forprefix:  FOR L_PAR elist SEMICOLON M expr SEMICOLON  {
+                                                          fprintf(fp, "forprefix: L_PAR elist SEMICOLON M expr SEMICOLON at line %d --> %s\n", yylineno, yytext);
                                                           printf("Enterd forprefix\n");
                                                           forprefix_t* tmp = (forprefix_t*) malloc(sizeof(forprefix_t));
                                                           tmp->test = $5;
@@ -831,7 +834,7 @@ forprefix:  FOR L_PAR elist SEMICOLON M expr SEMICOLON  {
                                                           $$ = tmp;
                                                         }
 
-forstmt:  forprefix N elist R_PAR N loopstmt N              {
+forstmt:  forprefix N elist R_PAR N loopstmt N          {
                                                           fprintf(fp, "forstm: for(elist; expr; elist) stmt at line %d --> %s\n", yylineno, yytext);
                                                           printf("Enterd forstm\n");
                                                           patchlabel($1->enter, $5+1); //true jump
@@ -891,7 +894,7 @@ continue: CONTINUE  {
                       else{
                         printf("loopcounter = %d\n", loopcounter);
                         stmt_t* tmp = (stmt_t*) malloc(sizeof(stmt_t));
-                        breakcount++;
+                        contcount++;
                         make_stmt(tmp);
                         printf("breaklist = %d | contlist = %d\n", tmp->breaklist, tmp->contlist);
                         tmp->contlist = newlist(nextquad());
