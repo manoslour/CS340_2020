@@ -20,23 +20,21 @@ unsigned int peekOffset(offsetStack *root){
         return root->numoflocals;
 }
 
-void pushOffset(offsetStack *root, unsigned int offset){
+void pushOffset(offsetStack **root, unsigned int offset){
     offsetStack *newNode = (offsetStack*) malloc(sizeof(offsetStack));
     newNode->numoflocals = offset;
-    newNode->next = root;
-    root = newNode;
-    printf("Node Offset = %d\n", offset);
-    printf("Pushed node to stack\n");
+    newNode->next = *root;
+    *root = newNode;
 }
 
-unsigned int popOffset(offsetStack *root){
+unsigned int popOffset(offsetStack **root){
     unsigned int offset;
-    if(isEmptyOffset(root)){
+    if(isEmptyOffset(*root)){
         return -1;
     }
     else{
-        offset = peekOffset(root);
-        root = root->next;
+        offset = peekOffset(*root);
+        *root = (*root)->next;
         return offset;
     }
 }
@@ -57,29 +55,31 @@ int isEmptyCounter(counterStack *root){
 }
 
 unsigned int peekCounter(counterStack *root){
-    if(isEmptyCounter(root))
-        return -1;
-    else
-        return root->loopcounter;
-}
-
-void pushCounter(counterStack *root, unsigned int counter){
-    counterStack *newNode = (counterStack*) malloc(sizeof(counterStack));
-    newNode->loopcounter = counter;
-    newNode->next = root;
-    root = newNode;
-    printf("Node loopcounter = %d\n", counter);
-    printf("Pushed node to stack\n");
-}
-
-unsigned int popCounter(counterStack *root){
-    unsigned int counter;
     if(isEmptyCounter(root)){
+        printf("Stack is empty\n");
         return -1;
     }
     else{
-        counter = peekCounter(root);
-        root = root->next;
+        return root->loopcounter;
+    }
+}
+
+void pushCounter(counterStack **root, unsigned int counter){
+    counterStack *newNode = (counterStack*) malloc(sizeof(counterStack));
+    newNode->loopcounter = counter;
+    newNode->next = *root;
+    *root = newNode;
+    //printf("%d pushed to stack\n", counter);
+}
+
+unsigned int popCounter(counterStack **root){
+    unsigned int counter;
+    if(isEmptyCounter(*root)){
+        return -1;
+    }
+    else{
+        counter = peekCounter(*root);
+        *root = (*root)->next;
         return counter;
     }
 }

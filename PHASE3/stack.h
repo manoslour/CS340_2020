@@ -17,9 +17,9 @@ int isEmptyOffset(offsetStack *root);
 
 unsigned int peekOffset(offsetStack *root);
 
-void pushOffset(offsetStack *root, unsigned int offset);
+void pushOffset(offsetStack **root, unsigned int offset);
 
-unsigned int popOffset(offsetStack *root);
+unsigned int popOffset(offsetStack **root);
 
 counterStack* initCounterStack();
 
@@ -27,6 +27,6 @@ int isEmptyCounter(counterStack *root);
 
 unsigned int peekCounter(counterStack *root);
 
-void pushCounter(counterStack *root, unsigned int counter);
+void pushCounter(counterStack **root, unsigned int counter);
 
-unsigned int popCounter(counterStack *root);
+unsigned int popCounter(counterStack **root);
