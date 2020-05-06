@@ -873,11 +873,13 @@ break: BREAK        {
                         addError("Use of break while not in loop", "", yylineno);
                       else{
                         printf("loopcounter = %d\n", loopcounter);
+                        stmt_t* tmp = (stmt_t*) malloc(sizeof(stmt_t));
                         breakcount++;
-                        make_stmt($$);
-                        printf("breaklist = %d | contlist = %d\n", $$->breaklist, $$->contlist);
-                        $$->breaklist = newlist(nextquad());
+                        make_stmt(tmp);
+                        printf("breaklist = %d | contlist = %d\n", tmp->breaklist, tmp->contlist);
+                        tmp->breaklist = newlist(nextquad());
                         emit(jump, NULL, NULL, NULL, 0, yylineno);
+                        $$ = tmp;
                       }
                     }
 
@@ -888,11 +890,13 @@ continue: CONTINUE  {
                         addError("Use of break while not in loop", "", yylineno);
                       else{
                         printf("loopcounter = %d\n", loopcounter);
+                        stmt_t* tmp = (stmt_t*) malloc(sizeof(stmt_t));
                         breakcount++;
-                        make_stmt($$);
-                        printf("breaklist = %d | contlist = %d\n", $$->breaklist, $$->contlist);
-                        $$->contlist = newlist(nextquad());
+                        make_stmt(tmp);
+                        printf("breaklist = %d | contlist = %d\n", tmp->breaklist, tmp->contlist);
+                        tmp->contlist = newlist(nextquad());
                         emit(jump, NULL, NULL, NULL, 0, yylineno);
+                        $$ = tmp;
                       }
                     }
 %%
