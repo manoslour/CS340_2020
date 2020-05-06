@@ -1,5 +1,4 @@
-function f() {
-    return;
-    return local x;
-    return nil;
-}
+while(x)
+    function g(){
+        break;
+    }
