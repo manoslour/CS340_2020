@@ -91,6 +91,7 @@ typedef struct symbol {
 	bool isActive;
 	unsigned int scope;
 	unsigned int line;
+	unsigned int inFunc;
 	unsigned int iaddress;
 	symbol_t type;
 	scopespace_t space;
@@ -169,6 +170,8 @@ char* translateopcode(iopcode opcode);
 
 symbol* lookup(char* name, unsigned int scope);
 
+int findInFunc(char *name, unsigned int scope);
+
 expr* emit_iftableitem(expr* e, unsigned int line);
 
 symbol* scopelookup(char* name, unsigned int scope);
@@ -183,7 +186,7 @@ void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, 
 
 symbol* tempInsert(char *name, unsigned int scope);
 
-symbol* hashInsert(char *name, unsigned int scope, unsigned int line, symbol_t type, scopespace_t space, unsigned int offset);
+symbol* hashInsert(char *name, unsigned int scope, unsigned int line, symbol_t type, scopespace_t space, unsigned int offset, unsigned int inFunc);
 
 void resetformalargsoffset();
 
@@ -203,11 +206,16 @@ void make_stmt(stmt_t* s);
 
 int newlist(int i);
 
-int mergelist(int l1, int l2);
+int mergelist(unsigned int l1, unsigned int l2);
 
 void patchlist(int list, int label);
 
 void comperror(char* format, const char* context);
 
 void check_arith(expr* e, const char* context);
+
+unsigned int istempname(char* s);
+
+unsigned int istempexpr(expr* e);
+
 #endif

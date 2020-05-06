@@ -1,40 +1,33 @@
-//y = q.a = x;
-//x = f(y)(a,b,c,d,e);
-//sprite..move(dx,dy,dz,dw,dq);
-//x = (function(a,b){ return a; });
-//(function(){})();
-//x++;
-//t.x++;
-//t = [-4, 13, 12.34, a+b];
-//t = [{"x":0}, {"y":1}];
-//t.a.b = c.d.e=f.g.h;
-//function foo (a,b) { };
-//f(1,2);
-//f(a(1), b(2, 3));
-//test().x = 1;
-//a = x--;
-//a = t.x++;
-//++x;
-//a = ++t.x;
-//a = --t.x.y;
-//a = print+y;
-//a = (x+y)-(z*w);
-//a = x>=y;
-//b = f()>=g();
-//a = x || y && z;
-//if(x+y >= z-w)
-    //f(x,y,z);
 /*
-if(a || b)
-    x = y;
-else
-    y = z;
-*/
-/*
-while (x-y > z-w)
-    x = x - z;
+[];
+
+[1, 2, 3];
+
+[false, true, [], 5, [ "hello", "lol" ], []];
+
+[ {4: 5}, {2:18}, {"lulz": (function(){[];})},
+  {"wot": [1,2,3]}, {"wut": [{1: 2},{"bool": false},{5: print}]}
+];
+
+[{4: [{4: [{4: [{4: (function four(four){four=4;})}] }] }] }];
 */
 
-for(i = 0; i < N; ++i);
-    print("*");
+/*
+a = 4;
+b = 5;
+c = 7;
+d = 8;
+*/
+//e = a+b+c+d;
+//e = a+(b+(c+d));
+//e = -a+b;
+//e = -(a+b);
 
+//e = a*b-c/d%e;
+//e = a*(b-c/(d%e));
+
+/*
+e = -(-(a+b)/-(c+d))%e;
+a---++b+--c-d++;
+*/
+//t.x---++t[3]+--t["a"]-t.z++;

@@ -1,56 +1,85 @@
 #include "stack.h"
 
-StackNode* initStack(){
-    StackNode *tmp = (StackNode*) malloc(sizeof(StackNode));
+offsetStack* initOffsetStack(){
+    offsetStack *tmp = (offsetStack*) malloc(sizeof(offsetStack));
     tmp->next = NULL;
     return tmp;
 }
 
-int isEmpty(StackNode *root){
+int isEmptyOffset(offsetStack *root){
     if(root == NULL)
         return 1;
     else
         return 0;
 }
 
-unsigned int peek(StackNode *root){
-    if(isEmpty(root))
+unsigned int peekOffset(offsetStack *root){
+    if(isEmptyOffset(root))
         return -1;
     else
         return root->numoflocals;
 }
 
-void push(StackNode *root, unsigned int offset){
-    StackNode *newNode = (StackNode*) malloc(sizeof(StackNode));
+void pushOffset(offsetStack **root, unsigned int offset){
+    offsetStack *newNode = (offsetStack*) malloc(sizeof(offsetStack));
     newNode->numoflocals = offset;
-    newNode->next = root;
-    root = newNode;
-    printf("Node Offset = %d\n", offset);
-    printf("Pushed node to stack\n");
+    newNode->next = *root;
+    *root = newNode;
 }
 
-unsigned int pop(StackNode *root){
+unsigned int popOffset(offsetStack **root){
     unsigned int offset;
-    if(isEmpty(root)){
+    if(isEmptyOffset(*root)){
         return -1;
     }
     else{
-        offset = peek(root);
-        root = root->next;
+        offset = peekOffset(*root);
+        *root = (*root)->next;
         return offset;
     }
 }
 
-/*
-int main(){
+//-------------------------------------------------------------------
 
-    StackNode *root = NULL;
-
-    push(&root, 10);
-    push(&root, 20);
-    push(&root, 30);
-    printf("%d popped from stack\n", pop(&root));
-    printf("Top element is %d\n", peek(root));
-    return 0;
+counterStack* initCounterStack(){
+    counterStack *tmp = (counterStack*) malloc(sizeof(counterStack));
+    tmp->next = NULL;
+    return tmp;
 }
-*/
+
+int isEmptyCounter(counterStack *root){
+    if(root == NULL)
+        return 1;
+    else
+        return 0;
+}
+
+unsigned int peekCounter(counterStack *root){
+    if(isEmptyCounter(root)){
+        printf("Stack is empty\n");
+        return -1;
+    }
+    else{
+        return root->loopcounter;
+    }
+}
+
+void pushCounter(counterStack **root, unsigned int counter){
+    counterStack *newNode = (counterStack*) malloc(sizeof(counterStack));
+    newNode->loopcounter = counter;
+    newNode->next = *root;
+    *root = newNode;
+    //printf("%d pushed to stack\n", counter);
+}
+
+unsigned int popCounter(counterStack **root){
+    unsigned int counter;
+    if(isEmptyCounter(*root)){
+        return -1;
+    }
+    else{
+        counter = peekCounter(*root);
+        *root = (*root)->next;
+        return counter;
+    }
+}
