@@ -268,25 +268,25 @@ expr:     assignexpr            {
                                 }
           |expr AND expr        {
                                   fprintf(fp, "expr: expr AND expr at line %d --> %s\n", yylineno, yytext);
-                                  if(illegalop($1, $3))
+                                  //if(illegalop($1, $3))
                                     //MUST FIX FOR BOOLOP!
-                                    addError("Error, illegal real operation", "", yylineno);
-                                  else{
+                                    //addError("Error, illegal real operation", "", yylineno);
+                                  //else{
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = newtemp();
                                     emit(and, $1, $3, $$, -1, yylineno);
-                                  }
+                                  //}
                                 }
           |expr OR expr			    {
                                   fprintf(fp, "expr: expr OR expr at line %d --> %s\n", yylineno, yytext);
-                                  if(illegalop($1, $3))
+                                  //if(illegalop($1, $3))
                                     //MUST FIX FOR BOOLOP!
-                                    addError("Error, illegal real operation", "", yylineno);
-                                  else{
+                                    //addError("Error, illegal real operation", "", yylineno);
+                                  //else{
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = newtemp();
                                     emit(or, $1, $3, $$, -1, yylineno);
-                                  }
+                                  //}
                                 }
           |term					        {	fprintf(fp, "expr: term at line %d --> %s\n", yylineno, yytext);}
           ;
@@ -713,8 +713,12 @@ const: REAL 		{
                   fprintf(fp, "const: NIL at line %d --> %s\n", yylineno, yytext);
                   $$ = newexpr_conststring("nil");
                 }
-       |TRUE		{	fprintf(fp, "const: TRUE at line %d --> %s\n", yylineno, yytext);}
-       |FALSE 	{	fprintf(fp, "const: FALSE at line %d --> %s\n", yylineno, yytext);}
+       |TRUE		{	fprintf(fp, "const: TRUE at line %d --> %s\n", yylineno, yytext);
+                  $$ = newexpr_conststring("true");
+                }
+       |FALSE 	{	fprintf(fp, "const: FALSE at line %d --> %s\n", yylineno, yytext);
+                  $$ = newexpr_conststring("false");
+                }
        ;
 
 idlist:		ID	{
