@@ -213,4 +213,9 @@ void patchlist(int list, int label);
 void comperror(char* format, const char* context);
 
 void check_arith(expr* e, const char* context);
+
+unsigned int istempname(char* s);
+
+unsigned int istempexpr(expr* e);
+
 #endif

@@ -525,6 +525,14 @@ void patchlist(int list, int label){
 	}
 }
 
+unsigned int istempname(char* s){
+	return *s == '_';
+}
+
+unsigned int istempexpr(expr* e){
+	return e->sym && istempname(e->sym->name);
+}
+
 //----------------------------------------------------------------------------------------------
 
 char* newtempfuncname(){

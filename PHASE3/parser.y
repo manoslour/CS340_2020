@@ -127,7 +127,7 @@ expr:     assignexpr            {
                                       $$ = newexpr(constnum_e);
                                     else
                                       $$ = newexpr(arithexpr_e);
-                                    $$->sym = newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
                                     emit(add, $1, $3, $$, -1, yylineno);
                                   }
                                 }
@@ -140,7 +140,7 @@ expr:     assignexpr            {
                                       $$ = newexpr(constnum_e);
                                     else
                                       $$ = newexpr(arithexpr_e);
-                                    $$->sym = newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
                                     emit(sub, $1, $3, $$, -1, yylineno);
                                   }
                                 }
@@ -153,7 +153,7 @@ expr:     assignexpr            {
                                       $$ = newexpr(constnum_e);
                                     else
                                       $$ = newexpr(arithexpr_e);
-                                    $$->sym = newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
                                     emit(mul, $1, $3, $$, -1, yylineno);
                                   }
                                 }
@@ -166,7 +166,7 @@ expr:     assignexpr            {
                                       $$ = newexpr(constnum_e);
                                     else
                                       $$ = newexpr(arithexpr_e);
-                                    $$->sym = newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
                                     emit(divide, $1, $3, $$, -1, yylineno);
                                   }
                                 }
@@ -179,7 +179,7 @@ expr:     assignexpr            {
                                       $$ = newexpr(constnum_e);
                                     else
                                       $$ = newexpr(arithexpr_e);
-                                    $$->sym = newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
                                     emit(mod, $1, $3, $$, -1, yylineno);
                                   }
                                 }
@@ -189,7 +189,7 @@ expr:     assignexpr            {
                                     addError("Error, illegal boolean operation", "", yylineno);
                                   else{
                                     $$ = newexpr(boolexpr_e);
-                                    $$->sym = newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
                                     emit(if_greater, $1, $3, NULL, nextquad()+3, yylineno);
                                     emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
                                     emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
@@ -202,7 +202,7 @@ expr:     assignexpr            {
                                     addError("Error, illegal boolean operation", "", yylineno);
                                   else{
                                     $$ = newexpr(boolexpr_e);
-                                    $$->sym = newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
 
                                     emit(if_greatereq, $1, $3, NULL, nextquad()+3, yylineno);
                                     emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
@@ -216,7 +216,7 @@ expr:     assignexpr            {
                                     addError("Error, illegal boolean operation", "", yylineno);
                                   else{
                                     $$ = newexpr(boolexpr_e);
-                                    $$->sym = newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
 
                                     emit(if_less, $1, $3, NULL, nextquad()+3, yylineno);
                                     emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
@@ -230,7 +230,7 @@ expr:     assignexpr            {
                                     addError("Error, illegal boolean operation", "", yylineno);
                                   else{
                                     $$ = newexpr(boolexpr_e);
-                                    $$->sym = newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
 
                                     emit(if_lesseq, $1, $3, NULL, nextquad()+3, yylineno);
                                     emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
@@ -244,7 +244,7 @@ expr:     assignexpr            {
                                     addError("Error, illegal boolean operation", "", yylineno);
                                   else{
                                     $$ = newexpr(boolexpr_e);
-                                    $$->sym = newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
 
                                     emit(if_eq, $1, $3, NULL, nextquad()+3, yylineno);
                                     emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
@@ -258,7 +258,7 @@ expr:     assignexpr            {
                                     addError("Error, illegal boolean operation", "", yylineno);
                                   else{
                                     $$ = newexpr(boolexpr_e);
-                                    $$->sym = newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
 
                                     emit(if_noteq, $1, $3, NULL, nextquad()+3, yylineno);
                                     emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
@@ -299,13 +299,13 @@ term:     L_PAR expr R_PAR			    {
                                       fprintf(fp, "term: MINUS expr at line %d --> %s\n", yylineno, yytext);
                                       check_arith($2, "-expr");
                                       $$ = newexpr(arithexpr_e);
-                                      $$->sym = newtemp();
+                                      $$->sym = istempexpr($2) ? $2->sym : newtemp();
                                       emit(uminus, $2, NULL, $$, -1, yylineno);
                                     }
           |NOT expr	                {
                                       fprintf(fp, "term: NOT expr at line %d --> %s\n", yylineno, yytext);
                                       $$ = newexpr(boolexpr_e);
-                                      $$->sym = newtemp();
+                                      $$->sym = istempexpr($2) ? $2->sym : newtemp();
                                       emit(not, $2, NULL, $$, -1, yylineno);
                                     }
           |INCR lvalue              {
@@ -540,7 +540,10 @@ methodcall: DDOT ID L_PAR elist R_PAR {
                                       }
 				    ;
 
-elist:      expr                { fprintf(fp, "elist: expr at line %d --> %s\n", yylineno, yytext);}
+elist:      expr                { 
+                                  fprintf(fp, "elist: expr at line %d --> %s\n", yylineno, yytext);
+                                  $$ = $1;
+                                }
 		        |expr COMMA elist 	{
 								                  fprintf(fp, "elist: expr, elist at line %d --> %s\n", yylineno, yytext);
                                   $1->next = $3;
@@ -565,7 +568,10 @@ tablemake:	L_BR elist R_BR     {
                                   int i = 0;
                                   expr* tmp = $2;
                                   expr* t = newexpr(newtable_e);
-                                  t->sym = newtemp();
+                                  if($2 == NULL)
+                                    t->sym = newtemp();
+                                  else
+                                    t->sym = istempexpr($2) ? $2->sym : newtemp();
                                   emit(tablecreate, t, NULL, NULL, -1, yylineno);
                                   while(tmp != NULL){
                                     emit(tablesetelem, newexpr_constnum(i++), tmp, t, -1, yylineno);
@@ -577,7 +583,7 @@ tablemake:	L_BR elist R_BR     {
 					 							          fprintf(fp, "tablemake: [indexed] at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered tablemake[indexed]\n");
                                   expr* t = newexpr(newtable_e);
-                                  t->sym = newtemp();
+                                  t->sym = istempexpr($2) ? $2->sym : newtemp();
                                   expr* tmp = $2;
                                   emit(tablecreate, t, NULL, NULL, -1, yylineno);
                                   while(tmp != NULL){
