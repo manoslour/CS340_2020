@@ -414,15 +414,22 @@ primary:    lvalue                { fprintf(fp, "primary: lvalue at line %d --> 
 
 lvalue:     ID          {
                           fprintf(fp, "lvalue: ID at line %d --> %s\n", yylineno, yylval.stringValue);
+                          int varInFunc;
                           symbol *sym = lookup(yylval.stringValue, currentscope);
                           if(sym == NULL){
-                            sym = hashInsert(yylval.stringValue, currentscope, yylineno, var_s, currscopespace(), currscopeoffset());
+                            sym = hashInsert(yylval.stringValue, currentscope, yylineno, var_s, currscopespace(), currscopeoffset(), inFunc);
                             inccurrscopeoffset();
                             //printf("Inserted symbol %s\n", yylval.stringValue);
                           }
                           else {
                             printf("Symbol %s already defined\n", sym->name);
                             //MUST CHECK ACCESSIBILITY
+                            varInFunc = findInFunc(yylval.stringValue, currentscope);
+                            if( (sym->type == var_s) && (inFunc - varInFunc >= 1) )
+                              if(sym->scope != 0)
+                                addError("Cannot access symbol", yytext, yylineno);
+                            else
+                              fprintf(fp, "Symbol %s found and it's accessible\n", yylval.stringValue);
                           }
                           $$ = lvalue_expr(sym);
                         }
@@ -435,7 +442,7 @@ lvalue:     ID          {
                             if(tmp != NULL && tmp->type == libraryfunc_s)
                               printf("Error, collision with libfunc at line %d\n", yylineno);
                             else{
-                              sym = hashInsert(yytext, currentscope, yylineno, var_s, currscopespace(), currscopeoffset());
+                              sym = hashInsert(yytext, currentscope, yylineno, var_s, currscopespace(), currscopeoffset(), inFunc);
                               inccurrscopeoffset();
                             }
                           }
@@ -607,25 +614,21 @@ indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR {
 
 block:  LCURLY_BR	  {
                       fprintf(fp, "block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
-                      inFunc++;
                       currentscope++;
                     }
         RCURLY_BR   {
                       fprintf(fp, "block: LCURLY_BR RCURLY_BR at line %d --> %s\n", yylineno, yytext);
                       hideScope(currentscope);
-                      inFunc--;
                       currentscope--;
                     }
         |LCURLY_BR	{
                       fprintf(fp, "block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
-                      inFunc++;
                       currentscope++;
                     }
         stmtlist  	{	fprintf(fp, "block: LCURLY_BR  stmtlist at line %d --> %s\n", yylineno, yytext);}
 			  RCURLY_BR	  {
                       fprintf(fp, "block: LCURLY_BR stmtlist RCURLY_BR at line %d --> %s\n", yylineno, yytext);
                       hideScope(currentscope);
-                      inFunc--;
                       currentscope--;
                     }
 			  ;
@@ -643,7 +646,7 @@ funcdef:  funcprefix funcargs funcblockstart funcbody	funcblockend {
 
 funcprefix:		FUNCTION funcname	            {
                                               fprintf(fp, "funcprefix: FUNCTION funcname at line %d --> %s\n", yylineno, yytext);
-                                              $$ = hashInsert($2, currentscope, yylineno, programfunc_s, currscopespace(), currscopeoffset());
+                                              $$ = hashInsert($2, currentscope, yylineno, programfunc_s, currscopespace(), currscopeoffset(), inFunc);
                                               $$->iaddress = nextquadlabel();
                                               emit(funcstart, NULL, NULL, lvalue_expr($$), -1, yylineno);
                                               pushOffset(&scopeoffsetStack, currscopeoffset()); // Save current offset
@@ -662,7 +665,7 @@ funcname:     ID	                          {
                                             }
 				      ;
 
-funcargs:		  L_PAR	                        {	currentscope++;}
+funcargs:		  L_PAR	                        {	currentscope++; inFunc++;}
 				      idlist
 				      R_PAR	                        {
                                               fprintf(fp, "funcargs: (idlist) at line %d --> %s\n", yylineno, yytext);
@@ -674,6 +677,7 @@ funcargs:		  L_PAR	                        {	currentscope++;}
 
 funcbody: block {
                   fprintf(fp, "funcbody: block at line %d --> %s\n", yylineno, yytext);
+                  inFunc--;
                   $$ = currscopeoffset();
                   exitscopespace();
                 }
@@ -725,7 +729,7 @@ idlist:		ID	{
                 fprintf(fp, "idlist: ID at line %d --> %s\n", yylineno, yytext);
                 symbol *sym = lookup(yylval.stringValue, currentscope);
                 if(sym == NULL){
-                  sym = hashInsert(yylval.stringValue, currentscope, yylineno, var_s, currscopespace(), currscopeoffset());
+                  sym = hashInsert(yylval.stringValue, currentscope, yylineno, var_s, currscopespace(), currscopeoffset(), inFunc);
                   inccurrscopeoffset();
                   //printf("Inserted symbol %s\n", yylval.stringValue);
                 }
@@ -738,7 +742,7 @@ idlist:		ID	{
                               fprintf(fp, "idlist: idlist COMMA ID at line %d --> %s\n", yylineno, yytext);
                               symbol *sym = lookup(yylval.stringValue, currentscope);
                               if(sym == NULL){
-                                sym = hashInsert(yylval.stringValue, currentscope, yylineno, var_s, currscopespace(), currscopeoffset());
+                                sym = hashInsert(yylval.stringValue, currentscope, yylineno, var_s, currscopespace(), currscopeoffset(), inFunc);
                                 inccurrscopeoffset();
                                 //printf("Inserted symbol %s\n", yylval.stringValue);
                               }
