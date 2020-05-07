@@ -191,10 +191,19 @@ expr:     assignexpr            {
                                   else{
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                    //---MERIKH APOTIMHSH---
+                                    $$->truelist = newlist(nextquad());
+                                    $$->falselist = newlist(nextquad() + 1);
+                                    emit(if_greater, $1, $3, NULL, -1, yylineno);
+                                    emit(jump, NULL, NULL, NULL, -1, yylineno);
+                                    
+                                    //---OLIKH APOTIMHSH---
+                                    /*
                                     emit(if_greater, $1, $3, NULL, nextquad()+3, yylineno);
                                     emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
                                     emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
                                     emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
+                                    */
                                   }
                                 }
           |expr GREATER_EQ expr	{
@@ -267,30 +276,45 @@ expr:     assignexpr            {
                                     emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
                                   }
                                 }
-          |expr AND expr        {
+          |expr AND M expr      {
                                   fprintf(fp, "expr: expr AND expr at line %d --> %s\n", yylineno, yytext);
                                   //if(illegalop($1, $3))
                                     //MUST FIX FOR BOOLOP!
                                     //addError("Error, illegal real operation", "", yylineno);
                                   //else{
+
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
-                                    emit(and, $1, $3, $$, -1, yylineno);
+                                    //---MERIKH APOTIMHSH---
+                                    patchlabel($1->truelist, $3);
+                                    $$->truelist = $4->truelist;
+                                    $$->falselist = mergelist($1->falselist, $4->falselist);
+
+                                    //---OLIKH APOTIMHSH---
+                                    //emit(and, $1, $3, $$, -1, yylineno);
                                   //}
                                 }
-          |expr OR expr			    {
+          |expr OR M expr			  {
                                   fprintf(fp, "expr: expr OR expr at line %d --> %s\n", yylineno, yytext);
                                   //if(illegalop($1, $3))
                                     //MUST FIX FOR BOOLOP!
                                     //addError("Error, illegal real operation", "", yylineno);
                                   //else{
+
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
-                                    emit(or, $1, $3, $$, -1, yylineno);
+                                    //---MERIKH APOTIMHSH---
+                                    patchlabel($1->falselist, $3);
+                                    $$->truelist = mergelist($1->truelist, $4->truelist);
+                                    $$->falselist = $4->falselist;
+
+                                    //---OLIKH APOTIMHSH---
+                                    //emit(or, $1, $3, $$, -1, yylineno);
                                   //}
                                 }
           |term					        {	fprintf(fp, "expr: term at line %d --> %s\n", yylineno, yytext);}
           ;
+
 
 term:     L_PAR expr R_PAR			    {
                                       fprintf(fp, "term: L_PAR expr R_PAR at line %d --> %s\n", yylineno, yytext);
@@ -307,7 +331,12 @@ term:     L_PAR expr R_PAR			    {
                                       fprintf(fp, "term: NOT expr at line %d --> %s\n", yylineno, yytext);
                                       $$ = newexpr(boolexpr_e);
                                       $$->sym = istempexpr($2) ? $2->sym : newtemp();
-                                      emit(not, $2, NULL, $$, -1, yylineno);
+                                      //---MERIKH APOTIMHSH---  
+                                      $$->truelist = $2->falselist;
+                                      $$->falselist = $2->truelist;
+
+                                      //---OLIKH APOTIMHSH---
+                                      //emit(not, $2, NULL, $$, -1, yylineno);
                                     }
           |INCR lvalue              {
                                       fprintf(fp, "term: INCR lvalue at line %d --> %s\n", yylineno, yytext);
