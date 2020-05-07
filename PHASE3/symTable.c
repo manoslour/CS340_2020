@@ -253,7 +253,7 @@ unsigned int nextquadlabel() {return currQuad;}
 
 void patchlabel(unsigned int quadNo, unsigned int label){
 	printf("Entered patchlabel: ");
-	assert(quadNo < currQuad && !quads[quadNo].label);
+	//assert(quadNo < currQuad && !quads[quadNo].label);
 	quads[quadNo].label = label;
 	printf("quads[%d].label = %d\n", quadNo+1, label+1);
 }
@@ -494,23 +494,23 @@ void make_stmt(stmt_t* s){
 }
 
 int newlist(int i){
-	quads[i].label = 0;
+	quads[i].label = -1;
 	return i;
 }
 
 int mergelist(unsigned int l1, unsigned int l2){
 	printf("Entered mergelist\n");
-	if(!l1){
+	if(l1 == -1){
 		printf("l1 is NULL\n");
 		return l2;
 	}
-	else if(!l2){
+	else if(l2 == -1){
 		printf("l2 is null\n");
 		return l1;
 	}
 	else{
 		int i = l1;
-		while(quads[i].label > 0){
+		while(quads[i].label > -1){
 			printf("Entered while\n");
 			printf("quads[%d].label = %d\n", i+1, quads[i].label+1);
 			i = quads[i].label;
@@ -526,7 +526,7 @@ int mergelist(unsigned int l1, unsigned int l2){
 
 void patchlist(int list, int label){
 	printf("Entered patchlist\n");
-	while(list > 0){
+	while(list >= 0){
 		printf("Entered while\n");
 		int next = quads[list].label;
 		printf("Next = %d\n", next+1);
