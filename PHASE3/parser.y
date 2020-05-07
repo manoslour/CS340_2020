@@ -187,7 +187,7 @@ expr:     assignexpr            {
           |expr GREATER expr		{
                                   fprintf(fp, "expr: expr GREATER expr at line %d --> %s\n", yylineno, yytext);
                                   printf("\nEntered %s > %s\n", $1->sym->name, $3->sym->name);
-                                  
+
                                   if(illegalop($1, $3))
                                     addError("Error, illegal boolean operation", "", yylineno);
                                   else{
@@ -288,6 +288,14 @@ expr:     assignexpr            {
                                     //MUST FIX FOR BOOLOP!
                                     //addError("Error, illegal real operation", "", yylineno);
                                   //else{
+                                    if($1->type != boolexpr_e){
+                                      emit(if_eq, newexpr_constbool(1), $1, NULL, 0, yylineno);
+                                      emit(jump, NULL, NULL, NULL, 0, yylineno);
+                                    }
+                                    if($4->type != boolexpr_e){
+                                      emit(if_eq, newexpr_constbool(1), $4, NULL, 0, yylineno);
+                                      emit(jump, NULL, NULL, NULL, 0, yylineno);
+                                    }
 
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
