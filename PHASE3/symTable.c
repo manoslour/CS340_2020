@@ -251,9 +251,16 @@ void restorecurrscopeoffset(unsigned int n){
 
 unsigned int nextquadlabel() {return currQuad;}
 
+void backpatch(unsigned int list, unsigned int quad ){
+	quads[list].label = quad;
+}
+
+
 void patchlabel(unsigned int quadNo, unsigned int label){
-	assert(quadNo < currQuad && !quads[quadNo].label);
+	printf("Entered patchlabel: ");
+	//assert(quadNo < currQuad && !quads[quadNo].label);
 	quads[quadNo].label = label;
+	printf("quads[%d].label = %d\n", quadNo+1, label+1);
 }
 
 unsigned nextquad(){
@@ -261,7 +268,7 @@ unsigned nextquad(){
 }
 
 void printQuads(){
-	int i;
+	int i, tmp;
 	char *arg1, *arg2, *result, *opcode;
 
 	printf("\nQuad#\t\topcode\t\tresult\t\targ1\t\targ2\t\tlabel");
@@ -277,10 +284,18 @@ void printQuads(){
 				switch((quads+i)->result->type){
 					case constnum_e:
 						printf("%11d\t", (int)(quads+i)->result->numConst); break;
+					case constbool_e:
+						tmp = (int)(quads+i)->result->boolConst;
+						if(tmp == 0){
+							printf("%13s\t", "FALSE");
+							break;
+						}
+						else{
+							printf("%12s\t", "TRUE");
+							break;
+						}
 					case conststring_e:
 						printf("%11s\t", (quads+i)->result->strConst); break;
-					case constbool_e:
-						printf("%11c\t", (quads+i)->result->boolConst); break;
 					default:
 						printf("Unknown case\n");
 				}
@@ -297,11 +312,19 @@ void printQuads(){
 					case constnum_e:
 						printf("%9d\t", (int)(quads+i)->arg1->numConst); break;
 					case constbool_e:
-						printf("%9d\t", (int)(quads+i)->arg1->boolConst); break;
+						tmp = (int)(quads+i)->arg1->boolConst;
+						if(tmp == 0){
+							printf("%13s\t", "FALSE");
+							break;
+						}
+						else{
+							printf("%12s\t", "TRUE");
+							break;
+						}
 					case conststring_e:
 						printf("%9s\t", (quads+i)->arg1->strConst); break;
 					default:
-						printf("Unknown case\n");
+						printf("Unknown case");
 				}
 			}
 			else
@@ -316,7 +339,15 @@ void printQuads(){
 					case constnum_e:
 						printf("%9d\t", (int)(quads+i)->arg2->numConst); break;
 					case constbool_e:
-						printf("%9d\t", (int)(quads+i)->arg2->boolConst); break;
+						tmp = (int)(quads+i)->arg2->boolConst;
+						if(tmp == 0){
+							printf("%13s\t", "FALSE");
+							break;
+						}
+						else{
+							printf("%12s\t", "TRUE");
+							break;
+						}
 					case conststring_e:
 						printf("%9s\t", (quads+i)->arg2->strConst); break;
 				}
@@ -430,32 +461,32 @@ void comperror(char* format, const char* context){
 }
 
 void check_arith(expr* e, const char* context){
-	if(	e->type == constbool_e		||
-		e->type == conststring_e 	||
-		e->type == nil_e 			||
-		e->type == newtable_e 		||
-		e->type == programfunc_e 	||
-		e->type == libraryfunc_e 	||
+	if(	e->type == constbool_e				||
+		e->type == conststring_e 				||
+		e->type == nil_e 								||
+		e->type == newtable_e 					||
+		e->type == programfunc_e 				||
+		e->type == libraryfunc_e 				||
 		e->type == boolexpr_e )
 		comperror("Illegal expr used in %s!", context);
 }
 
 int illegalop(expr* arg1, expr* arg2){
 	if(arg1->type == programfunc_e		||
-		arg1->type == libraryfunc_e		||
-		arg1->type == boolexpr_e		||
-		arg1->type == newtable_e		||
-		arg1->type == constbool_e		||
-		arg1->type == conststring_e		||
+		arg1->type == libraryfunc_e			||
+		arg1->type == boolexpr_e				||
+		arg1->type == newtable_e				||
+		arg1->type == constbool_e				||
+		arg1->type == conststring_e			||
 		arg1->type == nil_e)
 			return 1;
 
 	if(arg2->type == programfunc_e		||
-		arg2->type == libraryfunc_e		||
-		arg2->type == boolexpr_e		||
-		arg2->type == newtable_e		||
-		arg2->type == constbool_e		||
-		arg2->type == conststring_e		||
+		arg2->type == libraryfunc_e			||
+		arg2->type == boolexpr_e				||
+		arg2->type == newtable_e				||
+		arg2->type == constbool_e				||
+		arg2->type == conststring_e			||
 		arg2->type == nil_e)
 			return 1;
 
@@ -474,32 +505,54 @@ int newlist(int i){
 
 int mergelist(unsigned int l1, unsigned int l2){
 	printf("Entered mergelist\n");
-	if(l1 == 0)
+	if(!l1){
+		printf("l1 is NULL\n");
 		return l2;
-	else if(l2 == 0)
+	}
+	else if(!l2){
+		printf("l2 is null\n");
 		return l1;
+	}
 	else{
 		int i = l1;
-		while(quads[i].label){
+		printf("MPAINW ME i = %d\n",i);
+		while(quads[i].label ){
+			if (i == 0) {
+				printf("EPISTREFW APO MERGE ME l1 : %d KAI l2 : %d \n\n\n",l1,l2 );
+				break;
+			}
+			printf("Entered while\n");
+			printf("quads[%d].label = %d\n", i+1, quads[i].label+1);
 			i = quads[i].label;
+			printf("i = %d\n", i);
 		}
-				printf("EDWWWW\n" );
+		printf("Out of while\n");
         quads[i].label = l2;
+		printf("quads[%d].label = %d\n", i+1, l2+1);
+		printf("Mergelist finished\n");
         return l1;
 	}
 }
 
+
 void patchlist(int list, int label){
 	printf("Entered patchlist\n");
-	printf("list = %d, label = %d\n", list, label);
 	while(list > 0){
 		printf("Entered while\n");
 		int next = quads[list].label;
-		printf("Next = %d\n", next);
+		printf("Next = %d\n", next+1);
 		quads[list].label = label;
-		printf(" quads[%d].label = %d\n", list, label);
+		printf(" quads[%d].label = %d\n", list+1, label+1);
 		list = next;
 	}
+}
+
+unsigned int istempname(char* s){
+	return *s == '_';
+}
+
+unsigned int istempexpr(expr* e){
+	return e->sym && istempname(e->sym->name);
 }
 
 //----------------------------------------------------------------------------------------------
@@ -567,18 +620,48 @@ void hideScope(unsigned int scope){
 
 void initialize(){
 
-	hashInsert("print", 0, 0, libraryfunc_s, 0, 0);
-	hashInsert("input", 0 , 0, libraryfunc_s, 0, 0);
-	hashInsert("objectmemberkeys", 0, 0, libraryfunc_s, 0, 0);
-	hashInsert("objecttotalmembers", 0, 0, libraryfunc_s, 0, 0);
-	hashInsert("objectcopy", 0, 0, libraryfunc_s, 0, 0);
-	hashInsert("tootalarguments", 0, 0, libraryfunc_s, 0, 0);
-	hashInsert("argument", 0, 0, libraryfunc_s, 0, 0);
-	hashInsert("typeof", 0, 0, libraryfunc_s, 0, 0);
-	hashInsert("strtonum", 0, 0, libraryfunc_s, 0, 0);
-	hashInsert("sqrt", 0, 0, libraryfunc_s, 0, 0);
-	hashInsert("cos", 0, 0, libraryfunc_s, 0, 0);
-	hashInsert("sin", 0, 0, libraryfunc_s, 0, 0);
+	hashInsert("print", 0, 0, libraryfunc_s, 0, 0, 0);
+	hashInsert("input", 0 , 0, libraryfunc_s, 0, 0, 0);
+	hashInsert("objectmemberkeys", 0, 0, libraryfunc_s, 0, 0, 0);
+	hashInsert("objecttotalmembers", 0, 0, libraryfunc_s, 0, 0, 0);
+	hashInsert("objectcopy", 0, 0, libraryfunc_s, 0, 0, 0);
+	hashInsert("tootalarguments", 0, 0, libraryfunc_s, 0, 0, 0);
+	hashInsert("argument", 0, 0, libraryfunc_s, 0, 0, 0);
+	hashInsert("typeof", 0, 0, libraryfunc_s, 0, 0, 0);
+	hashInsert("strtonum", 0, 0, libraryfunc_s, 0, 0, 0);
+	hashInsert("sqrt", 0, 0, libraryfunc_s, 0, 0, 0);
+	hashInsert("cos", 0, 0, libraryfunc_s, 0, 0, 0);
+	hashInsert("sin", 0, 0, libraryfunc_s, 0, 0, 0);
+}
+
+int findInFunc(char *name, unsigned int scope){
+	int result = 0;
+	char *symbolName;
+	symbol *tmpSymbol;
+	ScopeListEntry *tmpScope = scope_head;
+
+	while (tmpScope->next != NULL && tmpScope->scope != scope){
+		tmpScope = tmpScope->next;
+	}
+
+	//printf("Arrived at currScope[%d]\n", tmpScope->scope);
+
+	while(tmpScope != NULL){
+
+		tmpSymbol = tmpScope->symbols;
+		//printf("Started searching scope[%d] symbols\n", tmpScope->scope);
+
+		while(tmpSymbol != NULL){
+			symbolName = strdup(tmpSymbol->name);
+			if(tmpSymbol->isActive == 1 && strcmp(symbolName, name) == 0){
+				//printf("Symbol %s found, inFunc = %d\n", symbolName, tmpSymbol->inFunc);
+				return tmpSymbol->inFunc;
+			}
+			tmpSymbol = tmpSymbol->scope_next;
+		}
+		tmpScope = tmpScope->prev;
+	}
+	return -1;
 }
 
 bool scopeListInsert (symbol *sym_node, unsigned int scope) {
@@ -634,7 +717,7 @@ bool scopeListInsert (symbol *sym_node, unsigned int scope) {
 	return 0;
 }
 
-symbol* hashInsert(char *name, unsigned int scope, unsigned int line, symbol_t type, scopespace_t space, unsigned int offset){
+symbol* hashInsert(char *name, unsigned int scope, unsigned int line, symbol_t type, scopespace_t space, unsigned int offset, unsigned int inFunc){
 
 	int pos = (int)*name % Buckets;
 
@@ -652,6 +735,7 @@ symbol* hashInsert(char *name, unsigned int scope, unsigned int line, symbol_t t
 	new_sym->type = type;
 	new_sym->space = space;
 	new_sym->offset = offset;
+	new_sym->inFunc = inFunc;
 
 	scopeListInsert(new_sym,scope);
 	if (HashTable[pos] == NULL){
