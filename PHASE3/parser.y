@@ -186,7 +186,8 @@ expr:     assignexpr            {
                                 }
           |expr GREATER expr		{
                                   fprintf(fp, "expr: expr GREATER expr at line %d --> %s\n", yylineno, yytext);
-                                  printf("Entered expr > expr\n");
+                                  printf("\nEntered %s > %s\n", $1->sym->name, $3->sym->name);
+                                  
                                   if(illegalop($1, $3))
                                     addError("Error, illegal boolean operation", "", yylineno);
                                   else{
@@ -196,9 +197,10 @@ expr:     assignexpr            {
                                     emit(if_greater, $1, $3, NULL, 0, yylineno);
                                     $$->truelist = newlist(nextquad()-1);
                                     emit(jump, NULL, NULL, NULL, 0, yylineno);
-                                    printf("$$->truelist = %d\n", $$->truelist);
                                     $$->falselist = newlist(nextquad()-1);
-                                    printf("$$->falselist = %d\n", $$->falselist);
+
+                                    printf("True list = %d\n", $$->truelist+1);
+                                    printf("False list = %d\n", $$->falselist+1);
 
                                     //---OLIKH APOTIMHSH---
                                     /*
@@ -281,7 +283,7 @@ expr:     assignexpr            {
                                 }
           |expr AND M expr      {
                                   fprintf(fp, "expr: expr AND expr at line %d --> %s\n", yylineno, yytext);
-                                  printf("Entered expr: expr and expr\n");
+                                  printf("\nEntered %s and %s\n", $1->sym->name, $4->sym->name);
                                   //if(illegalop($1, $3))
                                     //MUST FIX FOR BOOLOP!
                                     //addError("Error, illegal real operation", "", yylineno);
@@ -293,10 +295,10 @@ expr:     assignexpr            {
                                     printf("M = %d\n", $3+1);
                                     patchlabel($1->truelist, $3);
                                     $$->truelist = $4->truelist;
-                                    printf("$$->truelist = %d\n", $$->truelist+1);
+                                    printf("True list = %d\n", $$->truelist+1);
                                     printf("Merging falselist: $1->falselist = %d | $4->falselist = %d\n", $1->falselist+1, $4->falselist+1);
                                     $$->falselist = mergelist($1->falselist, $4->falselist);
-                                    printf("$$->falselist = %d\n", $$->falselist+1);
+                                    printf("False list = %d\n", $$->falselist+1);
 
                                     //---OLIKH APOTIMHSH---
                                     //emit(and, $1, $3, $$, -1, yylineno);
@@ -304,7 +306,7 @@ expr:     assignexpr            {
                                 }
           |expr OR M expr			  {
                                   fprintf(fp, "expr: expr OR expr at line %d --> %s\n", yylineno, yytext);
-                                  printf("Entered expr: expr OR expr\n");
+                                  printf("\nEntered %s or %s\n", $1->sym->name, $4->sym->name);
                                   //if(illegalop($1, $3))
                                     //MUST FIX FOR BOOLOP!
                                     //addError("Error, illegal real operation", "", yylineno);
@@ -318,9 +320,9 @@ expr:     assignexpr            {
                                     patchlabel($1->falselist, $3);
                                     printf("Merging truelist: $1->truelist = %d | $4->truelist = %d\n", $1->truelist+1, $4->truelist+1);
                                     $$->truelist = mergelist($1->truelist, $4->truelist);
-                                    printf("$$->truelist = %d\n", $$->truelist+1);
+                                    printf("Truelist = %d\n", $$->truelist+1);
                                     $$->falselist = $4->falselist;
-                                    printf("$$->falselist = %d\n", $$->falselist+1);
+                                    printf("Falselist = %d\n", $$->falselist+1);
 
                                     //---OLIKH APOTIMHSH---
                                     //emit(or, $1, $3, $$, -1, yylineno);
@@ -430,13 +432,25 @@ assignexpr: lvalue ASSIGN expr  {
                                     $$->type = assignexpr_e;
                                   }
                                   else{
-                                    //EDW PREPEI NA GINEI TO TELIKO BACKPATCHING THS MERIKHS APOTIMHSHS
-                                    //KAI NA PROSTETHOUN TA 3 EXTRA QUADS.
-                                    emit(assign, $3, NULL, $1, -1, yylineno);
+                                    
                                     $$ = newexpr(assignexpr_e);
                                     $$->sym = istempexpr($3) ? $3->sym : newtemp();
-                                    //$$->sym = newtemp();
-                                    emit(assign, $1, NULL, $$, -1, yylineno);
+                                    if($3->type == boolexpr_e){
+                                    //EDW PREPEI NA GINEI TO TELIKO BACKPATCHING THS MERIKHS APOTIMHSHS
+                                    //KAI NA PROSTETHOUN TA 3 EXTRA QUADS.
+                                      patchlist($3->truelist, nextquad());
+                                      patchlist($3->falselist, nextquad()+2);
+                                    
+                                      emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
+                                      emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
+                                      emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                      emit(assign, $3, NULL, $1, -1, yylineno);
+                                      emit(assign, $1, NULL, $$, -1, yylineno);
+                                    }
+                                    else{
+                                      emit(assign, $3, NULL, $1, -1, yylineno);
+                                      emit(assign, $1, NULL, $$, -1, yylineno);
+                                    }
                                   }
                                 }
             ;
@@ -866,9 +880,7 @@ N:          {
             }
 
 M:          {
-              printf("Entered M\n");
               $$ = nextquad();
-              printf("M = %d\n", $$);
             }
 
 forprefix:  FOR L_PAR elist SEMICOLON M expr SEMICOLON  {

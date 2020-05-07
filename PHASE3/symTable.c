@@ -252,8 +252,10 @@ void restorecurrscopeoffset(unsigned int n){
 unsigned int nextquadlabel() {return currQuad;}
 
 void patchlabel(unsigned int quadNo, unsigned int label){
+	printf("Entered patchlabel: ");
 	assert(quadNo < currQuad && !quads[quadNo].label);
 	quads[quadNo].label = label;
+	printf("quads[%d].label = %d\n", quadNo+1, label+1);
 }
 
 unsigned nextquad(){
@@ -492,38 +494,44 @@ void make_stmt(stmt_t* s){
 }
 
 int newlist(int i){
-	printf("Entered newlist\n");
-	printf("i = %d\n", i);
 	quads[i].label = 0;
-	printf("Ola kala\n");
 	return i;
 }
 
 int mergelist(unsigned int l1, unsigned int l2){
 	printf("Entered mergelist\n");
-	if(l1 == 0)
+	if(!l1){
+		printf("l1 is NULL\n");
 		return l2;
-	else if(l2 == 0)
+	}
+	else if(!l2){
+		printf("l2 is null\n");
 		return l1;
+	}
 	else{
 		int i = l1;
 		while(quads[i].label > 0){
+			printf("Entered while\n");
+			printf("quads[%d].label = %d\n", i+1, quads[i].label+1);
 			i = quads[i].label;
+			printf("i = %d\n", i);
 		}
+		printf("Out of while\n");
         quads[i].label = l2;
+		printf("quads[%d].label = %d\n", i+1, l2+1);
+		printf("Mergelist finished\n");
         return l1;
 	}
 }
 
 void patchlist(int list, int label){
 	printf("Entered patchlist\n");
-	printf("list = %d, label = %d\n", list, label);
 	while(list > 0){
 		printf("Entered while\n");
 		int next = quads[list].label;
-		printf("Next = %d\n", next);
+		printf("Next = %d\n", next+1);
 		quads[list].label = label;
-		printf(" quads[%d].label = %d\n", list, label);
+		printf(" quads[%d].label = %d\n", list+1, label+1);
 		list = next;
 	}
 }
