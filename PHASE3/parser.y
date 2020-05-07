@@ -186,17 +186,17 @@ expr:     assignexpr            {
                                 }
           |expr GREATER expr		{
                                   fprintf(fp, "expr: expr GREATER expr at line %d --> %s\n", yylineno, yytext);
+                                  printf("Entered expr > expr\n");
                                   if(illegalop($1, $3))
                                     addError("Error, illegal boolean operation", "", yylineno);
                                   else{
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
                                     //---MERIKH APOTIMHSH---
+                                    emit(if_greater, $1, $3, NULL, 0, yylineno);
+                                    emit(jump, NULL, NULL, NULL, 0, yylineno);
                                     $$->truelist = newlist(nextquad());
                                     $$->falselist = newlist(nextquad() + 1);
-                                    emit(if_greater, $1, $3, NULL, -1, yylineno);
-                                    emit(jump, NULL, NULL, NULL, -1, yylineno);
-                                    
                                     //---OLIKH APOTIMHSH---
                                     /*
                                     emit(if_greater, $1, $3, NULL, nextquad()+3, yylineno);
@@ -296,6 +296,7 @@ expr:     assignexpr            {
                                 }
           |expr OR M expr			  {
                                   fprintf(fp, "expr: expr OR expr at line %d --> %s\n", yylineno, yytext);
+                                  printf("Entered expr: expr OR expr\n");
                                   //if(illegalop($1, $3))
                                     //MUST FIX FOR BOOLOP!
                                     //addError("Error, illegal real operation", "", yylineno);
@@ -304,9 +305,13 @@ expr:     assignexpr            {
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
                                     //---MERIKH APOTIMHSH---
+                                    printf("M = %d\n", $3);
                                     patchlabel($1->falselist, $3);
                                     $$->truelist = mergelist($1->truelist, $4->truelist);
                                     $$->falselist = $4->falselist;
+                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
+                                    emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
+                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
 
                                     //---OLIKH APOTIMHSH---
                                     //emit(or, $1, $3, $$, -1, yylineno);

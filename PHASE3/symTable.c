@@ -492,7 +492,10 @@ void make_stmt(stmt_t* s){
 }
 
 int newlist(int i){
+	printf("Entered newlist\n");
+	printf("i = %d\n", i);
 	quads[i].label = 0;
+	printf("Ola kala\n");
 	return i;
 }
 
