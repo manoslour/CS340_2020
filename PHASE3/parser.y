@@ -194,9 +194,12 @@ expr:     assignexpr            {
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
                                     //---MERIKH APOTIMHSH---
                                     emit(if_greater, $1, $3, NULL, 0, yylineno);
+                                    $$->truelist = newlist(nextquad()-1);
                                     emit(jump, NULL, NULL, NULL, 0, yylineno);
-                                    $$->truelist = newlist(nextquad());
-                                    $$->falselist = newlist(nextquad() + 1);
+                                    printf("$$->truelist = %d\n", $$->truelist);
+                                    $$->falselist = newlist(nextquad()-1);
+                                    printf("$$->falselist = %d\n", $$->falselist);
+
                                     //---OLIKH APOTIMHSH---
                                     /*
                                     emit(if_greater, $1, $3, NULL, nextquad()+3, yylineno);
@@ -278,6 +281,7 @@ expr:     assignexpr            {
                                 }
           |expr AND M expr      {
                                   fprintf(fp, "expr: expr AND expr at line %d --> %s\n", yylineno, yytext);
+                                  printf("Entered expr: expr and expr\n");
                                   //if(illegalop($1, $3))
                                     //MUST FIX FOR BOOLOP!
                                     //addError("Error, illegal real operation", "", yylineno);
@@ -286,9 +290,13 @@ expr:     assignexpr            {
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
                                     //---MERIKH APOTIMHSH---
+                                    printf("M = %d\n", $3+1);
                                     patchlabel($1->truelist, $3);
                                     $$->truelist = $4->truelist;
+                                    printf("$$->truelist = %d\n", $$->truelist+1);
+                                    printf("Merging falselist: $1->falselist = %d | $4->falselist = %d\n", $1->falselist+1, $4->falselist+1);
                                     $$->falselist = mergelist($1->falselist, $4->falselist);
+                                    printf("$$->falselist = %d\n", $$->falselist+1);
 
                                     //---OLIKH APOTIMHSH---
                                     //emit(and, $1, $3, $$, -1, yylineno);
@@ -304,14 +312,15 @@ expr:     assignexpr            {
 
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
+
                                     //---MERIKH APOTIMHSH---
-                                    printf("M = %d\n", $3);
+                                    printf("M = %d\n", $3+1);
                                     patchlabel($1->falselist, $3);
+                                    printf("Merging truelist: $1->truelist = %d | $4->truelist = %d\n", $1->truelist+1, $4->truelist+1);
                                     $$->truelist = mergelist($1->truelist, $4->truelist);
+                                    printf("$$->truelist = %d\n", $$->truelist+1);
                                     $$->falselist = $4->falselist;
-                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
-                                    emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
-                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                    printf("$$->falselist = %d\n", $$->falselist+1);
 
                                     //---OLIKH APOTIMHSH---
                                     //emit(or, $1, $3, $$, -1, yylineno);
@@ -421,6 +430,8 @@ assignexpr: lvalue ASSIGN expr  {
                                     $$->type = assignexpr_e;
                                   }
                                   else{
+                                    //EDW PREPEI NA GINEI TO TELIKO BACKPATCHING THS MERIKHS APOTIMHSHS
+                                    //KAI NA PROSTETHOUN TA 3 EXTRA QUADS.
                                     emit(assign, $3, NULL, $1, -1, yylineno);
                                     $$ = newexpr(assignexpr_e);
                                     $$->sym = istempexpr($3) ? $3->sym : newtemp();
@@ -855,7 +866,9 @@ N:          {
             }
 
 M:          {
+              printf("Entered M\n");
               $$ = nextquad();
+              printf("M = %d\n", $$);
             }
 
 forprefix:  FOR L_PAR elist SEMICOLON M expr SEMICOLON  {
