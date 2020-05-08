@@ -74,10 +74,6 @@ typedef struct expr {
 	double numConst;
 	char* strConst;
 	unsigned char boolConst;
-	//MERIKH APOTIMHSH
-	int truelist;
-	int falselist;
-	//----------------
 	struct expr* next;
 }expr;
 
@@ -123,7 +119,7 @@ struct errorToken {
     struct errorToken *next;
 };
 
-void backpatch(unsigned int list, unsigned int quad );
+
 void expand();
 
 void resettemp();
@@ -210,7 +206,7 @@ void make_stmt(stmt_t* s);
 
 int newlist(int i);
 
-int mergelist(unsigned int l1, unsigned int l2);
+unsigned int mergelist(unsigned int l1, unsigned int l2);
 
 void patchlist(int list, int label);
 

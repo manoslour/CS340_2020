@@ -1,8 +1,4 @@
-while (a || b){
+while(1){
 
-
-
-  a = 3;
-  x=6;
-  if (b) break;
+x = 1;
 }
