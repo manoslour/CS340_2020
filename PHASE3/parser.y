@@ -623,6 +623,7 @@ indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR {
 
 block:  LCURLY_BR	  {
                       fprintf(fp, "block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
+                      printf("Entered block\n");
                       currentscope++;
                     }
         RCURLY_BR   {
@@ -874,11 +875,11 @@ loopstart: { fprintf(fp, "loopstart: at line %d --> %s\n", yylineno, yytext); ++
 loopend:   { fprintf(fp, "loopend: at line %d --> %s\n", yylineno, yytext); --loopcounter;}
 
 loopstmt: loopstart stmt loopend  { 
-                                        fprintf(fp, "loopstmt: loopstart stmt loopend at line %d --> %s\n", yylineno, yytext);
-                                        printf("Entered loopstmt: loopstart stmt loopend\n"); 
-                                        printf("$2->breaklist = %d\n", $2->breaklist);
-                                        $$ = $2;
-                                      }
+                                    fprintf(fp, "loopstmt: loopstart stmt loopend at line %d --> %s\n", yylineno, yytext);
+                                    printf("Entered loopstmt: loopstart stmt loopend\n"); 
+                                    printf("$2->breaklist = %d\n", $2->breaklist);
+                                    $$ = $2;
+                                  }
 
 break: BREAK        {
                       fprintf(fp, "break: BREAK at line %d --> %s\n", yylineno, yytext);
