@@ -290,7 +290,9 @@ expr:     assignexpr            {
                                   //else{
                                     if($1->type != boolexpr_e){
                                       emit(if_eq, newexpr_constbool(1), $1, NULL, 0, yylineno);
+                                      //$$->truelist = newlist(nextquad()-1);
                                       emit(jump, NULL, NULL, NULL, 0, yylineno);
+                                      //$$->falselist = newlist(nextquad()-1);
                                     }
                                     if($4->type != boolexpr_e){
                                       emit(if_eq, newexpr_constbool(1), $4, NULL, 0, yylineno);
@@ -444,6 +446,7 @@ assignexpr: lvalue ASSIGN expr  {
                                     $$ = newexpr(assignexpr_e);
                                     $$->sym = istempexpr($3) ? $3->sym : newtemp();
                                     if($3->type == boolexpr_e){
+                                      printf("%s is boolexpr\n", $3->sym->name);
                                     //EDW PREPEI NA GINEI TO TELIKO BACKPATCHING THS MERIKHS APOTIMHSHS
                                     //KAI NA PROSTETHOUN TA 3 EXTRA QUADS.
                                       patchlist($3->truelist, nextquad());
