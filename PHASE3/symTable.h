@@ -74,10 +74,6 @@ typedef struct expr {
 	double numConst;
 	char* strConst;
 	unsigned char boolConst;
-	//MERIKH APOTIMHSH
-	int truelist;
-	int falselist;
-	//----------------
 	struct expr* next;
 }expr;
 

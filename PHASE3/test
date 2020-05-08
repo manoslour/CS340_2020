@@ -1,12 +1,4 @@
-//x = y;
-
-x = a > b or c > d and e > f;
-
-//x = a > b;
-	//print("?");
-
-//x = a and b;
-
-//x = a and b > c;
-
-//x == a;
+while (a > n){
+  if(b)
+    break;
+}
