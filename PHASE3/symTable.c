@@ -500,40 +500,32 @@ int newlist(int i){
 
 int mergelist(unsigned int l1, unsigned int l2){
 	printf("Entered mergelist\n");
-	if(!l1){
-		printf("l1 is NULL\n");
-		return l2;
-	}
-	else if(!l2){
-		printf("l2 is null\n");
+	if(!l2)
 		return l1;
+	int i = l1;
+	while(quads[i].label > 0){
+		printf("Entered while\n");
+		printf("quads[%d].label = %d\n", i+1, quads[i].label+1);
+		i = quads[i].label;
+		printf("i = %d\n", i);
 	}
-	else{
-		int i = l1;
-		while(quads[i].label > 0){
-			printf("Entered while\n");
-			printf("quads[%d].label = %d\n", i+1, quads[i].label+1);
-			i = quads[i].label;
-			printf("i = %d\n", i);
-		}
-		printf("Out of while\n");
-        quads[i].label = l2;
-		printf("quads[%d].label = %d\n", i+1, l2+1);
-		printf("Mergelist finished\n");
-        return l1;
-	}
+	printf("Out of while\n");
+    quads[i].label = l2;
+	printf("quads[%d].label = %d\n", i+1, l2+1);
+	printf("Mergelist finished\n");
+    return l1;
 }
 
 void patchlist(int list, int label){
 	printf("Entered patchlist\n");
-	while(list > 0){
+	do{
 		printf("Entered while\n");
 		int next = quads[list].label;
 		printf("Next = %d\n", next+1);
 		quads[list].label = label;
 		printf(" quads[%d].label = %d\n", list+1, label+1);
 		list = next;
-	}
+	}while(list > 0);
 }
 
 unsigned int istempname(char* s){
