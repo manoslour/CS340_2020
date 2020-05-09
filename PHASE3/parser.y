@@ -41,7 +41,7 @@
 %type <forprefixNode> forprefix
 %type <symNode> funcprefix funcdef
 %type <callNode> callsuffix normcall methodcall
-%type <stmtNode> stmt stmtlist break continue ifstmt loopstmt
+%type <stmtNode> stmt stmtlist break continue ifstmt forstmt whilestmt loopstmt
 %type <unsignedValue> funcbody ifprefix elseprefix whilestart whilecond N M
 %type <exprNode> lvalue tableitem primary assignexpr call term tablemake expr elist indexed indexedelem const
 %token <realValue> REAL
@@ -79,13 +79,11 @@ stmtlist: stmt              {
                             }
           |stmtlist stmt		{
                               fprintf(fp, "stmtlist: stmtlist stmt at line %d --> %s\n", yylineno, yytext);
-                              //printf("Entered stmtlist: stmtlist stmt\n");
-                              /*
-                              if(loopcounter != 0 ){
+                              printf("Entered stmtlist: stmtlist stmt\n");
+                              if(breakcount != 0)
                                 $$->breaklist = mergelist($1->breaklist, $2->breaklist);
+                              if(contcount != 0)
                                 $$->contlist = mergelist($1->contlist, $2->contlist);
-                              }
-                              */
                             }
           ;
 
@@ -815,11 +813,12 @@ whilestmt: whilestart whilecond loopstmt {
                                           printf("Entered whilestmt, line = %d\n", yylineno);
                                           emit(jump, NULL, NULL, NULL, $1, yylineno);
                                           patchlabel($2, nextquad());
-                                          printf("$3->breaklist = %d\n", $3->breaklist);
+                                          //printf("$3->breaklist = %d\n", $3->breaklist);
                                           if(breakcount != 0)
                                             patchlist($3->breaklist, nextquad());
                                           if(contcount != 0)
                                             patchlist($3->contlist, $1);
+                                          $$ = $3;
                                         }
 
 N:          {
@@ -851,6 +850,8 @@ forstmt:  forprefix N elist R_PAR N loopstmt N          {
 
                                                           patchlist($6->breaklist, nextquad());
                                                           patchlist($6->contlist, $2+1);
+
+                                                          $$ = $6;
                                                         }
 
 returnstmt:	RETURN SEMICOLON    {
@@ -876,12 +877,17 @@ loopend:   { fprintf(fp, "loopend: at line %d --> %s\n", yylineno, yytext); --lo
 loopstmt: loopstart stmt loopend  { 
                                     fprintf(fp, "loopstmt: loopstart stmt loopend at line %d --> %s\n", yylineno, yytext);
                                     printf("Entered loopstmt: loopstart stmt loopend\n"); 
-                                    printf("$2->breaklist = %d\n", $2->breaklist);
-                                    printf("Some really cringy magic happens\n");
-                                    if($2->breaklist == 110)
-                                      $$ = breakpointer;
-                                    else
-                                      $$ = $2;
+                                    
+                                    if(breakcount != 0 || contcount != 0){
+                                      if($2->breaklist > 100 || $2->contlist > 100){
+                                        printf("Some really cringy magic happens\n");
+                                        $$ = breakpointer;
+                                      }
+                                      else{
+                                        printf("Normal case\n");
+                                        $$ = $2;
+                                      }
+                                    }
                                   }
 
 break: BREAK        {
