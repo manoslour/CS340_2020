@@ -80,18 +80,19 @@ stmtlist: stmt              {
           |stmt stmtlist		{
                               fprintf(fp, "stmtlist: stmtlist stmt at line %d --> %s\n", yylineno, yytext);
                               printf("Entered stmtlist: stmt stmtlist\n");
-                              //printf("$1->breaklist = %d | $2->breaklist = %d\n", $1->breaklist, $2->breaklist);
-                              //printf("$1->contlist = %d | $2->contlist = %d\n", $1->contlist, $2->contlist);
+                              printf("Breakcount = %d | Contcount = %d\n", breakcount, contcount);
                               stmt_t *tmp = (stmt_t*) malloc(sizeof(stmt_t));
-                              if(breakcount != 0 || contcount != 0){
-                                printf("Entered check\n");
+                              if(breakcount != 0){
+                                printf("Entered break check\n");
                                 tmp->breaklist = mergelist($1->breaklist, $2->breaklist);
-                                tmp->contlist = mergelist($1->contlist, $2->contlist);
-                                $$ = tmp;
                                 breakcount = 0;
-                                //printf("tmp->breaklist = %d\n", $$->breaklist);
-                                //printf("tmp->contlist = %d\n", $$->contlist);
                               }
+                              if(contcount != 0){
+                                printf("Entered continue check\n");
+                                tmp->contlist = mergelist($1->contlist, $2->contlist);
+                                contcount = 0;
+                              }
+                              $$ = tmp;
                             }
           ;
 
@@ -804,14 +805,18 @@ ifstmt: ifprefix stmt                   {
                                           patchlabel($1, $3+1);
                                           patchlabel($3, nextquad());
 
-                                          if(breakcount != 0 || contcount != 0){
+                                          stmt_t* tmp = (stmt_t*) malloc(sizeof(stmt_t));
+                                          if(breakcount != 0){
                                             printf("$2->breakist = %d | $4->breaklist = %d\n", $2->breaklist, $4->breaklist);
-                                            printf("$2->contlist = %d | $4->contlist = %d\n", $2->contlist, $4->contlist);
-                                            stmt_t* tmp = (stmt_t*) malloc(sizeof(stmt_t));
                                             tmp->breaklist = mergelist($2->breaklist, $4->breaklist);
-                                            tmp->contlist = mergelist($2->contlist, $4->contlist);
-                                            $$ = tmp;
+                                            breakcount = 0;
                                           }
+                                          if(contcount != 0){
+                                            printf("$2->contlist = %d | $4->contlist = %d\n", $2->contlist, $4->contlist);
+                                            tmp->contlist = mergelist($2->contlist, $4->contlist);
+                                            contcount = 0;
+                                          }
+                                          $$ = tmp;
                                         }
 
 whilestart: WHILE                       {
@@ -833,11 +838,14 @@ whilestmt: whilestart whilecond loopstmt {
                                           printf("Entered whilestmt, line = %d\n", yylineno);
                                           emit(jump, NULL, NULL, NULL, $1, yylineno);
                                           patchlabel($2, nextquad());
-                                          //printf("$3->breaklist = %d\n", $3->breaklist);
-                                          if(breakcount != 0)
+                                          if(breakcount != 0){
+                                            printf("$3->breaklist = %d\n", $3->breaklist);
                                             patchlist($3->breaklist, nextquad());
-                                          if(contcount != 0)
+                                          }
+                                          if(contcount != 0){
+                                            printf("$3->contlist = %d\n", $3->contlist);
                                             patchlist($3->contlist, $1);
+                                          }
                                           $$ = $3;
                                         }
 
@@ -868,9 +876,14 @@ forstmt:  forprefix N elist R_PAR N loopstmt N          {
                                                           patchlabel($5, $1->test); //loop jump
                                                           patchlabel($7, $2+1); //closure jump
 
-                                                          patchlist($6->breaklist, nextquad());
-                                                          patchlist($6->contlist, $2+1);
-
+                                                          if(breakcount != 0){
+                                                            printf("$6->breaklist = %d\n", $6->breaklist);  
+                                                            patchlist($6->breaklist, nextquad());
+                                                          }
+                                                          if(contcount != 0){
+                                                            printf("$6->contlist = %d\n", $6->contlist);
+                                                            patchlist($6->contlist, $2+1);
+                                                          }
                                                           $$ = $6;
                                                         }
 
@@ -932,7 +945,7 @@ continue: CONTINUE  {
                       fprintf(fp, "continue: CONTINUE at line %d --> %s\n", yylineno, yytext);
                       printf("Entered continue\n");
                       if(loopcounter == 0)
-                        addError("Use of break while not in loop", "", yylineno);
+                        addError("Use of continue while not in loop", "", yylineno);
                       else{
                         printf("Adding continue jump\n");
                         contcount++;
