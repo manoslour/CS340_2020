@@ -20,6 +20,7 @@
   unsigned int currentscope = 0;
   offsetStack *scopeoffsetStack = NULL;
   counterStack *loopcounterStack = NULL;
+  stmt_t *breakpointer = NULL;
 %}
 
 //%defines
@@ -621,27 +622,25 @@ indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR {
                                                   }
 				      ;
 
-block:  LCURLY_BR	  {
-                      fprintf(fp, "block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
-                      printf("Entered block\n");
-                      currentscope++;
-                    }
-        RCURLY_BR   {
-                      fprintf(fp, "block: LCURLY_BR RCURLY_BR at line %d --> %s\n", yylineno, yytext);
-                      hideScope(currentscope);
-                      currentscope--;
-                    }
-        |LCURLY_BR	{
-                      fprintf(fp, "block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
-                      currentscope++;
-                    }
-        stmtlist  	{	fprintf(fp, "block: LCURLY_BR  stmtlist at line %d --> %s\n", yylineno, yytext);}
-			  RCURLY_BR	  {
-                      fprintf(fp, "block: LCURLY_BR stmtlist RCURLY_BR at line %d --> %s\n", yylineno, yytext);
-                      hideScope(currentscope);
-                      currentscope--;
-                    }
+block:  blockstart blockend
+        |blockstart	stmtlist blockend	{	
+                                        fprintf(fp, "block: LCURLY_BR  stmtlist at line %d --> %s\n", yylineno, yytext);
+                                        breakpointer = $2;
+                                        printf("breakpointer->breaklist = %d\n", breakpointer->breaklist);
+                                      }
 			  ;
+
+blockstart: LCURLY_BR {
+                        fprintf(fp, "block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
+                        printf("Entered block\n");
+                        currentscope++;
+                      }
+
+blockend: RCURLY_BR   {
+                        fprintf(fp, "block: LCURLY_BR RCURLY_BR at line %d --> %s\n", yylineno, yytext);
+                        hideScope(currentscope);
+                        currentscope--;
+                      }
 
 funcdef:  funcprefix funcargs funcblockstart funcbody	funcblockend {
                                               fprintf(fp, "funcdef: funcprefix funcargs funcbody at line %d --> %s\n", yylineno, yytext);
@@ -878,7 +877,11 @@ loopstmt: loopstart stmt loopend  {
                                     fprintf(fp, "loopstmt: loopstart stmt loopend at line %d --> %s\n", yylineno, yytext);
                                     printf("Entered loopstmt: loopstart stmt loopend\n"); 
                                     printf("$2->breaklist = %d\n", $2->breaklist);
-                                    $$ = $2;
+                                    printf("Some really cringy magic happens\n");
+                                    if($2->breaklist == 110)
+                                      $$ = breakpointer;
+                                    else
+                                      $$ = $2;
                                   }
 
 break: BREAK        {

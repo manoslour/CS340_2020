@@ -1,3 +1,4 @@
-while (a > n)
+while (a > n){
   if(b)
     break;
+}
