@@ -80,10 +80,12 @@ stmtlist: stmt              {
           |stmtlist stmt		{
                               fprintf(fp, "stmtlist: stmtlist stmt at line %d --> %s\n", yylineno, yytext);
                               printf("Entered stmtlist: stmtlist stmt\n");
-                              if(breakcount != 0)
-                                $$->breaklist = mergelist($1->breaklist, $2->breaklist);
-                              if(contcount != 0)
-                                $$->contlist = mergelist($1->contlist, $2->contlist);
+                              stmt_t *tmp = (stmt_t*) malloc(sizeof(stmt_t));
+                              if(breakcount != 0 || contcount != 0){
+                                tmp->breaklist = mergelist($1->breaklist, $2->breaklist);
+                                tmp->contlist = mergelist($1->contlist, $2->contlist);
+                                $$ = tmp;
+                              }
                             }
           ;
 
@@ -94,22 +96,28 @@ stmt:     expr SEMICOLON        {
                                 }
           |ifstmt               { fprintf(fp, "stmt: ifstmt at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered stmt: ifstmt\n");
-                                  printf("$1->breaklist = %d\n", $1->breaklist);
+                                  //printf("$1->breaklist = %d\n", $1->breaklist);
                                   $$ = $1;
                                 }
           |whilestmt            { fprintf(fp, "stmt: whilestmt at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered stmt: whilestmt\n");
                                 }
-          |forstmt				      {	fprintf(fp, "stmt: forstmt at line %d --> %s\n", yylineno, yytext);}
+          |forstmt				      {	
+                                  fprintf(fp, "stmt: forstmt at line %d --> %s\n", yylineno, yytext);
+                                  $$ = $1;
+                                }
           |returnstmt			      {	fprintf(fp, "stmt: returnstmt at line %d --> %s\n", yylineno, yytext);}
           |break SEMICOLON		  {
 										              fprintf(fp, "stmt: BREAK SEMICOLON at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered stmt: break;\n");
-                                  printf("$1->breaklist = %d\n", $1->breaklist);
+                                  printf("breakcount %d\n", breakcount);
+                                  //printf("$1->breaklist = %d\n", $1->breaklist);
                                   $$ = $1;
                                 }
           |continue SEMICOLON		{
 										              fprintf(fp, "stmt: CONTINUE SEMICOLON at line %d --> %s\n", yylineno, yytext);
+                                  printf("Entered stmt: continue\n");
+                                  printf("contcount = %d\n", contcount);
                                   $$ = $1;
                                 }
           |block                {	fprintf(fp, "stmt: block at line %d --> %s\n", yylineno, yytext);}
@@ -776,8 +784,10 @@ ifstmt: ifprefix stmt                   {
                                           fprintf(fp, "ifstmt: ifprefix stmt at line %d --> %s\n", yylineno, yytext);
                                           printf("Entered ifstmt: ifprefix stmt\n");
                                           patchlabel($1, nextquad());
-                                          printf("$2->breaklist = %d\n", $2->breaklist);
-                                          $$ = $2;
+                                          if(breakcount != 0 || contcount != 0){
+                                            //printf("$2->breaklist = %d\n", $2->breaklist);
+                                            $$ = $2;
+                                          }
                                         }
         |ifprefix stmt elseprefix stmt  {
                                           fprintf(fp, "ifstmt: ifprefix stmt elseprefix stmt at line %d --> %s\n", yylineno, yytext);
@@ -785,13 +795,14 @@ ifstmt: ifprefix stmt                   {
                                           patchlabel($1, $3+1);
                                           patchlabel($3, nextquad());
 
-                                          //---------
-                                          printf("$2->breakist = %d | $4->breaklist = %d\n", $2->breaklist, $4->breaklist);
-                                          stmt_t* tmp = (stmt_t*) malloc(sizeof(stmt_t));
-                                          tmp->breaklist = mergelist($2->breaklist, $4->breaklist);
-                                          tmp->contlist = mergelist($2->contlist, $4->contlist);
-                                          $$ = tmp;
-                                          //---------
+                                          if(breakcount != 0 || contcount != 0){
+                                            printf("$2->breakist = %d | $4->breaklist = %d\n", $2->breaklist, $4->breaklist);
+                                            printf("$2->contlist = %d | $4->contlist = %d\n", $2->contlist, $4->contlist);
+                                            stmt_t* tmp = (stmt_t*) malloc(sizeof(stmt_t));
+                                            tmp->breaklist = mergelist($2->breaklist, $4->breaklist);
+                                            tmp->contlist = mergelist($2->contlist, $4->contlist);
+                                            $$ = tmp;
+                                          }
                                         }
 
 whilestart: WHILE                       {
