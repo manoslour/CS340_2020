@@ -349,7 +349,7 @@ void printQuads(){
 				printf("%9s\t", (quads+i)->arg2->sym->name);
 		}
 
-		if((quads+i)->label == 0)
+		if((quads+i)->label == -1)
 			printf("%9s", "");
 		else
 			printf("%9d", ((quads+i)->label)+1);
@@ -501,10 +501,14 @@ int newlist(int i){
 int mergelist(unsigned int l1, unsigned int l2){
 	printf("Entered mergelist\n");
 	printf("l1 = %d | l2 = %d\n", l1, l2);
-	if(l1 == 0)
+	if(l1 == 0){
+		printf("l1 = 0\n");
 		return l2;
-	else if(l2 == 0)
+	}
+	else if(l2 == 0){
+		printf("l2 = 0\n");
 		return l1;
+	}
 	else{
 		int i = l1;
 		while(quads[i].label > 0){
