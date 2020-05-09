@@ -636,8 +636,10 @@ indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR {
 block:  blockstart blockend
         |blockstart	stmtlist blockend	{	
                                         fprintf(fp, "block: LCURLY_BR  stmtlist at line %d --> %s\n", yylineno, yytext);
-                                        breakpointer = $2;
-                                        printf("breakpointer->breaklist = %d | breakpointer->contlist = %d\n", breakpointer->breaklist, breakpointer->contlist);
+                                        if(loopcounter != 0){
+                                          breakpointer = $2;
+                                          printf("breakpointer->breaklist = %d | breakpointer->contlist = %d\n", breakpointer->breaklist, breakpointer->contlist);
+                                        }
                                       }
 			  ;
 
