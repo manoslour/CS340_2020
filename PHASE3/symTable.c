@@ -349,7 +349,7 @@ void printQuads(){
 				printf("%9s\t", (quads+i)->arg2->sym->name);
 		}
 
-		if((quads+i)->label == -1)
+		if((quads+i)->label == 0)
 			printf("%9s", "");
 		else
 			printf("%9d", ((quads+i)->label)+1);
@@ -500,6 +500,7 @@ int newlist(int i){
 
 int mergelist(unsigned int l1, unsigned int l2){
 	printf("Entered mergelist\n");
+	printf("l1 = %d | l2 = %d\n", l1, l2);
 	if(l1 == 0)
 		return l2;
 	else if(l2 == 0)
@@ -507,11 +508,15 @@ int mergelist(unsigned int l1, unsigned int l2){
 	else{
 		int i = l1;
 		while(quads[i].label > 0){
+			printf("Entered while\n");
+			printf("quads[%d].label = %d\n", i, quads[i].label);
 			i = quads[i].label;
 		}
+		printf("Exited while\n");
         quads[i].label = l2;
         return l1;
 	}
+	printf("Exiting mergelist\n");
 }
 
 void patchlist(int list, int label){

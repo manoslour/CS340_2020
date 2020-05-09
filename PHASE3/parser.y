@@ -74,7 +74,7 @@ program:  stmtlist  {	fprintf(fp, "promgram: stmtlist at line %d --> %s\n", yyli
 stmtlist: stmt              {
                               fprintf(fp, "stmtlist: stmt at line %d --> %s\n", yylineno, yytext);
                               printf("Entered stmtlist: stmt\n");
-                              //printf("$1->breaklist = %d\n", $1->breaklist);
+                              printf("$1->breaklist = %d\n", $1->breaklist);
                               $$ = $1;
                             }
           |stmtlist stmt		{
@@ -91,7 +91,7 @@ stmtlist: stmt              {
 
 stmt:     expr SEMICOLON        {
                                   fprintf(fp, "stmt: expr SEMICOLON at line %d --> %s\n", yylineno, yytext);
-                                  //printf("Entered stmt: expr;\n");
+                                  printf("Entered stmt: expr;\n");
                                   //printf("$$->breaklist = %d\n", $$->breaklist);
                                 }
           |ifstmt               { fprintf(fp, "stmt: ifstmt at line %d --> %s\n", yylineno, yytext);
@@ -139,7 +139,7 @@ expr:     assignexpr            {
                                     else
                                       $$ = newexpr(arithexpr_e);
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
-                                    emit(add, $1, $3, $$, -1, yylineno);
+                                    emit(add, $1, $3, $$, 0, yylineno);
                                   }
                                 }
           |expr MINUS expr      {
@@ -152,7 +152,7 @@ expr:     assignexpr            {
                                     else
                                       $$ = newexpr(arithexpr_e);
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
-                                    emit(sub, $1, $3, $$, -1, yylineno);
+                                    emit(sub, $1, $3, $$, 0, yylineno);
                                   }
                                 }
           |expr MULT expr       {
@@ -165,7 +165,7 @@ expr:     assignexpr            {
                                     else
                                       $$ = newexpr(arithexpr_e);
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
-                                    emit(mul, $1, $3, $$, -1, yylineno);
+                                    emit(mul, $1, $3, $$, 0, yylineno);
                                   }
                                 }
           |expr DIV expr        {
@@ -178,7 +178,7 @@ expr:     assignexpr            {
                                     else
                                       $$ = newexpr(arithexpr_e);
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
-                                    emit(divide, $1, $3, $$, -1, yylineno);
+                                    emit(divide, $1, $3, $$, 0, yylineno);
                                   }
                                 }
           |expr MOD expr        {
@@ -191,7 +191,7 @@ expr:     assignexpr            {
                                     else
                                       $$ = newexpr(arithexpr_e);
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
-                                    emit(mod, $1, $3, $$, -1, yylineno);
+                                    emit(mod, $1, $3, $$, 0, yylineno);
                                   }
                                 }
           |expr GREATER expr		{
@@ -202,9 +202,9 @@ expr:     assignexpr            {
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
                                     emit(if_greater, $1, $3, NULL, nextquad()+3, yylineno);
-                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                    emit(assign, newexpr_constbool(0), NULL, $$, 0, yylineno);
                                     emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
-                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
+                                    emit(assign, newexpr_constbool(1), NULL, $$, 0, yylineno);
                                   }
                                 }
           |expr GREATER_EQ expr	{
@@ -216,9 +216,9 @@ expr:     assignexpr            {
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
 
                                     emit(if_greatereq, $1, $3, NULL, nextquad()+3, yylineno);
-                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                    emit(assign, newexpr_constbool(0), NULL, $$, 0, yylineno);
                                     emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
-                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
+                                    emit(assign, newexpr_constbool(1), NULL, $$, 0, yylineno);
                                   }
                                 }
           |expr LESS expr       {
@@ -230,9 +230,9 @@ expr:     assignexpr            {
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
 
                                     emit(if_less, $1, $3, NULL, nextquad()+3, yylineno);
-                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                    emit(assign, newexpr_constbool(0), NULL, $$, 0, yylineno);
                                     emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
-                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
+                                    emit(assign, newexpr_constbool(1), NULL, $$, 0, yylineno);
                                   }
                                 }
           |expr LESS_EQ expr		{
@@ -244,9 +244,9 @@ expr:     assignexpr            {
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
 
                                     emit(if_lesseq, $1, $3, NULL, nextquad()+3, yylineno);
-                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                    emit(assign, newexpr_constbool(0), NULL, $$, 0, yylineno);
                                     emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
-                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
+                                    emit(assign, newexpr_constbool(1), NULL, $$, 0, yylineno);
                                   }
                                 }
           |expr EQUAL expr      {
@@ -258,9 +258,9 @@ expr:     assignexpr            {
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
 
                                     emit(if_eq, $1, $3, NULL, nextquad()+3, yylineno);
-                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                    emit(assign, newexpr_constbool(0), NULL, $$, 0, yylineno);
                                     emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
-                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
+                                    emit(assign, newexpr_constbool(1), NULL, $$, 0, yylineno);
                                   }
                                 }
           |expr NOT_EQUAL expr  {
@@ -272,9 +272,9 @@ expr:     assignexpr            {
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
 
                                     emit(if_noteq, $1, $3, NULL, nextquad()+3, yylineno);
-                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                    emit(assign, newexpr_constbool(0), NULL, $$, 0, yylineno);
                                     emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
-                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
+                                    emit(assign, newexpr_constbool(1), NULL, $$, 0, yylineno);
                                   }
                                 }
           |expr AND expr        {
@@ -285,7 +285,7 @@ expr:     assignexpr            {
                                   //else{
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
-                                    emit(and, $1, $3, $$, -1, yylineno);
+                                    emit(and, $1, $3, $$, 0, yylineno);
                                   //}
                                 }
           |expr OR expr			    {
@@ -296,7 +296,7 @@ expr:     assignexpr            {
                                   //else{
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
-                                    emit(or, $1, $3, $$, -1, yylineno);
+                                    emit(or, $1, $3, $$, 0, yylineno);
                                   //}
                                 }
           |term					        {	fprintf(fp, "expr: term at line %d --> %s\n", yylineno, yytext);}
@@ -311,28 +311,28 @@ term:     L_PAR expr R_PAR			    {
                                       check_arith($2, "-expr");
                                       $$ = newexpr(arithexpr_e);
                                       $$->sym = istempexpr($2) ? $2->sym : newtemp();
-                                      emit(uminus, $2, NULL, $$, -1, yylineno);
+                                      emit(uminus, $2, NULL, $$, 0, yylineno);
                                     }
           |NOT expr	                {
                                       fprintf(fp, "term: NOT expr at line %d --> %s\n", yylineno, yytext);
                                       $$ = newexpr(boolexpr_e);
                                       $$->sym = istempexpr($2) ? $2->sym : newtemp();
-                                      emit(not, $2, NULL, $$, -1, yylineno);
+                                      emit(not, $2, NULL, $$, 0, yylineno);
                                     }
           |INCR lvalue              {
                                       fprintf(fp, "term: INCR lvalue at line %d --> %s\n", yylineno, yytext);
                                       check_arith($2, "++lvalue");
                                       if($2->type == tableitem_e){
                                         $$ = emit_iftableitem($2, yylineno);
-                                        emit(add, $$, newexpr_constnum(1), $$, -1, yylineno);
-                                        emit(tablesetelem, $2->index, $$, $2, -1, yylineno);
+                                        emit(add, $$, newexpr_constnum(1), $$, 0, yylineno);
+                                        emit(tablesetelem, $2->index, $$, $2, 0, yylineno);
 
                                       }
                                       else{
-                                        emit(add, $2, newexpr_constnum(1), $2, -1, yylineno);
+                                        emit(add, $2, newexpr_constnum(1), $2, 0, yylineno);
                                         $$ = newexpr(arithexpr_e);
                                         $$->sym = newtemp();
-                                        emit(assign, $2, NULL, $$, -1, yylineno);
+                                        emit(assign, $2, NULL, $$, 0, yylineno);
                                       }
                                     }
           |lvalue INCR              {
@@ -342,13 +342,13 @@ term:     L_PAR expr R_PAR			    {
                                       $$->sym = newtemp();
                                       if($1->type == tableitem_e){
                                         expr* val = emit_iftableitem($1, yylineno);
-                                        emit(assign, val, NULL, $$, -1, yylineno);
-                                        emit(add, val, newexpr_constnum(1), val, -1, yylineno);
-                                        emit(tablesetelem, $1->index, val, $1, -1, yylineno);
+                                        emit(assign, val, NULL, $$, 0, yylineno);
+                                        emit(add, val, newexpr_constnum(1), val, 0, yylineno);
+                                        emit(tablesetelem, $1->index, val, $1, 0, yylineno);
                                       }
                                       else{
                                         emit(assign, $1, NULL, $$, -1, yylineno);
-                                        emit(add, $1, newexpr_constnum(1), $1, -1, yylineno);
+                                        emit(add, $1, newexpr_constnum(1), $1, 0, yylineno);
                                       }
                                     }
           |DECR lvalue              {
@@ -356,14 +356,14 @@ term:     L_PAR expr R_PAR			    {
                                       check_arith($2, "--lvalue");
                                       if($2->type == tableitem_e){
                                         $$ = emit_iftableitem($2, yylineno);
-                                        emit(sub, $$, newexpr_constnum(1), $$, -1, yylineno);
-                                        emit(tablesetelem, $2->index, $$, $2, -1, yylineno);
+                                        emit(sub, $$, newexpr_constnum(1), $$, 0, yylineno);
+                                        emit(tablesetelem, $2->index, $$, $2, 0, yylineno);
                                       }
                                       else{
-                                        emit(sub, $2, newexpr_constnum(1), $2, -1, yylineno);
+                                        emit(sub, $2, newexpr_constnum(1), $2, 0, yylineno);
                                         $$ = newexpr(arithexpr_e);
                                         $$->sym = newtemp();
-                                        emit(assign, $2, NULL, $$, -1, yylineno);
+                                        emit(assign, $2, NULL, $$, 0, yylineno);
                                       }
                                     }
           |lvalue DECR              {
@@ -373,13 +373,13 @@ term:     L_PAR expr R_PAR			    {
                                       $$->sym = newtemp();
                                       if($1->type == tableitem_e){
                                         expr* val = emit_iftableitem($1, yylineno);
-                                        emit(assign, val, NULL, $$, -1, yylineno);
-                                        emit(sub, val, newexpr_constnum(1), val, -1, yylineno);
-                                        emit(tablesetelem, $1->index, val, $1, -1, yylineno);
+                                        emit(assign, val, NULL, $$, 0, yylineno);
+                                        emit(sub, val, newexpr_constnum(1), val, 0, yylineno);
+                                        emit(tablesetelem, $1->index, val, $1, 0, yylineno);
                                       }
                                       else{
                                         emit(assign, $1, NULL, $$, -1, yylineno);
-                                        emit(sub, $1, newexpr_constnum(1), $1, -1, yylineno);
+                                        emit(sub, $1, newexpr_constnum(1), $1, 0, yylineno);
                                       }
                                     }
 			    |primary                  {
@@ -392,16 +392,16 @@ assignexpr: lvalue ASSIGN expr  {
                                   fprintf(fp, "assignexpr: lvalue ASSIGN expr at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered assignexpr: lvalue = expr\n");
                                   if($1->type == tableitem_e){
-                                    emit(tablesetelem, $1->index, $3, $1, -1, yylineno);
+                                    emit(tablesetelem, $1->index, $3, $1, 0, yylineno);
                                     $$ = emit_iftableitem($1, yylineno);
                                     $$->type = assignexpr_e;
                                   }
                                   else{
-                                    emit(assign, $3, NULL, $1, -1, yylineno);
+                                    emit(assign, $3, NULL, $1, 0, yylineno);
                                     $$ = newexpr(assignexpr_e);
                                     $$->sym = istempexpr($3) ? $3->sym : newtemp();
                                     //$$->sym = newtemp();
-                                    emit(assign, $1, NULL, $$, -1, yylineno);
+                                    emit(assign, $1, NULL, $$, 0, yylineno);
                                   }
                                 }
             ;
@@ -582,9 +582,9 @@ tablemake:	L_BR elist R_BR     {
                                     t->sym = newtemp();
                                   else
                                     t->sym = istempexpr($2) ? $2->sym : newtemp();
-                                  emit(tablecreate, t, NULL, NULL, -1, yylineno);
+                                  emit(tablecreate, t, NULL, NULL, 0, yylineno);
                                   while(tmp != NULL){
-                                    emit(tablesetelem, newexpr_constnum(i++), tmp, t, -1, yylineno);
+                                    emit(tablesetelem, newexpr_constnum(i++), tmp, t, 0, yylineno);
                                     tmp = tmp->next;
                                   }
                                   $$ = t;
@@ -595,9 +595,9 @@ tablemake:	L_BR elist R_BR     {
                                   expr* t = newexpr(newtable_e);
                                   t->sym = istempexpr($2) ? $2->sym : newtemp();
                                   expr* tmp = $2;
-                                  emit(tablecreate, t, NULL, NULL, -1, yylineno);
+                                  emit(tablecreate, t, NULL, NULL, 0, yylineno);
                                   while(tmp != NULL){
-                                    emit(tablesetelem, tmp, tmp->index, t, -1, yylineno);
+                                    emit(tablesetelem, tmp, tmp->index, t, 0, yylineno);
                                     tmp = tmp->next;
                                   }
                                   $$ = t;
@@ -655,7 +655,7 @@ funcdef:  funcprefix funcargs funcblockstart funcbody	funcblockend {
                                               int offset = popOffset(&scopeoffsetStack); // pop and get pre scope offset
                                               restorecurrscopeoffset(offset);
                                               $$ = $1;
-                                              emit(funcend, NULL, NULL, lvalue_expr($1), -1, yylineno);
+                                              emit(funcend, NULL, NULL, lvalue_expr($1), 0, yylineno);
                                             }
 				  ;
 
@@ -663,7 +663,7 @@ funcprefix:		FUNCTION funcname	            {
                                               fprintf(fp, "funcprefix: FUNCTION funcname at line %d --> %s\n", yylineno, yytext);
                                               $$ = hashInsert($2, currentscope, yylineno, programfunc_s, currscopespace(), currscopeoffset(), inFunc);
                                               $$->iaddress = nextquadlabel();
-                                              emit(funcstart, NULL, NULL, lvalue_expr($$), -1, yylineno);
+                                              emit(funcstart, NULL, NULL, lvalue_expr($$), 0, yylineno);
                                               pushOffset(&scopeoffsetStack, currscopeoffset()); // Save current offset
                                               enterscopespace();
                                               resetformalargsoffset();
@@ -785,7 +785,7 @@ ifstmt: ifprefix stmt                   {
                                           printf("Entered ifstmt: ifprefix stmt\n");
                                           patchlabel($1, nextquad());
                                           if(breakcount != 0 || contcount != 0){
-                                            //printf("$2->breaklist = %d\n", $2->breaklist);
+                                            printf("$2->breaklist = %d\n", $2->breaklist);
                                             $$ = $2;
                                           }
                                         }
@@ -870,14 +870,14 @@ returnstmt:	RETURN SEMICOLON    {
                                   if (inFunc == 0)
                                     addError("Use of return while not in function", "", yylineno);
                                   else
-                                    emit(ret, NULL, NULL, NULL, -1, yylineno);
+                                    emit(ret, NULL, NULL, NULL, 0, yylineno);
                                 }
 			      |RETURN expr SEMICOLON   {
                                         fprintf(fp, "returnstmt: RETURN expr SEMICOLON at line %d --> %s\n", yylineno, yytext);
                                         if (inFunc == 0)
                                           addError("Use of return while not in function", "", yylineno);
                                         else
-                                          emit(ret, NULL, NULL, $2, -1, yylineno);
+                                          emit(ret, NULL, NULL, $2, 0, yylineno);
                                       }
 			      ;
 
