@@ -77,16 +77,18 @@ stmtlist: stmt              {
                               //printf("$1->breaklist = %d\n", $1->breaklist);
                               $$ = $1;
                             }
-          |stmtlist stmt		{
+          |stmt stmtlist		{
                               fprintf(fp, "stmtlist: stmtlist stmt at line %d --> %s\n", yylineno, yytext);
-                              printf("Entered stmtlist: stmtlist stmt\n");
+                              printf("Entered stmtlist: stmt stmtlist\n");
                               //printf("$1->breaklist = %d | $2->breaklist = %d\n", $1->breaklist, $2->breaklist);
                               //printf("$1->contlist = %d | $2->contlist = %d\n", $1->contlist, $2->contlist);
                               stmt_t *tmp = (stmt_t*) malloc(sizeof(stmt_t));
                               if(breakcount != 0 || contcount != 0){
+                                printf("Entered check\n");
                                 tmp->breaklist = mergelist($1->breaklist, $2->breaklist);
                                 tmp->contlist = mergelist($1->contlist, $2->contlist);
                                 $$ = tmp;
+                                breakcount = 0;
                                 //printf("tmp->breaklist = %d\n", $$->breaklist);
                                 //printf("tmp->contlist = %d\n", $$->contlist);
                               }
@@ -115,7 +117,7 @@ stmt:     expr SEMICOLON        {
           |break SEMICOLON		  {
 										              fprintf(fp, "stmt: BREAK SEMICOLON at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered stmt: break;\n");
-                                  printf("breakcount %d\n", breakcount);
+                                  printf("breakcount = %d\n", breakcount);
                                   //printf("$1->breaklist = %d\n", $1->breaklist);
                                   $$ = $1;
                                 }
