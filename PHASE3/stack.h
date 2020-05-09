@@ -1,17 +1,32 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct StackNode{
+typedef struct offsetStack{
     unsigned int numoflocals;
-    struct StackNode *next;
-}StackNode;
+    struct offsetStack* next;
+}offsetStack;
 
-StackNode* initStack();
+typedef struct counterStack{
+    unsigned int loopcounter;
+    struct counterStack* next;
+}counterStack;
 
-int isEmpty(StackNode *root);
+offsetStack* initOffsetStack();
 
-unsigned int peek(StackNode *root);
+int isEmptyOffset(offsetStack *root);
 
-void push(StackNode *root, unsigned int offset);
+unsigned int peekOffset(offsetStack *root);
 
-unsigned int pop(StackNode *root);
+void pushOffset(offsetStack **root, unsigned int offset);
+
+unsigned int popOffset(offsetStack **root);
+
+counterStack* initCounterStack();
+
+int isEmptyCounter(counterStack *root);
+
+unsigned int peekCounter(counterStack *root);
+
+void pushCounter(counterStack **root, unsigned int counter);
+
+unsigned int popCounter(counterStack **root);
