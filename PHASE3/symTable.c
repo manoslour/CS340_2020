@@ -349,7 +349,7 @@ void printQuads(){
 				printf("%9s\t", (quads+i)->arg2->sym->name);
 		}
 
-		if((quads+i)->label == -1)
+		if((quads+i)->label == -1 || ( (quads+i)->label == 0 && strcmp(opcode, "jump") != 0))
 			printf("%9s", "");
 		else
 			printf("%9d", ((quads+i)->label)+1);
@@ -494,13 +494,13 @@ void make_stmt(stmt_t* s){
 int newlist(int i){
 	printf("Entered newlist\n");
 	quads[i].label = 0;
-	printf("quads[%d] = 0\n", i);
+	printf("quads[%d] = 0\n", i+1);
 	return i;
 }
 
 int mergelist(unsigned int l1, unsigned int l2){
 	printf("Entered mergelist\n");
-	printf("l1 = %d | l2 = %d\n", l1, l2);
+	printf("l1 = %d | l2 = %d\n", l1+1, l2+1);
 	if(l1 == 0){
 		printf("l1 = 0\n");
 		return l2;
@@ -513,11 +513,12 @@ int mergelist(unsigned int l1, unsigned int l2){
 		int i = l1;
 		while(quads[i].label > 0){
 			printf("Entered while\n");
-			printf("quads[%d].label = %d\n", i, quads[i].label);
+			printf("quads[%d].label = %d\n", i+1, quads[i+1].label);
 			i = quads[i].label;
 		}
 		printf("Exited while\n");
         quads[i].label = l2;
+		printf("quads[%d].label = %d\n", i+1, l2+1);
         return l1;
 	}
 	printf("Exiting mergelist\n");
