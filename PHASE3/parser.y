@@ -405,11 +405,11 @@ assignexpr: lvalue ASSIGN expr  {
                                     $$->type = assignexpr_e;
                                   }
                                   else{
-                                    emit(assign, $3, NULL, $1, -1, yylineno);
+                                    emit(assign, $3, NULL, $1, 0, yylineno);
                                     $$ = newexpr(assignexpr_e);
                                     $$->sym = istempexpr($3) ? $3->sym : newtemp();
                                     //$$->sym = newtemp();
-                                    emit(assign, $1, NULL, $$, -1, yylineno);
+                                    emit(assign, $1, NULL, $$, 0, yylineno);
                                   }
                                 }
             ;
@@ -838,13 +838,16 @@ whilestmt: whilestart whilecond loopstmt {
                                           printf("Entered whilestmt, line = %d\n", yylineno);
                                           emit(jump, NULL, NULL, NULL, $1, yylineno);
                                           patchlabel($2, nextquad());
+
                                           if(breakcount != 0){
                                             printf("$3->breaklist = %d\n", $3->breaklist);
                                             patchlist($3->breaklist, nextquad());
+                                            breakcount = 0;
                                           }
                                           if(contcount != 0){
                                             printf("$3->contlist = %d\n", $3->contlist);
                                             patchlist($3->contlist, $1);
+                                            contcount = 0;
                                           }
                                           $$ = $3;
                                         }
