@@ -262,99 +262,104 @@ unsigned nextquad(){
 
 void printQuads(){
 	int i, tmp;
+	FILE *quadOutput;
 	char *arg1, *arg2, *result, *opcode;
 
-	printf("\nQuad#\t\topcode\t\tresult\t\targ1\t\targ2\t\tlabel");
-	printf("\n-------------------------------------------------------------------------------------");
+	quadOutput = fopen("quads.txt", "w+");
+	if(quadOutput == NULL)
+		printf("Error, cant open file\n");
+
+	fprintf(quadOutput, "\nQuad#\t\topcode\t\tresult\t\targ1\t\targ2\t\tlabel");
+	fprintf(quadOutput, "\n-------------------------------------------------------------------------------------");
 	for (i = 0; i < currQuad; i++){
 		opcode = strdup(translateopcode((quads+i)->op));
-		printf("\n%d:\t%14s\t", i+1, opcode);
+		fprintf(quadOutput, "\n%d:\t%14s\t", i+1, opcode);
 
 		if ((quads+i)->result == NULL )
-			printf("%11s\t", "");
+			fprintf(quadOutput, "%11s\t", "");
 		else{
 			if((quads+i)->result->sym == NULL){
 				switch((quads+i)->result->type){
 					case constnum_e:
-						printf("%11d\t", (int)(quads+i)->result->numConst); break;
+						fprintf(quadOutput, "%11d\t", (int)(quads+i)->result->numConst); break;
 					case constbool_e:
 						tmp = (int)(quads+i)->result->boolConst;
 						if(tmp == 0){
-							printf("%13s\t", "FALSE"); 
+							fprintf(quadOutput, "%13s\t", "FALSE"); 
 							break;
 						}
 						else{
-							printf("%12s\t", "TRUE"); 
+							fprintf(quadOutput, "%12s\t", "TRUE"); 
 							break;
 						}
 					case conststring_e:
-						printf("%11s\t", (quads+i)->result->strConst); break;
+						fprintf(quadOutput, "%11s\t", (quads+i)->result->strConst); break;
 					default:
-						printf("Unknown case\n");
+						fprintf(quadOutput, "Unknown case\n");
 				}
 			}
 			else
-				printf("%11s\t", (quads+i)->result->sym->name);
+				fprintf(quadOutput, "%11s\t", (quads+i)->result->sym->name);
 		}
 
 		if((quads+i)->arg1 ==  NULL)
-			printf("%11s\t", "");
+			fprintf(quadOutput, "%11s\t", "");
 		else{
 			if((quads+i)->arg1->sym == NULL){
 				switch ((quads+i)->arg1->type) {
 					case constnum_e:
-						printf("%9d\t", (int)(quads+i)->arg1->numConst); break;
+						fprintf(quadOutput, "%9d\t", (int)(quads+i)->arg1->numConst); break;
 					case constbool_e:
 						tmp = (int)(quads+i)->arg1->boolConst;
 						if(tmp == 0){
-							printf("%13s\t", "FALSE"); 
+							fprintf(quadOutput, "%13s\t", "FALSE"); 
 							break;
 						}
 						else{
-							printf("%12s\t", "TRUE"); 
+							fprintf(quadOutput, "%12s\t", "TRUE"); 
 							break;
 						}
 					case conststring_e:
-						printf("%9s\t", (quads+i)->arg1->strConst); break;
+						fprintf(quadOutput, "%9s\t", (quads+i)->arg1->strConst); break;
 					default:
-						printf("Unknown case");
+						fprintf(quadOutput, "Unknown case");
 				}
 			}
 			else
-				printf("%9s\t", (quads+i)->arg1->sym->name);
+				fprintf(quadOutput, "%9s\t", (quads+i)->arg1->sym->name);
 		}
 
 		if((quads+i)->arg2 ==  NULL)
-			printf("%11s\t", "");
+			fprintf(quadOutput, "%11s\t", "");
 		else{
 			if((quads+i)->arg2->sym == NULL){
 				switch ((quads+i)->arg2->type) {
 					case constnum_e:
-						printf("%9d\t", (int)(quads+i)->arg2->numConst); break;
+						fprintf(quadOutput, "%9d\t", (int)(quads+i)->arg2->numConst); break;
 					case constbool_e:
 						tmp = (int)(quads+i)->arg2->boolConst;
 						if(tmp == 0){
-							printf("%13s\t", "FALSE"); 
+							fprintf(quadOutput, "%13s\t", "FALSE"); 
 							break;
 						}
 						else{
-							printf("%12s\t", "TRUE"); 
+							fprintf(quadOutput, "%12s\t", "TRUE"); 
 							break;
 						}
 					case conststring_e:
-						printf("%9s\t", (quads+i)->arg2->strConst); break;
+						fprintf(quadOutput, "%9s\t", (quads+i)->arg2->strConst); break;
 				}
 			}
 			else
-				printf("%9s\t", (quads+i)->arg2->sym->name);
+				fprintf(quadOutput, "%9s\t", (quads+i)->arg2->sym->name);
 		}
 
 		if((quads+i)->label == -1 || ( (quads+i)->label == 0 && strcmp(opcode, "jump") != 0))
-			printf("%9s", "");
+			fprintf(quadOutput, "%9s", "");
 		else
-			printf("%9d", ((quads+i)->label)+1);
+			fprintf(quadOutput, "%9d", ((quads+i)->label)+1);
 		}
-  printf("\n\n\n");
+	fclose(quadOutput);
 }
 
 char* translateopcode(iopcode opcode){
@@ -387,6 +392,7 @@ char* translateopcode(iopcode opcode){
 		case 24:	name = "tablesetelem"; break;
 		case 25:	name = "jump"; break;
 	}
+	return name;
 }
 
 expr* member_item (expr* lv, char* name, unsigned int line){
