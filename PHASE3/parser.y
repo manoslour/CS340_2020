@@ -82,12 +82,12 @@ stmtlist: stmt              {
                               printf("Entered stmtlist: stmt stmtlist\n");
                               printf("Breakcount = %d | Contcount = %d\n", breakcount, contcount);
                               stmt_t *tmp = (stmt_t*) malloc(sizeof(stmt_t));
-                              if(breakcount != 0){
+                              if(breakcount > 1){
                                 printf("Entered break check\n");
                                 tmp->breaklist = mergelist($1->breaklist, $2->breaklist);
                                 breakcount = 0;
                               }
-                              if(contcount != 0){
+                              if(contcount > 1){
                                 printf("Entered continue check\n");
                                 tmp->contlist = mergelist($1->contlist, $2->contlist);
                                 contcount = 0;
@@ -405,11 +405,11 @@ assignexpr: lvalue ASSIGN expr  {
                                     $$->type = assignexpr_e;
                                   }
                                   else{
-                                    emit(assign, $3, NULL, $1, 0, yylineno);
+                                    emit(assign, $3, NULL, $1, -1, yylineno);
                                     $$ = newexpr(assignexpr_e);
                                     $$->sym = istempexpr($3) ? $3->sym : newtemp();
                                     //$$->sym = newtemp();
-                                    emit(assign, $1, NULL, $$, 0, yylineno);
+                                    emit(assign, $1, NULL, $$, -1, yylineno);
                                   }
                                 }
             ;
@@ -806,12 +806,12 @@ ifstmt: ifprefix stmt                   {
                                           patchlabel($3, nextquad());
 
                                           stmt_t* tmp = (stmt_t*) malloc(sizeof(stmt_t));
-                                          if(breakcount != 0){
-                                            printf("$2->breakist = %d | $4->breaklist = %d\n", $2->breaklist, $4->breaklist);
+                                          if(breakcount > 1){
+                                            printf("$2->breaklist = %d | $4->breaklist = %d\n", $2->breaklist, $4->breaklist);
                                             tmp->breaklist = mergelist($2->breaklist, $4->breaklist);
                                             breakcount = 0;
                                           }
-                                          if(contcount != 0){
+                                          if(contcount > 1){
                                             printf("$2->contlist = %d | $4->contlist = %d\n", $2->contlist, $4->contlist);
                                             tmp->contlist = mergelist($2->contlist, $4->contlist);
                                             contcount = 0;
@@ -916,7 +916,7 @@ loopstmt: loopstart stmt loopend  {
                                     
                                     if(breakcount != 0 || contcount != 0){
                                       if(breakpointer != NULL){
-                                        printf("Some really cringy magic happens\n");
+                                        printf("Some magic happens\n");
                                         $$ = breakpointer;
                                       }
                                       else{
@@ -986,7 +986,7 @@ int main(int argc, char** argv){
     initialize();
     yyparse();
     printQuads();
-    //printScopeList();
+    printScopeList();
     printErrorList();
 
     fclose(fp);
