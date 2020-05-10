@@ -16,6 +16,9 @@
 #define CURR_SIZE (total * sizeof(quad))
 #define NEW_SIZE (EXPAND_SIZE * sizeof(quad) + CURR_SIZE)
 
+
+
+
 typedef enum {
 	Global,
 	Local,
@@ -206,7 +209,7 @@ void make_stmt(stmt_t* s);
 
 int newlist(int i);
 
-unsigned int mergelist(unsigned int l1, unsigned int l2);
+int mergelist(unsigned int l1, unsigned int l2);
 
 void patchlist(int list, int label);
 

@@ -1,0 +1,15 @@
+
+Quad#		opcode		result		arg1		arg2		label
+-------------------------------------------------------------------------------------
+1:	       if_less	           	        b	        2	        4
+2:	        assign	        _t0	        FALSE	           	         
+3:	          jump	           	           	           	        5
+4:	        assign	        _t0	        TRUE	           	         
+5:	            or	        _t1	        a	      _t0	         
+6:	         if_eq	           	      _t1	        TRUE	        8
+7:	          jump	           	           	           	       11
+8:	         param	           	      "?"	           	         
+9:	          call	           	    print	           	         
+10:	     getretval	        _t2	           	           	         
+
+
