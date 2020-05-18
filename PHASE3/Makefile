@@ -17,4 +17,4 @@ stack.o: stack.c
 
 clean:
 	rm *o
-	rm parser.c parser.h scanner.c calc syntaxAnalysis parser.output
+	rm parser.c parser.h scanner.c calc syntaxAnalysis parser.output quads.txt
