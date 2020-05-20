@@ -547,11 +547,11 @@ tableitem:  lvalue DOT ID 				    {
 
 call:	      call L_PAR elist R_PAR	  {
                                         fprintf(fp, "call: (elist) at line %d --> %s\n", yylineno, yytext);
-                                        printf("call (elist)\n");
+                                        printf("Entered call (elist)\n");
                                         $$ = make_call($1, $3, yylineno);
                                       }
             |lvalue callsuffix				{
-                                        fprintf(fp, "call: lvalue callsuffix at line %d --> %s\n", yylineno, yytext);
+                                         fprintf(fp, "call: lvalue callsuffix at line %d --> %s\n", yylineno, yytext);
                                         $1 = emit_iftableitem($1, yylineno); //In case it was a table item too
                                         printf("Enterd call: lvalue callsufix\n");
                                         if($2->method){
@@ -607,19 +607,20 @@ methodcall: DDOT ID L_PAR elist R_PAR {
 
 elist:      expr                { 
                                   fprintf(fp, "elist: expr at line %d --> %s\n", yylineno, yytext);
+                                  printf("expr = %s\n", $1->sym->name);
                                   $$ = $1;
                                 }
 		        |expr COMMA elist 	{
 								                  fprintf(fp, "elist: expr, elist at line %d --> %s\n", yylineno, yytext);
-                                  $1->next = $3;
-                                  /*
+                                  printf("expr = %s | elist = %s\n", $1->sym->name, $3->sym->name);
                                   expr* tmp = $3;
                                   while(tmp->next != NULL){
+                                    printf("tmp = %s | next = %s\n", tmp->sym->name, tmp->next->sym->name);
                                     tmp = tmp->next;
                                   }
                                   tmp->next = $1;
                                   $$ = $3;
-                                  */
+                                  
                                 }
  		        |					          {
 								                  fprintf(fp, "elist: empty at line %d --> %s\n", yylineno, yytext);
