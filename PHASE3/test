@@ -1,6 +1,2 @@
-while(b){
-	a = 3;
-	y = 3;
-	b = 3;
-	break;
-}
+//x = f(y)(a,b);
+sprite..move(dx, dy);
