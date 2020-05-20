@@ -18,6 +18,7 @@
   unsigned int betweenFunc = 0;
   unsigned int loopcounter = 0;
   unsigned int currentscope = 0;
+  unsigned int funcJump = 0;
   offsetStack *scopeoffsetStack = NULL;
   counterStack *loopcounterStack = NULL;
   stmt_t *breakpointer = NULL;
@@ -712,6 +713,7 @@ funcdef:  funcprefix funcargs funcblockstart funcbody	funcblockend {
                                               restorecurrscopeoffset(offset);
                                               $$ = $1;
                                               emit(funcend, NULL, NULL, lvalue_expr($1), -1, yylineno);
+                                              patchlabel(funcJump, nextquad());
                                             }
 				  ;
 
@@ -719,6 +721,8 @@ funcprefix:		FUNCTION funcname	            {
                                               fprintf(fp, "funcprefix: FUNCTION funcname at line %d --> %s\n", yylineno, yytext);
                                               $$ = hashInsert($2, currentscope, yylineno, programfunc_s, currscopespace(), currscopeoffset());
                                               $$->iaddress = nextquadlabel();
+                                              funcJump = nextquad();
+                                              emit(jump, NULL, NULL, NULL, 0, yylineno);
                                               emit(funcstart, NULL, NULL, lvalue_expr($$), -1, yylineno);
                                               pushOffset(&scopeoffsetStack, currscopeoffset()); // Save current offset
                                               enterscopespace();
