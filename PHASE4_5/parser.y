@@ -491,22 +491,10 @@ primary:    lvalue                { fprintf(fp, "primary: lvalue at line %d --> 
 
 lvalue:     ID          {
                           fprintf(fp, "lvalue: ID at line %d --> %s\n", yylineno, yylval.stringValue);
-                          int varInFunc;
                           symbol *sym = lookup(yylval.stringValue, currentscope);
                           if(sym == NULL){
-                            sym = hashInsert(yylval.stringValue, currentscope, yylineno, var_s, currscopespace(), currscopeoffset(), inFunc);
+                            sym = hashInsert(yylval.stringValue, currentscope, yylineno, var_s, currscopespace(), currscopeoffset());
                             inccurrscopeoffset();
-                            //printf("Inserted symbol %s\n", yylval.stringValue);
-                          }
-                          else {
-                            printf("Symbol %s already defined\n", sym->name);
-                            //MUST CHECK ACCESSIBILITY
-                            varInFunc = findInFunc(yylval.stringValue, currentscope);
-                            if( (sym->type == var_s) && (inFunc - varInFunc >= 1) )
-                              if(sym->scope != 0)
-                                addError("Cannot access symbol", yytext, yylineno);
-                            else
-                              fprintf(fp, "Symbol %s found and it's accessible\n", yylval.stringValue);
                           }
                           $$ = lvalue_expr(sym);
                         }
@@ -519,7 +507,7 @@ lvalue:     ID          {
                             if(tmp != NULL && tmp->type == libraryfunc_s)
                               printf("Error, collision with libfunc at line %d\n", yylineno);
                             else{
-                              sym = hashInsert(yytext, currentscope, yylineno, var_s, currscopespace(), currscopeoffset(), inFunc);
+                              sym = hashInsert(yytext, currentscope, yylineno, var_s, currscopespace(), currscopeoffset());
                               inccurrscopeoffset();
                             }
                           }
@@ -730,7 +718,7 @@ funcdef:  funcprefix funcargs funcblockstart funcbody	funcblockend {
 
 funcprefix:		FUNCTION funcname	            {
                                               fprintf(fp, "funcprefix: FUNCTION funcname at line %d --> %s\n", yylineno, yytext);
-                                              $$ = hashInsert($2, currentscope, yylineno, programfunc_s, currscopespace(), currscopeoffset(), inFunc);
+                                              $$ = hashInsert($2, currentscope, yylineno, programfunc_s, currscopespace(), currscopeoffset());
                                               $$->iaddress = nextquadlabel();
                                               emit(funcstart, NULL, NULL, lvalue_expr($$), -1, yylineno);
                                               pushOffset(&scopeoffsetStack, currscopeoffset()); // Save current offset
@@ -811,26 +799,16 @@ idlist:		ID	{
                 fprintf(fp, "idlist: ID at line %d --> %s\n", yylineno, yytext);
                 symbol *sym = lookup(yylval.stringValue, currentscope);
                 if(sym == NULL){
-                  sym = hashInsert(yylval.stringValue, currentscope, yylineno, var_s, currscopespace(), currscopeoffset(), inFunc);
+                  sym = hashInsert(yylval.stringValue, currentscope, yylineno, var_s, currscopespace(), currscopeoffset());
                   inccurrscopeoffset();
-                  //printf("Inserted symbol %s\n", yylval.stringValue);
-                }
-                else{
-                  printf("Symbol %s already defined\n", sym->name);
-                  //MUST CHECK ACCESSIBILITY
                 }
               }
           |idlist COMMA ID 	{
                               fprintf(fp, "idlist: idlist COMMA ID at line %d --> %s\n", yylineno, yytext);
                               symbol *sym = lookup(yylval.stringValue, currentscope);
                               if(sym == NULL){
-                                sym = hashInsert(yylval.stringValue, currentscope, yylineno, var_s, currscopespace(), currscopeoffset(), inFunc);
+                                sym = hashInsert(yylval.stringValue, currentscope, yylineno, var_s, currscopespace(), currscopeoffset());
                                 inccurrscopeoffset();
-                                //printf("Inserted symbol %s\n", yylval.stringValue);
-                              }
-                              else {
-                                printf("Symbol %s already defined\n", sym->name);
-                                //MUST CHECK ACCESSIBILITY
                               }
                             }
 			    |
