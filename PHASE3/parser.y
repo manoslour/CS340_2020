@@ -552,18 +552,16 @@ call:	      call L_PAR elist R_PAR	  {
                                       }
             |lvalue callsuffix				{
                                          fprintf(fp, "call: lvalue callsuffix at line %d --> %s\n", yylineno, yytext);
-                                        $1 = emit_iftableitem($1, yylineno); //In case it was a table item too
+                                        $1 = emit_iftableitem($1, yylineno);
                                         printf("Enterd call: lvalue callsufix\n");
                                         if($2->method){
-                                          //printf("Entered if check\n");
                                           expr* t = $1;
                                           $1 = emit_iftableitem(member_item(t, $2->name, yylineno), yylineno);
                                           expr* tmp = $2->elist;
                                           while( (tmp->next) != NULL){
-                                            //printf("tmp = %s\n", tmp->sym->name);
                                             tmp = tmp->next;
                                           }
-                                          tmp->next = t; //Insert as first argument(reserved, so last)
+                                          tmp->next = t;
                                         }
                                         $$ = make_call($1, $2->elist, yylineno);
                                       }
