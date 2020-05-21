@@ -205,97 +205,72 @@ expr:     assignexpr            {
                                 }
           |expr GREATER expr		{
                                   printf("expr: expr GREATER expr at line %d --> %s\n", yylineno, yytext);
-                                  if(illegalop($1, $3))
-                                    addError("Error, illegal boolean operation", "", yylineno);
-                                  else{
-                                    $$ = newexpr(boolexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
-                                    emit(if_greater, $1, $3, NULL, nextquad()+3, yylineno);
-                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
-                                    emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
-                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
 
-                                    //---MERIKH APOTIMHSH---
-                                    /*
-                                    emit(if_greater, $1, $3, NULL, 0, yylineno);
-                                    $$->truelist = newlist(nextquad()-1);
-                                    emit(jump, NULL, NULL, NULL, 0, yylineno);
-                                    $$->falselist = newlist(nextquad()-1);
-
-                                    printf("True list = %d\n", $$->truelist+1);
-                                    printf("False list = %d\n", $$->falselist+1);
-                                    */
-                                  }
+                                  $$ = newexpr(boolexpr_e);
+                                  $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                  emit(if_greater, $1, $3, NULL, nextquad()+3, yylineno);
+                                  emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                  emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
+                                  emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
+                                  //---MERIKH APOTIMHSH---
+                                  /*
+                                  emit(if_greater, $1, $3, NULL, 0, yylineno);
+                                  $$->truelist = newlist(nextquad()-1);
+                                  emit(jump, NULL, NULL, NULL, 0, yylineno);
+                                  $$->falselist = newlist(nextquad()-1);
+                                  printf("True list = %d\n", $$->truelist+1);
+                                  printf("False list = %d\n", $$->falselist+1);
+                                  */
                                 }
           |expr GREATER_EQ expr	{
                                   printf("expr: expr GREATER_EQ expr at line %d --> %s\n", yylineno, yytext);
-                                  if(illegalop($1, $3))
-                                    addError("Error, illegal boolean operation", "", yylineno);
-                                  else{
-                                    $$ = newexpr(boolexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
 
-                                    emit(if_greatereq, $1, $3, NULL, nextquad()+3, yylineno);
-                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
-                                    emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
-                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
-                                  }
+                                  $$ = newexpr(boolexpr_e);
+                                  $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                  emit(if_greatereq, $1, $3, NULL, nextquad()+3, yylineno);
+                                  emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                  emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
+                                  emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
                                 }
           |expr LESS expr       {
                                   printf("expr: expr LESS expr at line %d --> %s\n", yylineno, yytext);
-                                  if(illegalop($1, $3))
-                                    addError("Error, illegal boolean operation", "", yylineno);
-                                  else{
-                                    $$ = newexpr(boolexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
 
-                                    emit(if_less, $1, $3, NULL, nextquad()+3, yylineno);
-                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
-                                    emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
-                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
-                                  }
+                                  $$ = newexpr(boolexpr_e);
+                                  $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                  emit(if_less, $1, $3, NULL, nextquad()+3, yylineno);
+                                  emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                  emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
+                                  emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
                                 }
           |expr LESS_EQ expr		{
                                   printf("expr: expr LESS_EQ expr at line %d --> %s\n", yylineno, yytext);
-                                  if(illegalop($1, $3))
-                                    addError("Error, illegal boolean operation", "", yylineno);
-                                  else{
-                                    $$ = newexpr(boolexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
 
-                                    emit(if_lesseq, $1, $3, NULL, nextquad()+3, yylineno);
-                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
-                                    emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
-                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
-                                  }
+                                  $$ = newexpr(boolexpr_e);
+                                  $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                  emit(if_lesseq, $1, $3, NULL, nextquad()+3, yylineno);
+                                  emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                  emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
+                                  emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
                                 }
           |expr EQUAL expr      {
                                   printf("expr: expr EQUAL expr at line %d --> %s\n", yylineno, yytext);
-                                  if(illegalop($1, $3))
-                                    addError("Error, illegal boolean operation", "", yylineno);
-                                  else{
-                                    $$ = newexpr(boolexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
 
-                                    emit(if_eq, $1, $3, NULL, nextquad()+3, yylineno);
-                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
-                                    emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
-                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
-                                  }
+                                  $$ = newexpr(boolexpr_e);
+                                  $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                  emit(if_eq, $1, $3, NULL, nextquad()+3, yylineno);
+                                  emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                  emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
+                                  emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
                                 }
           |expr NOT_EQUAL expr  {
                                   printf("expr: expr NOT_EQUAL expr at line %d --> %s\n", yylineno, yytext);
-                                  if(illegalop($1, $3))
-                                    addError("Error, illegal boolean operation", "", yylineno);
-                                  else{
-                                    $$ = newexpr(boolexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
 
-                                    emit(if_noteq, $1, $3, NULL, nextquad()+3, yylineno);
-                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
-                                    emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
-                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
-                                  }
+                                  $$ = newexpr(boolexpr_e);
+                                  $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                  emit(if_noteq, $1, $3, NULL, nextquad()+3, yylineno);
+                                  emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                  emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
+                                  emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
                                 }
           |expr AND expr        {
                                   printf("expr: expr AND expr at line %d --> %s\n", yylineno, yytext);
