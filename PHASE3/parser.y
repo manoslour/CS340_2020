@@ -68,18 +68,18 @@
 
 %%
 
-program:  stmtlist  {	fprintf(fp, "promgram: stmtlist at line %d --> %s\n", yylineno, yytext);}
+program:  stmtlist  {	printf("promgram: stmtlist at line %d --> %s\n", yylineno, yytext);}
 			|
 			;
 
 stmtlist: stmt              {
-                              fprintf(fp, "stmtlist: stmt at line %d --> %s\n", yylineno, yytext);
+                              printf("stmtlist: stmt at line %d --> %s\n", yylineno, yytext);
                               printf("Entered stmtlist: stmt\n");
                               //printf("$1->breaklist = %d\n", $1->breaklist);
                               $$ = $1;
                             }
           |stmt stmtlist		{
-                              fprintf(fp, "stmtlist: stmtlist stmt at line %d --> %s\n", yylineno, yytext);
+                              printf("stmtlist: stmtlist stmt at line %d --> %s\n", yylineno, yytext);
                               printf("Entered stmtlist: stmt stmtlist\n");
                               printf("Breakcount = %d | Contcount = %d\n", breakcount, contcount);
                               stmt_t *tmp = (stmt_t*) malloc(sizeof(stmt_t));
@@ -98,48 +98,48 @@ stmtlist: stmt              {
           ;
 
 stmt:     expr SEMICOLON        {
-                                  fprintf(fp, "stmt: expr SEMICOLON at line %d --> %s\n", yylineno, yytext);
+                                  printf("stmt: expr SEMICOLON at line %d --> %s\n", yylineno, yytext);
                                   //printf("Entered stmt: expr;\n");
                                   //printf("$$->breaklist = %d\n", $$->breaklist);
                                 }
-          |ifstmt               { fprintf(fp, "stmt: ifstmt at line %d --> %s\n", yylineno, yytext);
+          |ifstmt               { printf("stmt: ifstmt at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered stmt: ifstmt\n");
                                   //printf("$1->breaklist = %d\n", $1->breaklist);
                                   $$ = $1;
                                 }
-          |whilestmt            { fprintf(fp, "stmt: whilestmt at line %d --> %s\n", yylineno, yytext);
+          |whilestmt            { printf("stmt: whilestmt at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered stmt: whilestmt\n");
                                   $$ = $1;
                                 }
           |forstmt				      {	
-                                  fprintf(fp, "stmt: forstmt at line %d --> %s\n", yylineno, yytext);
+                                  printf("stmt: forstmt at line %d --> %s\n", yylineno, yytext);
                                   $$ = $1;
                                 }
-          |returnstmt			      {	fprintf(fp, "stmt: returnstmt at line %d --> %s\n", yylineno, yytext);}
+          |returnstmt			      {	printf("stmt: returnstmt at line %d --> %s\n", yylineno, yytext);}
           |break SEMICOLON		  {
-										              fprintf(fp, "stmt: BREAK SEMICOLON at line %d --> %s\n", yylineno, yytext);
+										              printf("stmt: BREAK SEMICOLON at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered stmt: break;\n");
                                   printf("breakcount = %d\n", breakcount);
                                   //printf("$1->breaklist = %d\n", $1->breaklist);
                                   $$ = $1;
                                 }
           |continue SEMICOLON		{
-										              fprintf(fp, "stmt: CONTINUE SEMICOLON at line %d --> %s\n", yylineno, yytext);
+										              printf("stmt: CONTINUE SEMICOLON at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered stmt: continue\n");
                                   printf("contcount = %d\n", contcount);
                                   $$ = $1;
                                 }
-          |block                {	fprintf(fp, "stmt: block at line %d --> %s\n", yylineno, yytext);}
-          |funcdef              {	fprintf(fp, "stmt: funcdef at line %d --> %s\n", yylineno, yytext);}
-          |SEMICOLON            {	fprintf(fp, "stmt: SEMICOLON at line %d --> %s\n", yylineno, yytext);}
+          |block                {	printf("stmt: block at line %d --> %s\n", yylineno, yytext);}
+          |funcdef              {	printf("stmt: funcdef at line %d --> %s\n", yylineno, yytext);}
+          |SEMICOLON            {	printf("stmt: SEMICOLON at line %d --> %s\n", yylineno, yytext);}
           ;
 
 expr:     assignexpr            {
-                                  fprintf(fp, "expr: assignexpr at line %d --> %s\n", yylineno, yytext);
+                                  printf("expr: assignexpr at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered expr: assignexpr;\n");
                                 }
           |expr PLUS expr       {
-                                  fprintf(fp, "expr: expr PLUS expr at line %d --> %s\n", yylineno, yytext);
+                                  printf("expr: expr PLUS expr at line %d --> %s\n", yylineno, yytext);
                                   if(illegalop($1, $3))
                                     addError("Error, illegal arithmetic operation", "", yylineno);
                                   else{
@@ -152,7 +152,7 @@ expr:     assignexpr            {
                                   }
                                 }
           |expr MINUS expr      {
-                                  fprintf(fp, "expr: MINUS op expr at line %d --> %s\n", yylineno, yytext);
+                                  printf("expr: MINUS op expr at line %d --> %s\n", yylineno, yytext);
                                   if(illegalop($1, $3))
                                     addError("Error, illegal arithmetic operation", "", yylineno);
                                   else{
@@ -165,7 +165,7 @@ expr:     assignexpr            {
                                   }
                                 }
           |expr MULT expr       {
-                                  fprintf(fp, "expr: expr MULT expr at line %d --> %s\n", yylineno, yytext);
+                                  printf("expr: expr MULT expr at line %d --> %s\n", yylineno, yytext);
                                   if(illegalop($1, $3))
                                     addError("Error, illegal arithmetic operation", "", yylineno);
                                   else{
@@ -178,7 +178,7 @@ expr:     assignexpr            {
                                   }
                                 }
           |expr DIV expr        {
-                                  fprintf(fp, "expr: expr DIV expr at line %d --> %s\n", yylineno, yytext);
+                                  printf("expr: expr DIV expr at line %d --> %s\n", yylineno, yytext);
                                   if(illegalop($1, $3))
                                     addError("Error, illegal arithmetic operation", "", yylineno);
                                   else{
@@ -191,7 +191,7 @@ expr:     assignexpr            {
                                   }
                                 }
           |expr MOD expr        {
-                                  fprintf(fp, "expr: expr MOD expr at line %d --> %s\n", yylineno, yytext);
+                                  printf("expr: expr MOD expr at line %d --> %s\n", yylineno, yytext);
                                   if(illegalop($1, $3))
                                     addError("Error, illegal arithmetic operation", "", yylineno);
                                   else{
@@ -204,7 +204,7 @@ expr:     assignexpr            {
                                   }
                                 }
           |expr GREATER expr		{
-                                  fprintf(fp, "expr: expr GREATER expr at line %d --> %s\n", yylineno, yytext);
+                                  printf("expr: expr GREATER expr at line %d --> %s\n", yylineno, yytext);
                                   if(illegalop($1, $3))
                                     addError("Error, illegal boolean operation", "", yylineno);
                                   else{
@@ -228,7 +228,7 @@ expr:     assignexpr            {
                                   }
                                 }
           |expr GREATER_EQ expr	{
-                                  fprintf(fp, "expr: expr GREATER_EQ expr at line %d --> %s\n", yylineno, yytext);
+                                  printf("expr: expr GREATER_EQ expr at line %d --> %s\n", yylineno, yytext);
                                   if(illegalop($1, $3))
                                     addError("Error, illegal boolean operation", "", yylineno);
                                   else{
@@ -242,7 +242,7 @@ expr:     assignexpr            {
                                   }
                                 }
           |expr LESS expr       {
-                                  fprintf(fp, "expr: expr LESS expr at line %d --> %s\n", yylineno, yytext);
+                                  printf("expr: expr LESS expr at line %d --> %s\n", yylineno, yytext);
                                   if(illegalop($1, $3))
                                     addError("Error, illegal boolean operation", "", yylineno);
                                   else{
@@ -256,7 +256,7 @@ expr:     assignexpr            {
                                   }
                                 }
           |expr LESS_EQ expr		{
-                                  fprintf(fp, "expr: expr LESS_EQ expr at line %d --> %s\n", yylineno, yytext);
+                                  printf("expr: expr LESS_EQ expr at line %d --> %s\n", yylineno, yytext);
                                   if(illegalop($1, $3))
                                     addError("Error, illegal boolean operation", "", yylineno);
                                   else{
@@ -270,7 +270,7 @@ expr:     assignexpr            {
                                   }
                                 }
           |expr EQUAL expr      {
-                                  fprintf(fp, "expr: expr EQUAL expr at line %d --> %s\n", yylineno, yytext);
+                                  printf("expr: expr EQUAL expr at line %d --> %s\n", yylineno, yytext);
                                   if(illegalop($1, $3))
                                     addError("Error, illegal boolean operation", "", yylineno);
                                   else{
@@ -284,7 +284,7 @@ expr:     assignexpr            {
                                   }
                                 }
           |expr NOT_EQUAL expr  {
-                                  fprintf(fp, "expr: expr NOT_EQUAL expr at line %d --> %s\n", yylineno, yytext);
+                                  printf("expr: expr NOT_EQUAL expr at line %d --> %s\n", yylineno, yytext);
                                   if(illegalop($1, $3))
                                     addError("Error, illegal boolean operation", "", yylineno);
                                   else{
@@ -298,7 +298,7 @@ expr:     assignexpr            {
                                   }
                                 }
           |expr AND expr        {
-                                  fprintf(fp, "expr: expr AND expr at line %d --> %s\n", yylineno, yytext);
+                                  printf("expr: expr AND expr at line %d --> %s\n", yylineno, yytext);
 
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
@@ -328,7 +328,7 @@ expr:     assignexpr            {
                                     */
                                 }
           |expr OR expr			    {
-                                  fprintf(fp, "expr: expr OR expr at line %d --> %s\n", yylineno, yytext);
+                                  printf("expr: expr OR expr at line %d --> %s\n", yylineno, yytext);
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
                                     emit(or, $1, $3, $$, -1, yylineno);
@@ -344,22 +344,22 @@ expr:     assignexpr            {
                                     printf("Falselist = %d\n", $$->falselist+1);
                                     */
                                 }
-          |term					        {	fprintf(fp, "expr: term at line %d --> %s\n", yylineno, yytext);}
+          |term					        {	printf("expr: term at line %d --> %s\n", yylineno, yytext);}
           ;
 
 term:     L_PAR expr R_PAR			    {
-                                      fprintf(fp, "term: L_PAR expr R_PAR at line %d --> %s\n", yylineno, yytext);
+                                      printf("term: L_PAR expr R_PAR at line %d --> %s\n", yylineno, yytext);
                                       $$ = $2;
                                     }
           |MINUS expr %prec UMINUS	{
-                                      fprintf(fp, "term: MINUS expr at line %d --> %s\n", yylineno, yytext);
+                                      printf("term: MINUS expr at line %d --> %s\n", yylineno, yytext);
                                       check_arith($2, "-expr");
                                       $$ = newexpr(arithexpr_e);
                                       $$->sym = istempexpr($2) ? $2->sym : newtemp();
                                       emit(uminus, $2, NULL, $$, -1, yylineno);
                                     }
           |NOT expr	                {
-                                      fprintf(fp, "term: NOT expr at line %d --> %s\n", yylineno, yytext);
+                                      printf("term: NOT expr at line %d --> %s\n", yylineno, yytext);
                                       $$ = newexpr(boolexpr_e);
                                       $$->sym = istempexpr($2) ? $2->sym : newtemp();
                                       emit(not, $2, NULL, $$, -1, yylineno);
@@ -371,7 +371,7 @@ term:     L_PAR expr R_PAR			    {
                                       */
                                     }
           |INCR lvalue              {
-                                      fprintf(fp, "term: INCR lvalue at line %d --> %s\n", yylineno, yytext);
+                                      printf("term: INCR lvalue at line %d --> %s\n", yylineno, yytext);
                                       check_arith($2, "++lvalue");
                                       if($2->type == tableitem_e){
                                         $$ = emit_iftableitem($2, yylineno);
@@ -387,7 +387,7 @@ term:     L_PAR expr R_PAR			    {
                                       }
                                     }
           |lvalue INCR              {
-                                      fprintf(fp, "term: lvalue INCR at line %d --> %s\n", yylineno, yytext);
+                                      printf("term: lvalue INCR at line %d --> %s\n", yylineno, yytext);
                                       check_arith($1, "lvalue++");
                                       $$ = newexpr(var_e);
                                       $$->sym = newtemp();
@@ -403,7 +403,7 @@ term:     L_PAR expr R_PAR			    {
                                       }
                                     }
           |DECR lvalue              {
-                                      fprintf(fp, "term: DECR lvalue at line %d --> %s\n", yylineno, yytext);
+                                      printf("term: DECR lvalue at line %d --> %s\n", yylineno, yytext);
                                       check_arith($2, "--lvalue");
                                       if($2->type == tableitem_e){
                                         $$ = emit_iftableitem($2, yylineno);
@@ -418,7 +418,7 @@ term:     L_PAR expr R_PAR			    {
                                       }
                                     }
           |lvalue DECR              {
-                                      fprintf(fp, "term: lvalue DECR at line %d --> %s\n", yylineno, yytext);
+                                      printf("term: lvalue DECR at line %d --> %s\n", yylineno, yytext);
                                       check_arith($1, "lvalue--");
                                       $$ = newexpr(var_e);
                                       $$->sym = newtemp();
@@ -434,13 +434,13 @@ term:     L_PAR expr R_PAR			    {
                                       }
                                     }
 			    |primary                  {
-                                      fprintf(fp, "term: primary at line %d --> %s\n", yylineno, yytext);
+                                      printf("term: primary at line %d --> %s\n", yylineno, yytext);
                                       $$ = $1;
                                     }
 			    ;
 
 assignexpr: lvalue ASSIGN expr  {
-                                  fprintf(fp, "assignexpr: lvalue ASSIGN expr at line %d --> %s\n", yylineno, yytext);
+                                  printf("assignexpr: lvalue ASSIGN expr at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered assignexpr: lvalue = expr\n");
                                   if($1->type == tableitem_e){
                                     emit(tablesetelem, $1->index, $3, $1, -1, yylineno);
@@ -474,24 +474,24 @@ assignexpr: lvalue ASSIGN expr  {
                                 }
             ;
 
-primary:    lvalue                { fprintf(fp, "primary: lvalue at line %d --> %s\n", yylineno, yytext);
+primary:    lvalue                { printf("primary: lvalue at line %d --> %s\n", yylineno, yytext);
 										                $$ = emit_iftableitem($1, yylineno);
                                   }
-            |call                 { fprintf(fp, "primary: call at line %d --> %s\n", yylineno, yytext);}
-			      |tablemake            { fprintf(fp, "primary: tablemake at line %d --> %s\n", yylineno, yytext);}
+            |call                 { printf("primary: call at line %d --> %s\n", yylineno, yytext);}
+			      |tablemake            { printf("primary: tablemake at line %d --> %s\n", yylineno, yytext);}
 			      |L_PAR funcdef R_PAR	{
-                                    fprintf(fp, "primary: L_PAR funcdef R_PAR at line %d --> %s\n", yylineno, yytext);
+                                    printf("primary: L_PAR funcdef R_PAR at line %d --> %s\n", yylineno, yytext);
                                     $$ = newexpr(programfunc_e);
                                     $$->sym = $2;
                                   }
 			      |const					      {
-                                    fprintf(fp, "primary: const at line %d --> %s\n", yylineno, yytext);
+                                    printf("primary: const at line %d --> %s\n", yylineno, yytext);
                                     $$ = $1;
                                   }
 			      ;
 
 lvalue:     ID          {
-                          fprintf(fp, "lvalue: ID at line %d --> %s\n", yylineno, yylval.stringValue);
+                          printf("lvalue: ID at line %d --> %s\n", yylineno, yylval.stringValue);
                           symbol *sym = lookup(yylval.stringValue, currentscope);
                           if(sym == NULL){
                             sym = hashInsert(yylval.stringValue, currentscope, yylineno, var_s, currscopespace(), currscopeoffset());
@@ -526,35 +526,37 @@ lvalue:     ID          {
                             $$ = lvalue_expr(sym);\
                         }
 			|tableitem			  {
-                          fprintf(fp, "lvalue: tableitem at line %d --> %s\n", yylineno, yytext);
+                          printf("lvalue: tableitem at line %d --> %s\n", yylineno, yytext);
                           $$ = $1;
                         }
 			;
 
 tableitem:  lvalue DOT ID 				    {
-                                        fprintf(fp, "tableitem: lvalue.ID at line %d --> %s\n", yylineno, yytext);
+                                        printf("tableitem: lvalue.ID at line %d --> %s\n", yylineno, yytext);
+                                        printf("Entered tableitem: lvalue.ID\n");
                                         $$ = member_item($1, $3, yylineno);
                                       }
 			      |lvalue L_BR expr R_BR 		{
-                                        fprintf(fp, "tableitem: lvalue[expr] at line %d --> %s\n", yylineno, yytext);
+                                        printf("tableitem: lvalue[expr] at line %d --> %s\n", yylineno, yytext);
+                                        printf("Entered tableitem: lvalue[expr]\n");
                                         $1 = emit_iftableitem($1, yylineno);
                                         $$ = newexpr(tableitem_e);
                                         $$->sym = $1->sym;
                                         $$->index = $3;
                                       }
-			      |call DOT ID 						  { fprintf(fp, "tableitem: call.ID at line %d --> %s\n", yylineno, yytext);}
-			      |call L_BR expr R_BR 			{	fprintf(fp, "tableitem: call[expr] at line %d --> %s\n", yylineno, yytext);}
+			      |call DOT ID 						  { printf("tableitem: call.ID at line %d --> %s\n", yylineno, yytext);}
+			      |call L_BR expr R_BR 			{	printf("tableitem: call[expr] at line %d --> %s\n", yylineno, yytext);}
 			      ;
 
 call:	      call L_PAR elist R_PAR	  {
-                                        fprintf(fp, "call: (elist) at line %d --> %s\n", yylineno, yytext);
+                                        printf("call: (elist) at line %d --> %s\n", yylineno, yytext);
                                         printf("Entered call (elist)\n");
                                         $$ = make_call($1, $3, yylineno);
                                       }
             |lvalue callsuffix				{
-                                         fprintf(fp, "call: lvalue callsuffix at line %d --> %s\n", yylineno, yytext);
-                                        $1 = emit_iftableitem($1, yylineno);
+                                        printf("call: lvalue callsuffix at line %d --> %s\n", yylineno, yytext);
                                         printf("Enterd call: lvalue callsufix\n");
+                                        $1 = emit_iftableitem($1, yylineno);
                                         if($2->method){
                                           expr* t = $1;
                                           $1 = emit_iftableitem(member_item(t, $2->name, yylineno), yylineno);
@@ -567,7 +569,7 @@ call:	      call L_PAR elist R_PAR	  {
                                         $$ = make_call($1, $2->elist, yylineno);
                                       }
             |L_PAR funcdef R_PAR L_PAR elist R_PAR    {
-                                                        fprintf(fp, "call: (funcdef) (elist) at line %d --> %s\n", yylineno, yytext);
+                                                        printf("call: (funcdef) (elist) at line %d --> %s\n", yylineno, yytext);
                                                         printf("(funcdef)(elist)\n");
                                                         expr* func = newexpr(programfunc_e);
                                                         func->sym = $2;
@@ -576,19 +578,19 @@ call:	      call L_PAR elist R_PAR	  {
             ;
 
 callsuffix:	normcall          {
-                                fprintf(fp, "callsuffix: normcall at line %d --> %s\n", yylineno, yytext);
+                                printf("callsuffix: normcall at line %d --> %s\n", yylineno, yytext);
                                 $$ = $1;
                                 printf("Entered normcall\n");
                               }
 			      |methodcall       {
-                                fprintf(fp, "callsuffix: methodcall at line %d --> %s\n", yylineno, yytext);
+                                printf("callsuffix: methodcall at line %d --> %s\n", yylineno, yytext);
                                 printf("Entered callsufix: methodcall\n");
                                 $$ = $1;
                               }
 			      ;
 
 normcall:	L_PAR elist R_PAR   {
-                                fprintf(fp, "normcall: (elist) at line %d --> %s\n", yylineno, yytext);
+                                printf("normcall: (elist) at line %d --> %s\n", yylineno, yytext);
                                 $$->elist = $2;
                                 $$->method = 0;
                                 $$->name = NULL;
@@ -596,8 +598,7 @@ normcall:	L_PAR elist R_PAR   {
 			    ;
 
 methodcall: DDOT ID L_PAR elist R_PAR {
-                                        fprintf(fp, "methodcall: ..ID (elist) at line %d --> %s\n", yylineno, yytext);
-                                        printf("methodcall: ..id(elist)\n");
+                                        printf("methodcall: ..ID (elist) at line %d --> %s\n", yylineno, yytext);
                                         $$->elist = $4;
                                         $$->method = 1;
                                         $$->name = $2;
@@ -605,12 +606,12 @@ methodcall: DDOT ID L_PAR elist R_PAR {
 				    ;
 
 elist:      expr                { 
-                                  fprintf(fp, "elist: expr at line %d --> %s\n", yylineno, yytext);
+                                  printf("elist: expr at line %d --> %s\n", yylineno, yytext);
                                   printf("expr = %s\n", $1->sym->name);
                                   $$ = $1;
                                 }
 		        |expr COMMA elist 	{
-								                  fprintf(fp, "elist: expr, elist at line %d --> %s\n", yylineno, yytext);
+								                  printf("elist: expr, elist at line %d --> %s\n", yylineno, yytext);
                                   printf("expr = %s | elist = %s\n", $1->sym->name, $3->sym->name);
                                   expr* tmp = $3;
                                   while(tmp->next != NULL){
@@ -622,13 +623,13 @@ elist:      expr                {
                                   
                                 }
  		        |					          {
-								                  fprintf(fp, "elist: empty at line %d --> %s\n", yylineno, yytext);
+								                  printf("elist: empty at line %d --> %s\n", yylineno, yytext);
                                   $$ = NULL;
                                 }
  		        ;
 
 tablemake:	L_BR elist R_BR     {
-                                  fprintf(fp, "tablemake: [elist] at line %d --> %s\n", yylineno, yytext);
+                                  printf("tablemake: [elist] at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered tablemake: [elist]\n");
                                   int i = 0;
                                   expr* tmp = $2;
@@ -645,7 +646,7 @@ tablemake:	L_BR elist R_BR     {
                                   $$ = t;
                                 }
  				    |L_BR indexed R_BR {
-					 							          fprintf(fp, "tablemake: [indexed] at line %d --> %s\n", yylineno, yytext);
+					 							          printf("tablemake: [indexed] at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered tablemake[indexed]\n");
                                   expr* t = newexpr(newtable_e);
                                   t->sym = istempexpr($2) ? $2->sym : newtemp();
@@ -660,14 +661,14 @@ tablemake:	L_BR elist R_BR     {
 				      ;
 
 indexed:	    indexedelem                 {
-                                            fprintf(fp, "indexed: indexedelem at line %d --> %s\n", yylineno, yytext);
+                                            printf("indexed: indexedelem at line %d --> %s\n", yylineno, yytext);
                                             printf("Entered indexed: indexelem\n");
                                             $$ = $1;
                                             //printf("indexedelem($1) = %s\n", $1->strConst);
                                             //printf("index = %d\n",(int)$1->index->numConst);
                                           }
 			        |indexedelem COMMA indexed  {
-                                            fprintf(fp, "indexed: indexedelem, indexed at line %d --> %s\n", yylineno, yytext);
+                                            printf("indexed: indexedelem, indexed at line %d --> %s\n", yylineno, yytext);
                                             printf("Entered indexed: indexelem, indexed\n");
                                             //printf("indexedelem($1) = %s\n", $1->strConst);
                                             $1->next = $3;
@@ -675,7 +676,7 @@ indexed:	    indexedelem                 {
 			        ;
 
 indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR {
-                                                    fprintf(fp, "indexedelem: {expr:expr} at line %d --> %s\n", yylineno, yytext);
+                                                    printf("indexedelem: {expr:expr} at line %d --> %s\n", yylineno, yytext);
                                                     printf("Entered indexedelem: {expr:expr}\n");
                                                     //printf("{%s:%d}\n", $2->strConst, (int)$4->numConst);
                                                     $2->index = $4;
@@ -685,7 +686,7 @@ indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR {
 
 block:  blockstart blockend
         |blockstart	stmtlist blockend	{	
-                                        fprintf(fp, "block: LCURLY_BR  stmtlist at line %d --> %s\n", yylineno, yytext);
+                                        printf("block: LCURLY_BR  stmtlist at line %d --> %s\n", yylineno, yytext);
                                         if(loopcounter != 0){
                                           breakpointer = $2;
                                           printf("breakpointer->breaklist = %d | breakpointer->contlist = %d\n", breakpointer->breaklist, breakpointer->contlist);
@@ -694,19 +695,19 @@ block:  blockstart blockend
 			  ;
 
 blockstart: LCURLY_BR {
-                        fprintf(fp, "block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
+                        printf("block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
                         printf("Entered block\n");
                         currentscope++;
                       }
 
 blockend: RCURLY_BR   {
-                        fprintf(fp, "block: LCURLY_BR RCURLY_BR at line %d --> %s\n", yylineno, yytext);
+                        printf("block: LCURLY_BR RCURLY_BR at line %d --> %s\n", yylineno, yytext);
                         hideScope(currentscope);
                         currentscope--;
                       }
 
 funcdef:  funcprefix funcargs funcblockstart funcbody	funcblockend {
-                                              fprintf(fp, "funcdef: funcprefix funcargs funcbody at line %d --> %s\n", yylineno, yytext);
+                                              printf("funcdef: funcprefix funcargs funcbody at line %d --> %s\n", yylineno, yytext);
                                               exitscopespace();
                                               $1->totalLocals = $4;
                                               int offset = popOffset(&scopeoffsetStack); // pop and get pre scope offset
@@ -718,7 +719,7 @@ funcdef:  funcprefix funcargs funcblockstart funcbody	funcblockend {
 				  ;
 
 funcprefix:		FUNCTION funcname	            {
-                                              fprintf(fp, "funcprefix: FUNCTION funcname at line %d --> %s\n", yylineno, yytext);
+                                              printf("funcprefix: FUNCTION funcname at line %d --> %s\n", yylineno, yytext);
                                               $$ = hashInsert($2, currentscope, yylineno, programfunc_s, currscopespace(), currscopeoffset());
                                               $$->iaddress = nextquadlabel();
                                               funcJump = nextquad();
@@ -731,11 +732,11 @@ funcprefix:		FUNCTION funcname	            {
               ;
 
 funcname:     ID	                          {
-                                              fprintf(fp, "funcname: ID at line %d --> %s\n", yylineno, yytext);
+                                              printf("funcname: ID at line %d --> %s\n", yylineno, yytext);
                                               $$ = $1;
                                             }
 				      |	                            {
-                                              fprintf(fp, "funcname: empty at line %d --> %s\n", yylineno, yytext);
+                                              printf("funcname: empty at line %d --> %s\n", yylineno, yytext);
                                               $$ = newtempfuncname();
                                             }
 				      ;
@@ -743,7 +744,7 @@ funcname:     ID	                          {
 funcargs:		  L_PAR	                        {	currentscope++; inFunc++;}
 				      idlist
 				      R_PAR	                        {
-                                              fprintf(fp, "funcargs: (idlist) at line %d --> %s\n", yylineno, yytext);
+                                              printf("funcargs: (idlist) at line %d --> %s\n", yylineno, yytext);
                                               currentscope--;
                                               enterscopespace();
                                               resetfunctionlocalsoffset();
@@ -751,7 +752,7 @@ funcargs:		  L_PAR	                        {	currentscope++; inFunc++;}
 				      ;
 
 funcbody: block {
-                  fprintf(fp, "funcbody: block at line %d --> %s\n", yylineno, yytext);
+                  printf("funcbody: block at line %d --> %s\n", yylineno, yytext);
                   inFunc--;
                   $$ = currscopeoffset();
                   exitscopespace();
@@ -773,33 +774,33 @@ funcblockend:   {
                 }
 
 const: REAL 		{
-                  fprintf(fp, "const: REAL at line %d --> %s\n", yylineno, yytext);
+                  printf("const: REAL at line %d --> %s\n", yylineno, yytext);
                   printf("const: REAL\n");
                   printf("REAL($1) = %f\n", $1);
                   $$ = newexpr_constnum($1);
                 }
 			 |INTEGER	{
-                  fprintf(fp, "const: INTEGER at line %d --> %s\n", yylineno, yytext);
+                  printf("const: INTEGER at line %d --> %s\n", yylineno, yytext);
                   $$ = newexpr_constnum($1);
                 }
        |STRING 	{
-                  fprintf(fp, "const: FLEX_STRING at line %d --> %s\n", yylineno, yytext);
+                  printf("const: FLEX_STRING at line %d --> %s\n", yylineno, yytext);
                   $$ = newexpr_conststring($1);
                 }
        |NIL		  {	
-                  fprintf(fp, "const: NIL at line %d --> %s\n", yylineno, yytext);
+                  printf("const: NIL at line %d --> %s\n", yylineno, yytext);
                   $$ = newexpr_conststring("nil");
                 }
-       |TRUE		{	fprintf(fp, "const: TRUE at line %d --> %s\n", yylineno, yytext);
+       |TRUE		{	printf("const: TRUE at line %d --> %s\n", yylineno, yytext);
                   $$ = newexpr_conststring("true");
                 }
-       |FALSE 	{	fprintf(fp, "const: FALSE at line %d --> %s\n", yylineno, yytext);
+       |FALSE 	{	printf("const: FALSE at line %d --> %s\n", yylineno, yytext);
                   $$ = newexpr_conststring("false");
                 }
        ;
 
 idlist:		ID	{
-                fprintf(fp, "idlist: ID at line %d --> %s\n", yylineno, yytext);
+                printf("idlist: ID at line %d --> %s\n", yylineno, yytext);
                 symbol *sym = lookup(yylval.stringValue, currentscope);
                 if(sym == NULL){
                   sym = hashInsert(yylval.stringValue, currentscope, yylineno, var_s, currscopespace(), currscopeoffset());
@@ -807,7 +808,7 @@ idlist:		ID	{
                 }
               }
           |idlist COMMA ID 	{
-                              fprintf(fp, "idlist: idlist COMMA ID at line %d --> %s\n", yylineno, yytext);
+                              printf("idlist: idlist COMMA ID at line %d --> %s\n", yylineno, yytext);
                               symbol *sym = lookup(yylval.stringValue, currentscope);
                               if(sym == NULL){
                                 sym = hashInsert(yylval.stringValue, currentscope, yylineno, var_s, currscopespace(), currscopeoffset());
@@ -818,20 +819,20 @@ idlist:		ID	{
           ;
 
 ifprefix: IF L_PAR expr R_PAR           {
-                                          fprintf(fp, "ifprefix: if(expr) at line %d --> %s\n", yylineno, yytext);
+                                          printf("ifprefix: if(expr) at line %d --> %s\n", yylineno, yytext);
                                           emit(if_eq, $3, newexpr_constbool(1), NULL, nextquad()+2, yylineno);
                                           $$ = nextquad();
                                           emit(jump, NULL, NULL, NULL, 0, yylineno);
                                         }
 
 elseprefix: ELSE                        {
-                                          fprintf(fp, "elseprefix: else at line %d --> %s\n", yylineno, yytext);
+                                          printf("elseprefix: else at line %d --> %s\n", yylineno, yytext);
                                           $$ = nextquad();
                                           emit(jump, NULL, NULL, NULL, 0, yylineno);
                                         }
 
 ifstmt: ifprefix stmt                   {
-                                          fprintf(fp, "ifstmt: ifprefix stmt at line %d --> %s\n", yylineno, yytext);
+                                          printf("ifstmt: ifprefix stmt at line %d --> %s\n", yylineno, yytext);
                                           printf("Entered ifstmt: ifprefix stmt\n");
                                           patchlabel($1, nextquad());
                                           if(breakcount != 0 || contcount != 0){
@@ -840,7 +841,7 @@ ifstmt: ifprefix stmt                   {
                                           }
                                         }
         |ifprefix stmt elseprefix stmt  {
-                                          fprintf(fp, "ifstmt: ifprefix stmt elseprefix stmt at line %d --> %s\n", yylineno, yytext);
+                                          printf("ifstmt: ifprefix stmt elseprefix stmt at line %d --> %s\n", yylineno, yytext);
                                           printf("Entered ifstmt: ifprefix stmt elseprefix stmt\n");
                                           patchlabel($1, $3+1);
                                           patchlabel($3, nextquad());
@@ -860,13 +861,13 @@ ifstmt: ifprefix stmt                   {
                                         }
 
 whilestart: WHILE                       {
-                                          fprintf(fp, "whilestart: WHILE at line %d --> %s\n", yylineno, yytext);
+                                          printf("whilestart: WHILE at line %d --> %s\n", yylineno, yytext);
                                           printf("Entered whilestart\n");
                                           $$ = nextquad();
                                         }
 
 whilecond: L_PAR expr R_PAR           {
-                                          fprintf(fp, "whilesecond: (expr) at line %d --> %s\n", yylineno, yytext);
+                                          printf("whilesecond: (expr) at line %d --> %s\n", yylineno, yytext);
                                           printf("Entered whilecond\n");
                                           emit(if_eq, $2, newexpr_constbool(1), NULL, nextquad()+2, yylineno);
                                           $$ = nextquad();
@@ -874,7 +875,7 @@ whilecond: L_PAR expr R_PAR           {
                                         }
 
 whilestmt: whilestart whilecond loopstmt {
-                                          fprintf(fp, "whilestmt: while(expr) stmt at line %d --> %s\n", yylineno, yytext);
+                                          printf("whilestmt: while(expr) stmt at line %d --> %s\n", yylineno, yytext);
                                           printf("Entered whilestmt, line = %d\n", yylineno);
                                           emit(jump, NULL, NULL, NULL, $1, yylineno);
                                           patchlabel($2, nextquad());
@@ -902,7 +903,7 @@ M:          {
             }
 
 forprefix:  FOR L_PAR elist SEMICOLON M expr SEMICOLON  {
-                                                          fprintf(fp, "forprefix: L_PAR elist SEMICOLON M expr SEMICOLON at line %d --> %s\n", yylineno, yytext);
+                                                          printf("forprefix: L_PAR elist SEMICOLON M expr SEMICOLON at line %d --> %s\n", yylineno, yytext);
                                                           printf("Enterd forprefix\n");
                                                           forprefix_t* tmp = (forprefix_t*) malloc(sizeof(forprefix_t));
                                                           tmp->test = $5;
@@ -912,7 +913,7 @@ forprefix:  FOR L_PAR elist SEMICOLON M expr SEMICOLON  {
                                                         }
 
 forstmt:  forprefix N elist R_PAR N loopstmt N          {
-                                                          fprintf(fp, "forstm: for(elist; expr; elist) stmt at line %d --> %s\n", yylineno, yytext);
+                                                          printf("forstm: for(elist; expr; elist) stmt at line %d --> %s\n", yylineno, yytext);
                                                           printf("Enterd forstm\n");
                                                           patchlabel($1->enter, $5+1); //true jump
                                                           patchlabel($2, nextquad()); //false jump
@@ -931,14 +932,14 @@ forstmt:  forprefix N elist R_PAR N loopstmt N          {
                                                         }
 
 returnstmt:	RETURN SEMICOLON    {
-                                  fprintf(fp, "returnstmt: RETURN SEMICOLON at line %d --> %s\n", yylineno, yytext);
+                                  printf("returnstmt: RETURN SEMICOLON at line %d --> %s\n", yylineno, yytext);
                                   if (inFunc == 0)
                                     addError("Use of return while not in function", "", yylineno);
                                   else
                                     emit(ret, NULL, NULL, NULL, -1, yylineno);
                                 }
 			      |RETURN expr SEMICOLON   {
-                                        fprintf(fp, "returnstmt: RETURN expr SEMICOLON at line %d --> %s\n", yylineno, yytext);
+                                        printf("returnstmt: RETURN expr SEMICOLON at line %d --> %s\n", yylineno, yytext);
                                         if (inFunc == 0)
                                           addError("Use of return while not in function", "", yylineno);
                                         else
@@ -946,12 +947,12 @@ returnstmt:	RETURN SEMICOLON    {
                                       }
 			      ;
 
-loopstart: { fprintf(fp, "loopstart: at line %d --> %s\n", yylineno, yytext); ++loopcounter;}
+loopstart: { printf("loopstart: at line %d --> %s\n", yylineno, yytext); ++loopcounter;}
 
-loopend:   { fprintf(fp, "loopend: at line %d --> %s\n", yylineno, yytext); --loopcounter;}
+loopend:   { printf("loopend: at line %d --> %s\n", yylineno, yytext); --loopcounter;}
 
 loopstmt: loopstart stmt loopend  { 
-                                    fprintf(fp, "loopstmt: loopstart stmt loopend at line %d --> %s\n", yylineno, yytext);
+                                    printf("loopstmt: loopstart stmt loopend at line %d --> %s\n", yylineno, yytext);
                                     printf("Entered loopstmt: loopstart stmt loopend\n"); 
                                     
                                     if(breakcount != 0 || contcount != 0){
@@ -967,7 +968,7 @@ loopstmt: loopstart stmt loopend  {
                                   }
 
 break: BREAK        {
-                      fprintf(fp, "break: BREAK at line %d --> %s\n", yylineno, yytext);
+                      printf("break: BREAK at line %d --> %s\n", yylineno, yytext);
                       printf("Entered break\n");
                       printf("loopcounter = %d\n", loopcounter);
                       if(loopcounter == 0)
@@ -985,7 +986,7 @@ break: BREAK        {
                     }
 
 continue: CONTINUE  {
-                      fprintf(fp, "continue: CONTINUE at line %d --> %s\n", yylineno, yytext);
+                      printf("continue: CONTINUE at line %d --> %s\n", yylineno, yytext);
                       printf("Entered continue\n");
                       if(loopcounter == 0)
                         addError("Use of continue while not in loop", "", yylineno);
