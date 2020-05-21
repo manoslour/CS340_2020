@@ -1,3 +1,5 @@
 //x = f(y)(a,b);
 //sprite..move(dx, dy);
-function f(a,b){ x = a+b; }
+//function f(a,b){ x = a+b; }
+//a["3"].q[4](5);
+q[4]();
