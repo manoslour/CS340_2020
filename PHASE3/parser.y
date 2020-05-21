@@ -344,7 +344,10 @@ expr:     assignexpr            {
                                     printf("Falselist = %d\n", $$->falselist+1);
                                     */
                                 }
-          |term					        {	printf("expr: term at line %d --> %s\n", yylineno, yytext);}
+          |term					        {	
+                                  printf("expr: term at line %d --> %s\n", yylineno, yytext);
+                                  $$ = $1;  
+                                }
           ;
 
 term:     L_PAR expr R_PAR			    {
@@ -477,7 +480,10 @@ assignexpr: lvalue ASSIGN expr  {
 primary:    lvalue                { printf("primary: lvalue at line %d --> %s\n", yylineno, yytext);
 										                $$ = emit_iftableitem($1, yylineno);
                                   }
-            |call                 { printf("primary: call at line %d --> %s\n", yylineno, yytext);}
+            |call                 { 
+                                    printf("primary: call at line %d --> %s\n", yylineno, yytext);
+                                    $$ = $1;
+                                  }
 			      |tablemake            { printf("primary: tablemake at line %d --> %s\n", yylineno, yytext);}
 			      |L_PAR funcdef R_PAR	{
                                     printf("primary: L_PAR funcdef R_PAR at line %d --> %s\n", yylineno, yytext);
@@ -580,47 +586,45 @@ call:	      call L_PAR elist R_PAR	  {
 callsuffix:	normcall          {
                                 printf("callsuffix: normcall at line %d --> %s\n", yylineno, yytext);
                                 $$ = $1;
-                                printf("Entered normcall\n");
                               }
 			      |methodcall       {
                                 printf("callsuffix: methodcall at line %d --> %s\n", yylineno, yytext);
-                                printf("Entered callsufix: methodcall\n");
                                 $$ = $1;
                               }
 			      ;
 
 normcall:	L_PAR elist R_PAR   {
                                 printf("normcall: (elist) at line %d --> %s\n", yylineno, yytext);
-                                $$->elist = $2;
-                                $$->method = 0;
-                                $$->name = NULL;
+                                callStr* tmp = (callStr*) malloc(sizeof(expr));
+                                tmp->elist = $2;
+                                tmp->method = 0;
+                                tmp->name = NULL;
+                                $$ = tmp;
                               }
 			    ;
 
 methodcall: DDOT ID L_PAR elist R_PAR {
                                         printf("methodcall: ..ID (elist) at line %d --> %s\n", yylineno, yytext);
-                                        $$->elist = $4;
-                                        $$->method = 1;
-                                        $$->name = $2;
+                                        callStr* tmp = (callStr*) malloc(sizeof(expr));
+                                        tmp->elist = $4;
+                                        tmp->method = 1;
+                                        tmp->name = $2;
+                                        $$ = tmp;
                                       }
 				    ;
 
 elist:      expr                { 
                                   printf("elist: expr at line %d --> %s\n", yylineno, yytext);
-                                  printf("expr = %s\n", $1->sym->name);
                                   $$ = $1;
                                 }
 		        |expr COMMA elist 	{
 								                  printf("elist: expr, elist at line %d --> %s\n", yylineno, yytext);
-                                  printf("expr = %s | elist = %s\n", $1->sym->name, $3->sym->name);
                                   expr* tmp = $3;
                                   while(tmp->next != NULL){
-                                    printf("tmp = %s | next = %s\n", tmp->sym->name, tmp->next->sym->name);
                                     tmp = tmp->next;
                                   }
                                   tmp->next = $1;
                                   $$ = $3;
-                                  
                                 }
  		        |					          {
 								                  printf("elist: empty at line %d --> %s\n", yylineno, yytext);
@@ -632,8 +636,21 @@ tablemake:	L_BR elist R_BR     {
                                   printf("tablemake: [elist] at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered tablemake: [elist]\n");
                                   int i = 0;
-                                  expr* tmp = $2;
+                                  expr* tmp;
+                                  expr* prev = NULL;
+                                  expr* curr = $2;
+                                  expr* next = NULL;
                                   expr* t = newexpr(newtable_e);
+
+                                  //Reverse elist
+                                  while(curr != NULL){
+                                    next = curr->next;
+                                    curr->next = prev;
+                                    prev = curr;
+                                    curr = next;
+                                  }
+                                  tmp = prev;
+
                                   if($2 == NULL)
                                     t->sym = newtemp();
                                   else
@@ -670,7 +687,7 @@ indexed:	    indexedelem                 {
 			        |indexedelem COMMA indexed  {
                                             printf("indexed: indexedelem, indexed at line %d --> %s\n", yylineno, yytext);
                                             printf("Entered indexed: indexelem, indexed\n");
-                                            //printf("indexedelem($1) = %s\n", $1->strConst);
+                                            printf("indexedelem($1) = %s\n", $1->strConst);
                                             $1->next = $3;
                                           }
 			        ;
