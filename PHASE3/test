@@ -3,4 +3,35 @@
 //function f(a,b){ x = a+b; }
 //a["3"].q[4]();
 //q[4](5);
-//a > b or c < d and e >= f or g <= h and not i == j or not k != l;
+//x = a and b or c;
+/*
+while(x-y > z-w)
+    if(b)
+        x = x-w;
+    else
+        x = x-z;
+*/
+
+/*
+if(a or b)
+    x = y;
+else
+    y = z;
+*/
+
+/*
+for ( i = 0; i < N; ++i )
+    print("*");
+*/
+
+while(a){
+    a = f(a);
+
+    if(a)
+        break;
+    else
+        continue;
+    
+    continue;
+    break;
+}
