@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <unistd.h>
 
 #define AVM_STACKSIZE 4096
 #define AVM_WIPEOUT(m) memset(&(m), 0, sizeof(m))
@@ -92,10 +93,16 @@ char** namedLibfuncs;
 unsigned totalNamedLibfuncs;
 userfunc* userFuncs;
 unsigned totalUserFuncs;
+
 avm_memcell stack[AVM_STACKSIZE];
 
 static void avm_initstack(void);
+void avm_tableincrefcounter(avm_table* t);
+void avm_tabledecrefcounter(avm_table* t);
+void avm_tablebucketsinit(avm_table_bucket** p);
 avm_table* avm_tablenew(void);
+void avm_memcellclear(avm_memcell* m);
+void avm_tablebucketsdestroy(avm_table_bucket** p);
 void avm_tabledestroy(avm_table* t);
 avm_memcell* avm_tablegetelem(avm_memcell* key);
 void avm_tablesetelem(avm_memcell* key, avm_memcell* value);
