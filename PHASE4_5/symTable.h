@@ -84,7 +84,7 @@ typedef struct quad {
 	struct expr* arg2;
 	unsigned int label;
 	unsigned int line;
-	unsigned int taddress; //PHASE_4 ADDITION. MUST SEE AGAIN!
+	unsigned int taddress; //PHASE_4 ADDITION.
 }quad;
 
 typedef struct symbol {
@@ -119,6 +119,8 @@ struct errorToken {
     struct errorToken *next;
 };
 
+
+unsigned int return_total();
 
 void expand();
 
