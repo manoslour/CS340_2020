@@ -95,6 +95,7 @@ void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, 
 	p->result = result;
 	p->label = label;
 	p->line = line;
+	p->taddress = -1;
 }
 
 expr* lvalue_expr(symbol* sym){
