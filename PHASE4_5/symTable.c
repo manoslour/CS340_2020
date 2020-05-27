@@ -17,6 +17,10 @@ unsigned int functionLocalOffset = 0;
 unsigned int formalArgOffset = 0;
 unsigned int scopeSpaceCounter = 1;
 
+//---------------------------------------------------------------------------------------------- 
+
+unsigned int return_total(){ return total; }
+
 //----------------------------------------------------------------------------------------------
 
 void resettemp() {tempcounter = 0;}
