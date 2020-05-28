@@ -8,14 +8,11 @@
 #define AVM_STACKSIZE 4096
 #define AVM_WIPEOUT(m) memset(&(m), 0, sizeof(m))
 #define AVM_TABLE_HASHSIZE 211
-//-------------------------------------------------
+//--------------------------------------------------------------------------
 #define CURR_INSTR_SIZE (totalInstructions * sizeof(instruction))
 #define NEW_INSTR_SIZE (EXPAND_SIZE * sizeof(instruction) + CURR_INSTR_SIZE)
 #define EXPAND_INSTR_SIZE 1024
-instruction *instructions = (instruction*) 0;
-unsigned totalInstructions = 0;
-unsigned currInstr = 0;  
-//-------------------------------------------------
+//--------------------------------------------------------------------------
 
 typedef enum {
     assign_v,       add_v,          sub_v,
@@ -131,6 +128,7 @@ void avm_tablesetelem(avm_memcell* key, avm_memcell* value);
 
 void expandInstr();
 void emit_instr(instruction *t);
+unsigned currprocessedquad();
 
 //-------------------------------------------------
 
@@ -192,6 +190,7 @@ generator_func_t generators[] = {
 
 void generate (vmopcode op, quad* quad);
 void generate_relational(vmopcode op, quad* quad);
+void exec_generate(void);
 
 void make_operand (expr* e, vmarg* arg);
 void make_numberoperand (vmarg* arg, double val);
