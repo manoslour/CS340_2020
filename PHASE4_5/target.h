@@ -12,12 +12,16 @@
 #define CURR_INSTR_SIZE (totalInstructions * sizeof(instruction))
 #define NEW_INSTR_SIZE (EXPAND_SIZE * sizeof(instruction) + CURR_INSTR_SIZE)
 #define EXPAND_INSTR_SIZE 1024
+
+#define ARRAY_SIZE 100
+#define EXPAND_ARRAYS_SIZE 10
+
 //--------------------------------------------------------------------------
 
 typedef enum {
     assign_v,       add_v,          sub_v,
     mul_v,          div_v,          mod_v,
-    uminus_v,       and_v,          or_v,
+    /*uminus_v,*/       and_v,          or_v,
     not_v,          jeq_v,          jne_v,
     jle_v,          jge_v,          jlt_v,
     jgt_v,          call_v,         pusharg_v,
@@ -101,15 +105,6 @@ typedef struct avm_memcell {
         char* libfuncVal;
     }data;
 }avm_memcell;
-
-double* numConsts;
-unsigned totalNumConsts;
-char** stringConsts;
-unsigned totalStringConsts;
-char** namedLibfuncs;
-unsigned totalNamedLibfuncs;
-userfunc* userFuncs;
-unsigned totalUserFuncs;
 
 avm_memcell stack[AVM_STACKSIZE];
 
@@ -198,3 +193,12 @@ void make_booloperand (vmarg *arg, unsigned val);
 void make_retvaloperand (vmarg *arg);
 
 void add_incomplete_jump(unsigned instNo, unsigned iaddress);
+void patch_incomplete_jumps(void);
+void printInstructions ();
+
+char *translateopcode_v(vmopcode opcode);
+
+unsigned consts_newstring (char* s); 
+unsigned consts_newnumber (double n);
+unsigned libfuncs_newused (char* s); 
+unsigned userfuncs_newfunc (symbol* sym); 
