@@ -2,12 +2,19 @@
 #include "symTable.h"
 
 extern quad *quads;
-incomplete_jump* ij_head = (incomplete_jump*) 0;
+extern unsigned total;
+extern unsigned currQuad;
+
 unsigned ij_total = 0;
+incomplete_jump* ij_head = (incomplete_jump*) 0;
 unsigned consts_newstring (char* s); 
 unsigned consts_newnumber (double n);
 unsigned libfuncs_newused (char* s); 
 unsigned userfuncs_newfunc (symbol* sym); 
+
+instruction *instructions = (instruction*) 0;
+unsigned totalInstructions = 0;
+unsigned currInstr = 0;
 
 //-------------------------------------------------
 
@@ -38,6 +45,10 @@ void emit_instr(instruction *t){
 
 unsigned nextinstructionlabel(void){
 	return currInstr;
+}
+
+unsigned currprocessedquad(){
+	return currQuad;
 }
 
 //-------------------------------------------------
@@ -191,7 +202,7 @@ void generate_relational(vmopcode op, quad* quad){
 	t->result->type = label_a;
 
 	// MUST SEE IF nextquad() CALL IS CORRECT OR EVEN WORKS
-	if(quad->label <currprocessedquad())
+	if(quad->label < currprocessedquad())
 		t->result->val = quads[quad->label].taddress;
 	else
 		add_incomplete_jump(nextinstructionlabel(), quad->label);
@@ -315,4 +326,9 @@ void generate_GETRETVAL (quad* q){
 	make_operand(q->result, t->result);
 	make_retvaloperand(t->arg1); 
 	emit_instr(t); 
+}
+
+void exec_generate(void){
+	for(unsigned i = 0; i < total; ++i)
+		(*generators[quads[i].op])(quads+i);
 }
