@@ -7,16 +7,97 @@ extern unsigned currQuad;
 
 unsigned ij_total = 0;
 incomplete_jump* ij_head = (incomplete_jump*) 0;
-unsigned consts_newstring (char* s); 
-unsigned consts_newnumber (double n);
-unsigned libfuncs_newused (char* s); 
-unsigned userfuncs_newfunc (symbol* sym); 
 
 instruction *instructions = (instruction*) 0;
 unsigned totalInstructions = 0;
 unsigned currInstr = 0;
 
+double* numConsts = (double*) 0;
+unsigned totalNumConsts = 0;
+
+char** stringConsts = (char**) 0;
+unsigned totalStringConsts = 0;
+
+char** namedLibfuncs = (char**) 0;
+unsigned totalNamedLibfuncs = 0;
+
+userfunc* userFuncs = (userfunc*) 0;
+unsigned totalUserFuncs = 0;
+
 //-------------------------------------------------
+
+unsigned consts_newnumber (double n){
+
+	unsigned ret_index;
+
+	if(numConsts == NULL)
+		numConsts = (double*) malloc(sizeof(double*));
+	else{
+		double* new_array = (double*) realloc(numConsts, (totalNumConsts + 1) * sizeof(double));
+		numConsts = new_array;
+	}
+
+	ret_index = totalNumConsts;
+	numConsts[totalNumConsts++] = n;
+
+	return ret_index;
+}
+
+unsigned consts_newstring (char* s){
+
+	unsigned ret_index;
+
+	if(stringConsts == NULL)
+        stringConsts = (char**) malloc(sizeof(char*));
+    else{
+        char** new_array = (char**) realloc(stringConsts, (totalStringConsts + 1) * sizeof(char*));
+        stringConsts = new_array;
+    }
+
+	ret_index = totalStringConsts;
+    stringConsts[totalStringConsts++] = strdup(s);
+    
+	return ret_index;
+}
+
+unsigned libfuncs_newused (char* s){
+
+	unsigned ret_index;
+
+	if(namedLibfuncs == NULL)
+		namedLibfuncs = (char**) malloc(sizeof(char*));
+	else{
+		char** new_array = (char**) realloc(namedLibfuncs, (totalNamedLibfuncs + 1) * sizeof(char*));
+        namedLibfuncs = new_array;
+	}
+
+	ret_index = totalNamedLibfuncs;
+	namedLibfuncs[totalNamedLibfuncs++] = strdup(s);
+	
+	return ret_index;
+}
+
+unsigned userfuncs_newfunc(symbol* sym){
+
+	unsigned ret_index;
+
+	if(userFuncs == NULL)
+		userFuncs = (userfunc*) malloc(sizeof(userfunc*));
+	else{
+		userfunc* new_array = (userfunc*) realloc(userFuncs, (totalUserFuncs + 1) * sizeof(userfunc));
+		userFuncs = new_array;
+	}
+
+	ret_index = totalUserFuncs;
+
+	userFuncs[totalUserFuncs].address = sym->offset; // Is offset the wanted field?
+	userFuncs[totalUserFuncs].localSize = sym->totalLocals;
+	userFuncs[totalUserFuncs].id = strdup(sym->name);
+
+	totalUserFuncs++;
+
+	return ret_index;
+}
 
 void expandInstr(){
 
@@ -331,4 +412,82 @@ void generate_GETRETVAL (quad* q){
 void exec_generate(void){
 	for(unsigned i = 0; i < total; ++i)
 		(*generators[quads[i].op])(quads+i);
+}
+
+void add_incomplete_jump(unsigned instNo, unsigned iaddress){
+
+	incomplete_jump* tmp = ij_head;
+	incomplete_jump* newNode = (incomplete_jump*) malloc(sizeof(incomplete_jump));
+
+	newNode->instrNo = instNo;
+	newNode->iaddress = iaddress;
+	newNode->next = NULL;
+
+	if(ij_head == NULL){
+		ij_head = newNode;
+	}
+	else{
+		while(tmp->next != NULL)
+			tmp = tmp->next;
+		tmp->next = newNode;
+	}
+}
+
+void patch_incomplete_jumps(void){
+	 
+	incomplete_jump* tmp = ij_head;
+	while (tmp != NULL){
+		if (tmp->iaddress == total)
+			instructions[tmp->instrNo].result = totalInstructions; 
+		else
+			instructions[tmp->instrNo].result = quads[tmp->iaddress].taddress; 
+		tmp = tmp->next; 
+	}
+}
+
+void printInstructions () {
+	int i, tmp; 
+	char *arg1,*arg2,*result,*opcode; 
+
+	for(i = 0; i<totalInstructions; i++){
+		opcode = strdup(translateopcode_v((instructions + i)->opcode));
+		printf("\n%d:\t%14s\t",i, opcode); 
+		if((instructions+i)->result == NULL){
+			printf("%11s\t", "");
+		}
+		else {
+
+		}
+	}
+}
+
+char *translateopcode_v(vmopcode opcode){
+	char *name; 
+	switch (opcode){
+		case 0  : name = "assign"; break;
+		case 1  : name = "add"; break;
+		case 2  : name = "sub"; break;
+		case 3  : name = "mul"; break;
+		case 4  : name = "div"; break;
+		case 5  : name = "mod"; break;
+		case 6  : name = "and"; break;
+		case 7  : name = "or"; break;
+		case 8  : name = "not"; break;
+		case 9  : name = "jeq"; break;
+		case 10 : name = "jne"; break;
+		case 11 : name = "jle"; break;
+		case 12 : name = "jge"; break;
+		case 13 : name = "jlt"; break;
+		case 14 : name = "jgt"; break;
+		case 15 : name = "call"; break;
+		case 16 : name = "pusharg"; break;
+		case 17 : name = "funcenter"; break;
+		case 18 : name = "funcexit"; break;
+		case 19 : name = "newtable"; break;
+		case 20 : name = "tablegetelem"; break;
+		case 21 : name = "tablesetelem"; break;
+		case 22 : name = "nop"; break;
+		case 23 : name = "jump"; break;
+	}
+	return name;
 }
