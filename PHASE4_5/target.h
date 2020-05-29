@@ -79,21 +79,6 @@ typedef struct incomplete_jump {
     struct incomplete_jump* next; 
 }incomplete_jump;
 
-typedef struct avm_table_bucket {
-    avm_memcell key;
-    avm_memcell value;
-    struct avm_table_bucket* next;
-}avm_table_bucket;
-
-
-
-typedef struct avm_table{
-    unsigned refCounter;
-    avm_table_bucket* strIndexed[AVM_TABLE_HASHSIZE];
-    avm_table_bucket* numIndexed[AVM_TABLE_HASHSIZE];
-    unsigned total;
-}avm_table;
-
 typedef struct avm_memcell {
     avm_memcell_t type;
     union {
@@ -105,6 +90,19 @@ typedef struct avm_memcell {
         char* libfuncVal;
     }data;
 }avm_memcell;
+
+typedef struct avm_table_bucket {
+    avm_memcell key;
+    avm_memcell value;
+    struct avm_table_bucket* next;
+}avm_table_bucket;
+
+typedef struct avm_table{
+    unsigned refCounter;
+    avm_table_bucket* strIndexed[AVM_TABLE_HASHSIZE];
+    avm_table_bucket* numIndexed[AVM_TABLE_HASHSIZE];
+    unsigned total;
+}avm_table;
 
 avm_memcell stack[AVM_STACKSIZE];
 
