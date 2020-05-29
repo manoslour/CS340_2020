@@ -36,7 +36,7 @@ symbol* newtemp(){
 	if(sym == NULL){
 		// !!! MUST SEE AGAIN !!!
 		//return tempInsert(name, currscope());
-		sym =  hashInsert(name, currscope(), -1, var_s, currscopespace(), currscopeoffset());
+		sym =  hashInsert(name, currscope(), 0, var_s, currscopespace(), currscopeoffset());
 		inccurrscopeoffset();
 	}
 	else{
