@@ -18,6 +18,7 @@
   unsigned int betweenFunc = 0;
   unsigned int loopcounter = 0;
   unsigned int currentscope = 0;
+  unsigned int funcJump = 0;
   offsetStack *scopeoffsetStack = NULL;
   counterStack *loopcounterStack = NULL;
   stmt_t *breakpointer = NULL;
@@ -74,7 +75,7 @@ program:  stmtlist  {	fprintf(fp, "promgram: stmtlist at line %d --> %s\n", yyli
 stmtlist: stmt              {
                               fprintf(fp, "stmtlist: stmt at line %d --> %s\n", yylineno, yytext);
                               printf("Entered stmtlist: stmt\n");
-                              //printf("$1->breaklist = %d\n", $1->breaklist);
+                              //fprintf(fp, "$1->breaklist = %d\n", $1->breaklist);
                               $$ = $1;
                             }
           |stmt stmtlist		{
@@ -85,12 +86,12 @@ stmtlist: stmt              {
                               if(breakcount > 1){
                                 printf("Entered break check\n");
                                 tmp->breaklist = mergelist($1->breaklist, $2->breaklist);
-                                breakcount = 0;
+                                //breakcount = 0;
                               }
                               if(contcount > 1){
                                 printf("Entered continue check\n");
                                 tmp->contlist = mergelist($1->contlist, $2->contlist);
-                                contcount = 0;
+                                //contcount = 0;
                               }
                               $$ = tmp;
                             }
@@ -98,12 +99,11 @@ stmtlist: stmt              {
 
 stmt:     expr SEMICOLON        {
                                   fprintf(fp, "stmt: expr SEMICOLON at line %d --> %s\n", yylineno, yytext);
-                                  //printf("Entered stmt: expr;\n");
-                                  //printf("$$->breaklist = %d\n", $$->breaklist);
+                                  //fprintf(fp, "Entered stmt: expr;\n");
+                                  //fprintf(fp, "$$->breaklist = %d\n", $$->breaklist);
                                 }
           |ifstmt               { fprintf(fp, "stmt: ifstmt at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered stmt: ifstmt\n");
-                                  //printf("$1->breaklist = %d\n", $1->breaklist);
                                   $$ = $1;
                                 }
           |whilestmt            { fprintf(fp, "stmt: whilestmt at line %d --> %s\n", yylineno, yytext);
@@ -119,7 +119,7 @@ stmt:     expr SEMICOLON        {
 										              fprintf(fp, "stmt: BREAK SEMICOLON at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered stmt: break;\n");
                                   printf("breakcount = %d\n", breakcount);
-                                  //printf("$1->breaklist = %d\n", $1->breaklist);
+                                  printf("$1->breaklist = %d\n", $1->breaklist+1);
                                   $$ = $1;
                                 }
           |continue SEMICOLON		{
@@ -133,10 +133,7 @@ stmt:     expr SEMICOLON        {
           |SEMICOLON            {	fprintf(fp, "stmt: SEMICOLON at line %d --> %s\n", yylineno, yytext);}
           ;
 
-expr:     assignexpr            {
-                                  fprintf(fp, "expr: assignexpr at line %d --> %s\n", yylineno, yytext);
-                                  printf("Entered expr: assignexpr;\n");
-                                }
+expr:     assignexpr            { fprintf(fp, "expr: assignexpr at line %d --> %s\n", yylineno, yytext);}
           |expr PLUS expr       {
                                   fprintf(fp, "expr: expr PLUS expr at line %d --> %s\n", yylineno, yytext);
                                   if(illegalop($1, $3))
@@ -204,97 +201,63 @@ expr:     assignexpr            {
                                 }
           |expr GREATER expr		{
                                   fprintf(fp, "expr: expr GREATER expr at line %d --> %s\n", yylineno, yytext);
-                                  if(illegalop($1, $3))
-                                    addError("Error, illegal boolean operation", "", yylineno);
-                                  else{
-                                    $$ = newexpr(boolexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
-                                    emit(if_greater, $1, $3, NULL, nextquad()+3, yylineno);
-                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
-                                    emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
-                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
 
-                                    //---MERIKH APOTIMHSH---
-                                    /*
-                                    emit(if_greater, $1, $3, NULL, 0, yylineno);
-                                    $$->truelist = newlist(nextquad()-1);
-                                    emit(jump, NULL, NULL, NULL, 0, yylineno);
-                                    $$->falselist = newlist(nextquad()-1);
-
-                                    printf("True list = %d\n", $$->truelist+1);
-                                    printf("False list = %d\n", $$->falselist+1);
-                                    */
-                                  }
+                                  $$ = newexpr(boolexpr_e);
+                                  $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                  emit(if_greater, $1, $3, NULL, nextquad()+3, yylineno);
+                                  emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                  emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
+                                  emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
                                 }
           |expr GREATER_EQ expr	{
                                   fprintf(fp, "expr: expr GREATER_EQ expr at line %d --> %s\n", yylineno, yytext);
-                                  if(illegalop($1, $3))
-                                    addError("Error, illegal boolean operation", "", yylineno);
-                                  else{
-                                    $$ = newexpr(boolexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
 
-                                    emit(if_greatereq, $1, $3, NULL, nextquad()+3, yylineno);
-                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
-                                    emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
-                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
-                                  }
+                                  $$ = newexpr(boolexpr_e);
+                                  $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                  emit(if_greatereq, $1, $3, NULL, nextquad()+3, yylineno);
+                                  emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                  emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
+                                  emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
                                 }
           |expr LESS expr       {
                                   fprintf(fp, "expr: expr LESS expr at line %d --> %s\n", yylineno, yytext);
-                                  if(illegalop($1, $3))
-                                    addError("Error, illegal boolean operation", "", yylineno);
-                                  else{
-                                    $$ = newexpr(boolexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
 
-                                    emit(if_less, $1, $3, NULL, nextquad()+3, yylineno);
-                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
-                                    emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
-                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
-                                  }
+                                  $$ = newexpr(boolexpr_e);
+                                  $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                  emit(if_less, $1, $3, NULL, nextquad()+3, yylineno);
+                                  emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                  emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
+                                  emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
                                 }
           |expr LESS_EQ expr		{
                                   fprintf(fp, "expr: expr LESS_EQ expr at line %d --> %s\n", yylineno, yytext);
-                                  if(illegalop($1, $3))
-                                    addError("Error, illegal boolean operation", "", yylineno);
-                                  else{
-                                    $$ = newexpr(boolexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
 
-                                    emit(if_lesseq, $1, $3, NULL, nextquad()+3, yylineno);
-                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
-                                    emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
-                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
-                                  }
+                                  $$ = newexpr(boolexpr_e);
+                                  $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                  emit(if_lesseq, $1, $3, NULL, nextquad()+3, yylineno);
+                                  emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                  emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
+                                  emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
                                 }
           |expr EQUAL expr      {
                                   fprintf(fp, "expr: expr EQUAL expr at line %d --> %s\n", yylineno, yytext);
-                                  if(illegalop($1, $3))
-                                    addError("Error, illegal boolean operation", "", yylineno);
-                                  else{
-                                    $$ = newexpr(boolexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
 
-                                    emit(if_eq, $1, $3, NULL, nextquad()+3, yylineno);
-                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
-                                    emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
-                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
-                                  }
+                                  $$ = newexpr(boolexpr_e);
+                                  $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                  emit(if_eq, $1, $3, NULL, nextquad()+3, yylineno);
+                                  emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                  emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
+                                  emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
                                 }
           |expr NOT_EQUAL expr  {
                                   fprintf(fp, "expr: expr NOT_EQUAL expr at line %d --> %s\n", yylineno, yytext);
-                                  if(illegalop($1, $3))
-                                    addError("Error, illegal boolean operation", "", yylineno);
-                                  else{
-                                    $$ = newexpr(boolexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
 
-                                    emit(if_noteq, $1, $3, NULL, nextquad()+3, yylineno);
-                                    emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
-                                    emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
-                                    emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
-                                  }
+                                  $$ = newexpr(boolexpr_e);
+                                  $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                  emit(if_noteq, $1, $3, NULL, nextquad()+3, yylineno);
+                                  emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
+                                  emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
+                                  emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
                                 }
           |expr AND expr        {
                                   fprintf(fp, "expr: expr AND expr at line %d --> %s\n", yylineno, yytext);
@@ -302,48 +265,17 @@ expr:     assignexpr            {
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
                                     emit(and, $1, $3, $$, -1, yylineno);
-
-                                    //---MERIKH APOTIMHSH---
-                                    /*
-                                    if($1->type != boolexpr_e){
-                                      emit(if_eq, newexpr_constbool(1), $1, NULL, 0, yylineno);
-                                      //$$->truelist = newlist(nextquad()-1);
-                                      emit(jump, NULL, NULL, NULL, 0, yylineno);
-                                      //$$->falselist = newlist(nextquad()-1);
-                                    }
-                                    if($4->type != boolexpr_e){
-                                      emit(if_eq, newexpr_constbool(1), $4, NULL, 0, yylineno);
-                                      emit(jump, NULL, NULL, NULL, 0, yylineno);
-                                    }
-
-                                    //---MERIKH APOTIMHSH---
-                                    printf("M = %d\n", $3+1);
-                                    patchlabel($1->truelist, $3);
-                                    $$->truelist = $4->truelist;
-                                    printf("True list = %d\n", $$->truelist+1);
-                                    printf("Merging falselist: $1->falselist = %d | $4->falselist = %d\n", $1->falselist+1, $4->falselist+1);
-                                    $$->falselist = mergelist($1->falselist, $4->falselist);
-                                    printf("False list = %d\n", $$->falselist+1);
-                                    */
                                 }
           |expr OR expr			    {
                                   fprintf(fp, "expr: expr OR expr at line %d --> %s\n", yylineno, yytext);
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
                                     emit(or, $1, $3, $$, -1, yylineno);
-
-                                    //---MERIKH APOTIMHSH---
-                                    /*
-                                    printf("M = %d\n", $3+1);
-                                    patchlabel($1->falselist, $3);
-                                    printf("Merging truelist: $1->truelist = %d | $4->truelist = %d\n", $1->truelist+1, $4->truelist+1);
-                                    $$->truelist = mergelist($1->truelist, $4->truelist);
-                                    printf("Truelist = %d\n", $$->truelist+1);
-                                    $$->falselist = $4->falselist;
-                                    printf("Falselist = %d\n", $$->falselist+1);
-                                    */
                                 }
-          |term					        {	fprintf(fp, "expr: term at line %d --> %s\n", yylineno, yytext);}
+          |term					        {	
+                                  fprintf(fp, "expr: term at line %d --> %s\n", yylineno, yytext);
+                                  $$ = $1;  
+                                }
           ;
 
 term:     L_PAR expr R_PAR			    {
@@ -362,12 +294,6 @@ term:     L_PAR expr R_PAR			    {
                                       $$ = newexpr(boolexpr_e);
                                       $$->sym = istempexpr($2) ? $2->sym : newtemp();
                                       emit(not, $2, NULL, $$, -1, yylineno);
-
-                                      //---MERIKH APOTIMHSH---
-                                      /*  
-                                      $$->truelist = $2->falselist;
-                                      $$->falselist = $2->truelist;
-                                      */
                                     }
           |INCR lvalue              {
                                       fprintf(fp, "term: INCR lvalue at line %d --> %s\n", yylineno, yytext);
@@ -440,7 +366,6 @@ term:     L_PAR expr R_PAR			    {
 
 assignexpr: lvalue ASSIGN expr  {
                                   fprintf(fp, "assignexpr: lvalue ASSIGN expr at line %d --> %s\n", yylineno, yytext);
-                                  printf("Entered assignexpr: lvalue = expr\n");
                                   if($1->type == tableitem_e){
                                     emit(tablesetelem, $1->index, $3, $1, -1, yylineno);
                                     $$ = emit_iftableitem($1, yylineno);
@@ -452,31 +377,16 @@ assignexpr: lvalue ASSIGN expr  {
                                     $$->sym = istempexpr($3) ? $3->sym : newtemp();
                                     emit(assign, $1, NULL, $$, -1, yylineno);
                                   }
-
-                                  //---MERIKH APOTIMHSH
-                                  /*
-                                   if($3->type == boolexpr_e){
-                                      printf("%s is boolexpr\n", $3->sym->name);
-                                    //EDW PREPEI NA GINEI TO TELIKO BACKPATCHING THS MERIKHS APOTIMHSHS
-                                    //KAI NA PROSTETHOUN TA 3 EXTRA QUADS.
-                                      patchlist($3->truelist, nextquad());
-                                      patchlist($3->falselist, nextquad()+2);
-                                    
-                                      emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
-                                      emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
-                                      emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
-                                      emit(assign, $3, NULL, $1, -1, yylineno);
-                                      emit(assign, $1, NULL, $$, -1, yylineno);
-                                    }
-                                    else{
-                                    */
                                 }
             ;
 
 primary:    lvalue                { fprintf(fp, "primary: lvalue at line %d --> %s\n", yylineno, yytext);
 										                $$ = emit_iftableitem($1, yylineno);
                                   }
-            |call                 { fprintf(fp, "primary: call at line %d --> %s\n", yylineno, yytext);}
+            |call                 { 
+                                    fprintf(fp, "primary: call at line %d --> %s\n", yylineno, yytext);
+                                    $$ = $1;
+                                  }
 			      |tablemake            { fprintf(fp, "primary: tablemake at line %d --> %s\n", yylineno, yytext);}
 			      |L_PAR funcdef R_PAR	{
                                     fprintf(fp, "primary: L_PAR funcdef R_PAR at line %d --> %s\n", yylineno, yytext);
@@ -520,7 +430,7 @@ lvalue:     ID          {
 			|DCOLON ID		    {
 								          symbol *sym = scopelookup(yytext,0);
                           if(sym == NULL)
-                            printf("Symbol %s does not exist\n", yylval.stringValue);
+                            fprintf(fp, "Symbol %s does not exist\n", yylval.stringValue);
                           else
                             $$ = lvalue_expr(sym);\
                         }
@@ -547,29 +457,24 @@ tableitem:  lvalue DOT ID 				    {
 
 call:	      call L_PAR elist R_PAR	  {
                                         fprintf(fp, "call: (elist) at line %d --> %s\n", yylineno, yytext);
-                                        printf("call (elist)\n");
                                         $$ = make_call($1, $3, yylineno);
                                       }
             |lvalue callsuffix				{
                                         fprintf(fp, "call: lvalue callsuffix at line %d --> %s\n", yylineno, yytext);
-                                        $1 = emit_iftableitem($1, yylineno); //In case it was a table item too
-                                        printf("Enterd call: lvalue callsufix\n");
+                                        $1 = emit_iftableitem($1, yylineno);
                                         if($2->method){
-                                          //printf("Entered if check\n");
                                           expr* t = $1;
                                           $1 = emit_iftableitem(member_item(t, $2->name, yylineno), yylineno);
                                           expr* tmp = $2->elist;
                                           while( (tmp->next) != NULL){
-                                            //printf("tmp = %s\n", tmp->sym->name);
                                             tmp = tmp->next;
                                           }
-                                          tmp->next = t; //Insert as first argument(reserved, so last)
+                                          tmp->next = t;
                                         }
                                         $$ = make_call($1, $2->elist, yylineno);
                                       }
             |L_PAR funcdef R_PAR L_PAR elist R_PAR    {
                                                         fprintf(fp, "call: (funcdef) (elist) at line %d --> %s\n", yylineno, yytext);
-                                                        printf("(funcdef)(elist)\n");
                                                         expr* func = newexpr(programfunc_e);
                                                         func->sym = $2;
                                                         $$ = make_call(func, $5, yylineno);
@@ -579,29 +484,30 @@ call:	      call L_PAR elist R_PAR	  {
 callsuffix:	normcall          {
                                 fprintf(fp, "callsuffix: normcall at line %d --> %s\n", yylineno, yytext);
                                 $$ = $1;
-                                printf("Entered normcall\n");
                               }
 			      |methodcall       {
                                 fprintf(fp, "callsuffix: methodcall at line %d --> %s\n", yylineno, yytext);
-                                printf("Entered callsufix: methodcall\n");
                                 $$ = $1;
                               }
 			      ;
 
 normcall:	L_PAR elist R_PAR   {
                                 fprintf(fp, "normcall: (elist) at line %d --> %s\n", yylineno, yytext);
-                                $$->elist = $2;
-                                $$->method = 0;
-                                $$->name = NULL;
+                                callStr* tmp = (callStr*) malloc(sizeof(expr));
+                                tmp->elist = $2;
+                                tmp->method = 0;
+                                tmp->name = NULL;
+                                $$ = tmp;
                               }
 			    ;
 
 methodcall: DDOT ID L_PAR elist R_PAR {
                                         fprintf(fp, "methodcall: ..ID (elist) at line %d --> %s\n", yylineno, yytext);
-                                        printf("methodcall: ..id(elist)\n");
-                                        $$->elist = $4;
-                                        $$->method = 1;
-                                        $$->name = $2;
+                                        callStr* tmp = (callStr*) malloc(sizeof(expr));
+                                        tmp->elist = $4;
+                                        tmp->method = 1;
+                                        tmp->name = $2;
+                                        $$ = tmp;
                                       }
 				    ;
 
@@ -611,15 +517,12 @@ elist:      expr                {
                                 }
 		        |expr COMMA elist 	{
 								                  fprintf(fp, "elist: expr, elist at line %d --> %s\n", yylineno, yytext);
-                                  $1->next = $3;
-                                  /*
                                   expr* tmp = $3;
                                   while(tmp->next != NULL){
                                     tmp = tmp->next;
                                   }
                                   tmp->next = $1;
                                   $$ = $3;
-                                  */
                                 }
  		        |					          {
 								                  fprintf(fp, "elist: empty at line %d --> %s\n", yylineno, yytext);
@@ -629,10 +532,22 @@ elist:      expr                {
 
 tablemake:	L_BR elist R_BR     {
                                   fprintf(fp, "tablemake: [elist] at line %d --> %s\n", yylineno, yytext);
-                                  printf("Entered tablemake: [elist]\n");
                                   int i = 0;
-                                  expr* tmp = $2;
+                                  expr* tmp;
+                                  expr* prev = NULL;
+                                  expr* curr = $2;
+                                  expr* next = NULL;
                                   expr* t = newexpr(newtable_e);
+
+                                  //Reverse elist
+                                  while(curr != NULL){
+                                    next = curr->next;
+                                    curr->next = prev;
+                                    prev = curr;
+                                    curr = next;
+                                  }
+                                  tmp = prev;
+
                                   if($2 == NULL)
                                     t->sym = newtemp();
                                   else
@@ -646,7 +561,6 @@ tablemake:	L_BR elist R_BR     {
                                 }
  				    |L_BR indexed R_BR {
 					 							          fprintf(fp, "tablemake: [indexed] at line %d --> %s\n", yylineno, yytext);
-                                  printf("Entered tablemake[indexed]\n");
                                   expr* t = newexpr(newtable_e);
                                   t->sym = istempexpr($2) ? $2->sym : newtemp();
                                   expr* tmp = $2;
@@ -661,23 +575,16 @@ tablemake:	L_BR elist R_BR     {
 
 indexed:	    indexedelem                 {
                                             fprintf(fp, "indexed: indexedelem at line %d --> %s\n", yylineno, yytext);
-                                            printf("Entered indexed: indexelem\n");
                                             $$ = $1;
-                                            //printf("indexedelem($1) = %s\n", $1->strConst);
-                                            //printf("index = %d\n",(int)$1->index->numConst);
                                           }
 			        |indexedelem COMMA indexed  {
                                             fprintf(fp, "indexed: indexedelem, indexed at line %d --> %s\n", yylineno, yytext);
-                                            printf("Entered indexed: indexelem, indexed\n");
-                                            //printf("indexedelem($1) = %s\n", $1->strConst);
                                             $1->next = $3;
                                           }
 			        ;
 
 indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR {
                                                     fprintf(fp, "indexedelem: {expr:expr} at line %d --> %s\n", yylineno, yytext);
-                                                    printf("Entered indexedelem: {expr:expr}\n");
-                                                    //printf("{%s:%d}\n", $2->strConst, (int)$4->numConst);
                                                     $2->index = $4;
                                                     $$ = $2;
                                                   }
@@ -695,7 +602,7 @@ block:  blockstart blockend
 
 blockstart: LCURLY_BR {
                         fprintf(fp, "block: LCURLY_BR at line %d --> %s\n", yylineno, yytext);
-                        printf("Entered block\n");
+                        fprintf(fp, "Entered block\n");
                         currentscope++;
                       }
 
@@ -713,6 +620,7 @@ funcdef:  funcprefix funcargs funcblockstart funcbody	funcblockend {
                                               restorecurrscopeoffset(offset);
                                               $$ = $1;
                                               emit(funcend, NULL, NULL, lvalue_expr($1), -1, yylineno);
+                                              patchlabel(funcJump, nextquad());
                                             }
 				  ;
 
@@ -720,6 +628,8 @@ funcprefix:		FUNCTION funcname	            {
                                               fprintf(fp, "funcprefix: FUNCTION funcname at line %d --> %s\n", yylineno, yytext);
                                               $$ = hashInsert($2, currentscope, yylineno, programfunc_s, currscopespace(), currscopeoffset());
                                               $$->iaddress = nextquadlabel();
+                                              funcJump = nextquad();
+                                              emit(jump, NULL, NULL, NULL, 0, yylineno);
                                               emit(funcstart, NULL, NULL, lvalue_expr($$), -1, yylineno);
                                               pushOffset(&scopeoffsetStack, currscopeoffset()); // Save current offset
                                               enterscopespace();
@@ -755,7 +665,7 @@ funcbody: block {
                 }
 
 funcblockstart: {
-                  printf("Entered funcblockstart\n");
+                  fprintf(fp, "Entered funcblockstart\n");
                   printf("loopcounter before push = %d\n", loopcounter);
                   pushCounter(&loopcounterStack, loopcounter); 
                   loopcounter = 0;
@@ -763,7 +673,7 @@ funcblockstart: {
                 }
 
 funcblockend:   { 
-                  printf("Entered funcblockend\n");
+                  fprintf(fp, "Entered funcblockend\n");
                   printf("loopcounter before pop = %d\n", loopcounter);
                   loopcounter = popCounter(&loopcounterStack);
                   printf("loopounter after pop = %d\n", loopcounter);
@@ -771,8 +681,6 @@ funcblockend:   {
 
 const: REAL 		{
                   fprintf(fp, "const: REAL at line %d --> %s\n", yylineno, yytext);
-                  printf("const: REAL\n");
-                  printf("REAL($1) = %f\n", $1);
                   $$ = newexpr_constnum($1);
                 }
 			 |INTEGER	{
@@ -829,31 +737,13 @@ elseprefix: ELSE                        {
 
 ifstmt: ifprefix stmt                   {
                                           fprintf(fp, "ifstmt: ifprefix stmt at line %d --> %s\n", yylineno, yytext);
-                                          printf("Entered ifstmt: ifprefix stmt\n");
                                           patchlabel($1, nextquad());
-                                          if(breakcount != 0 || contcount != 0){
-                                            //printf("$2->breaklist = %d\n", $2->breaklist);
-                                            $$ = $2;
-                                          }
                                         }
         |ifprefix stmt elseprefix stmt  {
                                           fprintf(fp, "ifstmt: ifprefix stmt elseprefix stmt at line %d --> %s\n", yylineno, yytext);
                                           printf("Entered ifstmt: ifprefix stmt elseprefix stmt\n");
                                           patchlabel($1, $3+1);
                                           patchlabel($3, nextquad());
-
-                                          stmt_t* tmp = (stmt_t*) malloc(sizeof(stmt_t));
-                                          if(breakcount > 1){
-                                            printf("$2->breaklist = %d | $4->breaklist = %d\n", $2->breaklist, $4->breaklist);
-                                            tmp->breaklist = mergelist($2->breaklist, $4->breaklist);
-                                            breakcount = 0;
-                                          }
-                                          if(contcount > 1){
-                                            printf("$2->contlist = %d | $4->contlist = %d\n", $2->contlist, $4->contlist);
-                                            tmp->contlist = mergelist($2->contlist, $4->contlist);
-                                            contcount = 0;
-                                          }
-                                          $$ = tmp;
                                         }
 
 whilestart: WHILE                       {
@@ -875,13 +765,13 @@ whilestmt: whilestart whilecond loopstmt {
                                           printf("Entered whilestmt, line = %d\n", yylineno);
                                           emit(jump, NULL, NULL, NULL, $1, yylineno);
                                           patchlabel($2, nextquad());
-
-                                          if(breakcount != 0){
-                                            printf("$3->breaklist = %d\n", $3->breaklist);
+                                          
+                                          if(breakcount > 1){
+                                            printf("$3->breaklist = %d\n", $3->breaklist+1);
                                             patchlist($3->breaklist, nextquad());
                                             breakcount = 0;
                                           }
-                                          if(contcount != 0){
+                                          if(contcount > 1){
                                             printf("$3->contlist = %d\n", $3->contlist);
                                             patchlist($3->contlist, $1);
                                             contcount = 0;
@@ -916,11 +806,11 @@ forstmt:  forprefix N elist R_PAR N loopstmt N          {
                                                           patchlabel($5, $1->test); //loop jump
                                                           patchlabel($7, $2+1); //closure jump
 
-                                                          if(breakcount != 0){
+                                                          if(breakcount > 1){
                                                             printf("$6->breaklist = %d\n", $6->breaklist);  
                                                             patchlist($6->breaklist, nextquad());
                                                           }
-                                                          if(contcount != 0){
+                                                          if(contcount > 1){
                                                             printf("$6->contlist = %d\n", $6->contlist);
                                                             patchlist($6->contlist, $2+1);
                                                           }
@@ -951,16 +841,13 @@ loopstmt: loopstart stmt loopend  {
                                     fprintf(fp, "loopstmt: loopstart stmt loopend at line %d --> %s\n", yylineno, yytext);
                                     printf("Entered loopstmt: loopstart stmt loopend\n"); 
                                     
-                                    if(breakcount != 0 || contcount != 0){
+                                    if(breakcount != 0 || contcount != 0)
                                       if(breakpointer != NULL){
                                         printf("Some magic happens\n");
-                                        $$ = breakpointer;
+                                        $2 = breakpointer;
                                       }
-                                      else{
-                                        printf("Normal case\n");
-                                        $$ = $2;
-                                      }
-                                    }
+
+                                    $$ = $2;
                                   }
 
 break: BREAK        {
