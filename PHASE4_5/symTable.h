@@ -128,7 +128,7 @@ void resettemp();
 
 void printQuads();
 
-symbol* newtemp();
+symbol* newtemp(unsigned int offset);
 
 void initialize();
 

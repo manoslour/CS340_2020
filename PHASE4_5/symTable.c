@@ -27,7 +27,7 @@ char* newtempname(){
 	return tempname;
 }
 
-symbol* newtemp(){
+symbol* newtemp(unsigned int offset){
 
 	symbol* sym;
 	char* name = strdup(newtempname());
@@ -36,8 +36,10 @@ symbol* newtemp(){
 	if(sym == NULL)
 		// !!! MUST SEE AGAIN !!!
 		return tempInsert(name, currscope());
-	else
+	else{
+		sym->offset = offset;
 		return sym;
+	}
 }
 
 symbol* tempInsert(char *name, unsigned int scope){
@@ -51,7 +53,7 @@ symbol* tempInsert(char *name, unsigned int scope){
 	new_sym->next =  NULL;
 	new_sym->scope_next =  NULL;
 	new_sym->isActive = true;
-	new_sym->offset = currscopeoffset();
+
 	new_sym->name = strdup(name);
 
 	scopeListInsert(new_sym,scope);
@@ -466,7 +468,7 @@ expr* emit_iftableitem(expr* e, unsigned int line){
 	}
 	else{
 		expr* result = newexpr(var_e);
-		result->sym = newtemp();
+		result->sym = newtemp(currscopeoffset());
 		emit(tablegetelem, e, e->index, result, -1, line);
 		return result;
 	}
@@ -481,7 +483,7 @@ expr* make_call(expr* lv, expr* reserved_elist, unsigned int line){
 	}
 	emit(call, func, NULL, NULL, -1, line);
 	expr* result = newexpr(var_e);
-	result->sym = newtemp();
+	result->sym = newtemp(currscopeoffset());
 	emit(getretval, NULL, NULL, result, -1, line);
 	return result;
 }

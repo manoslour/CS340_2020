@@ -146,7 +146,7 @@ expr:     assignexpr            {
                                       $$ = newexpr(constnum_e);
                                     else
                                       $$ = newexpr(arithexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp(currscopeoffset());
                                     emit(add, $1, $3, $$, -1, yylineno);
                                   }
                                 }
@@ -159,7 +159,7 @@ expr:     assignexpr            {
                                       $$ = newexpr(constnum_e);
                                     else
                                       $$ = newexpr(arithexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp(currscopeoffset());
                                     emit(sub, $1, $3, $$, -1, yylineno);
                                   }
                                 }
@@ -172,7 +172,7 @@ expr:     assignexpr            {
                                       $$ = newexpr(constnum_e);
                                     else
                                       $$ = newexpr(arithexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp(currscopeoffset());
                                     emit(mul, $1, $3, $$, -1, yylineno);
                                   }
                                 }
@@ -185,7 +185,7 @@ expr:     assignexpr            {
                                       $$ = newexpr(constnum_e);
                                     else
                                       $$ = newexpr(arithexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp(currscopeoffset());
                                     emit(divide, $1, $3, $$, -1, yylineno);
                                   }
                                 }
@@ -198,7 +198,7 @@ expr:     assignexpr            {
                                       $$ = newexpr(constnum_e);
                                     else
                                       $$ = newexpr(arithexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp(currscopeoffset());
                                     emit(mod, $1, $3, $$, -1, yylineno);
                                   }
                                 }
@@ -208,7 +208,7 @@ expr:     assignexpr            {
                                     addError("Error, illegal boolean operation", "", yylineno);
                                   else{
                                     $$ = newexpr(boolexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp(currscopeoffset());
                                     emit(if_greater, $1, $3, NULL, nextquad()+3, yylineno);
                                     emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
                                     emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
@@ -232,7 +232,7 @@ expr:     assignexpr            {
                                     addError("Error, illegal boolean operation", "", yylineno);
                                   else{
                                     $$ = newexpr(boolexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp(currscopeoffset());
 
                                     emit(if_greatereq, $1, $3, NULL, nextquad()+3, yylineno);
                                     emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
@@ -246,7 +246,7 @@ expr:     assignexpr            {
                                     addError("Error, illegal boolean operation", "", yylineno);
                                   else{
                                     $$ = newexpr(boolexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp(currscopeoffset());
 
                                     emit(if_less, $1, $3, NULL, nextquad()+3, yylineno);
                                     emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
@@ -260,7 +260,7 @@ expr:     assignexpr            {
                                     addError("Error, illegal boolean operation", "", yylineno);
                                   else{
                                     $$ = newexpr(boolexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp(currscopeoffset());
 
                                     emit(if_lesseq, $1, $3, NULL, nextquad()+3, yylineno);
                                     emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
@@ -274,7 +274,7 @@ expr:     assignexpr            {
                                     addError("Error, illegal boolean operation", "", yylineno);
                                   else{
                                     $$ = newexpr(boolexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp(currscopeoffset());
 
                                     emit(if_eq, $1, $3, NULL, nextquad()+3, yylineno);
                                     emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
@@ -288,7 +288,7 @@ expr:     assignexpr            {
                                     addError("Error, illegal boolean operation", "", yylineno);
                                   else{
                                     $$ = newexpr(boolexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp(currscopeoffset());
 
                                     emit(if_noteq, $1, $3, NULL, nextquad()+3, yylineno);
                                     emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
@@ -300,7 +300,7 @@ expr:     assignexpr            {
                                   fprintf(fp, "expr: expr AND expr at line %d --> %s\n", yylineno, yytext);
 
                                     $$ = newexpr(boolexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp(currscopeoffset());
                                     emit(and, $1, $3, $$, -1, yylineno);
 
                                     //---MERIKH APOTIMHSH---
@@ -329,7 +329,7 @@ expr:     assignexpr            {
           |expr OR expr			    {
                                   fprintf(fp, "expr: expr OR expr at line %d --> %s\n", yylineno, yytext);
                                     $$ = newexpr(boolexpr_e);
-                                    $$->sym = istempexpr($1) ? $1->sym : newtemp();
+                                    $$->sym = istempexpr($1) ? $1->sym : newtemp(currscopeoffset());
                                     emit(or, $1, $3, $$, -1, yylineno);
 
                                     //---MERIKH APOTIMHSH---
@@ -354,14 +354,14 @@ term:     L_PAR expr R_PAR			    {
                                       fprintf(fp, "term: MINUS expr at line %d --> %s\n", yylineno, yytext);
                                       check_arith($2, "-expr");
                                       $$ = newexpr(arithexpr_e);
-                                      $$->sym = istempexpr($2) ? $2->sym : newtemp();
+                                      $$->sym = istempexpr($2) ? $2->sym : newtemp(currscopeoffset());
                                       $2->numConst = -1 * $2->numConst;
                                       emit(mul, $2, NULL, $$, -1, yylineno);
                                     }
           |NOT expr	                {
                                       fprintf(fp, "term: NOT expr at line %d --> %s\n", yylineno, yytext);
                                       $$ = newexpr(boolexpr_e);
-                                      $$->sym = istempexpr($2) ? $2->sym : newtemp();
+                                      $$->sym = istempexpr($2) ? $2->sym : newtemp(currscopeoffset());
                                       emit(not, $2, NULL, $$, -1, yylineno);
 
                                       //---MERIKH APOTIMHSH---
@@ -382,7 +382,7 @@ term:     L_PAR expr R_PAR			    {
                                       else{
                                         emit(add, $2, newexpr_constnum(1), $2, -1, yylineno);
                                         $$ = newexpr(arithexpr_e);
-                                        $$->sym = newtemp();
+                                        $$->sym = newtemp(currscopeoffset());
                                         emit(assign, $2, NULL, $$, -1, yylineno);
                                       }
                                     }
@@ -390,7 +390,7 @@ term:     L_PAR expr R_PAR			    {
                                       fprintf(fp, "term: lvalue INCR at line %d --> %s\n", yylineno, yytext);
                                       check_arith($1, "lvalue++");
                                       $$ = newexpr(var_e);
-                                      $$->sym = newtemp();
+                                      $$->sym = newtemp(currscopeoffset());
                                       if($1->type == tableitem_e){
                                         expr* val = emit_iftableitem($1, yylineno);
                                         emit(assign, val, NULL, $$, -1, yylineno);
@@ -413,7 +413,7 @@ term:     L_PAR expr R_PAR			    {
                                       else{
                                         emit(sub, $2, newexpr_constnum(1), $2, -1, yylineno);
                                         $$ = newexpr(arithexpr_e);
-                                        $$->sym = newtemp();
+                                        $$->sym = newtemp(currscopeoffset());
                                         emit(assign, $2, NULL, $$, -1, yylineno);
                                       }
                                     }
@@ -421,7 +421,7 @@ term:     L_PAR expr R_PAR			    {
                                       fprintf(fp, "term: lvalue DECR at line %d --> %s\n", yylineno, yytext);
                                       check_arith($1, "lvalue--");
                                       $$ = newexpr(var_e);
-                                      $$->sym = newtemp();
+                                      $$->sym = newtemp(currscopeoffset());
                                       if($1->type == tableitem_e){
                                         expr* val = emit_iftableitem($1, yylineno);
                                         emit(assign, val, NULL, $$, -1, yylineno);
@@ -450,7 +450,7 @@ assignexpr: lvalue ASSIGN expr  {
                                   else{
                                     emit(assign, $3, NULL, $1, -1, yylineno);
                                     $$ = newexpr(assignexpr_e);
-                                    $$->sym = istempexpr($3) ? $3->sym : newtemp();
+                                    $$->sym = istempexpr($3) ? $3->sym : newtemp(currscopeoffset());
                                     emit(assign, $1, NULL, $$, -1, yylineno);
                                   }
 
@@ -635,9 +635,9 @@ tablemake:	L_BR elist R_BR     {
                                   expr* tmp = $2;
                                   expr* t = newexpr(newtable_e);
                                   if($2 == NULL)
-                                    t->sym = newtemp();
+                                    t->sym = newtemp(currscopeoffset());
                                   else
-                                    t->sym = istempexpr($2) ? $2->sym : newtemp();
+                                    t->sym = istempexpr($2) ? $2->sym : newtemp(currscopeoffset());
                                   emit(tablecreate, t, NULL, NULL, -1, yylineno);
                                   while(tmp != NULL){
                                     emit(tablesetelem, newexpr_constnum(i++), tmp, t, -1, yylineno);
@@ -649,7 +649,7 @@ tablemake:	L_BR elist R_BR     {
 					 							          fprintf(fp, "tablemake: [indexed] at line %d --> %s\n", yylineno, yytext);
                                   printf("Entered tablemake[indexed]\n");
                                   expr* t = newexpr(newtable_e);
-                                  t->sym = istempexpr($2) ? $2->sym : newtemp();
+                                  t->sym = istempexpr($2) ? $2->sym : newtemp(currscopeoffset());
                                   expr* tmp = $2;
                                   emit(tablecreate, t, NULL, NULL, -1, yylineno);
                                   while(tmp != NULL){
