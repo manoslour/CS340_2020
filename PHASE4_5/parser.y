@@ -21,6 +21,7 @@
   unsigned int funcJump = 0;
   offsetStack *scopeoffsetStack = NULL;
   counterStack *loopcounterStack = NULL;
+  funcStack *funcstack = NULL;
   stmt_t *breakpointer = NULL;
 %}
 
@@ -906,6 +907,7 @@ int main(int argc, char** argv){
 
     scopeoffsetStack = initOffsetStack();
     loopcounterStack = initCounterStack();
+    funcstack = initFuncStack();
 
     initialize();
     yyparse();
