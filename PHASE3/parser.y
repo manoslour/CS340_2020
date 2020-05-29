@@ -208,15 +208,6 @@ expr:     assignexpr            { fprintf(fp, "expr: assignexpr at line %d --> %
                                   emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
                                   emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
                                   emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
-                                  //---MERIKH APOTIMHSH---
-                                  /*
-                                  emit(if_greater, $1, $3, NULL, 0, yylineno);
-                                  $$->truelist = newlist(nextquad()-1);
-                                  emit(jump, NULL, NULL, NULL, 0, yylineno);
-                                  $$->falselist = newlist(nextquad()-1);
-                                  fprintf(fp, "True list = %d\n", $$->truelist+1);
-                                  fprintf(fp, "False list = %d\n", $$->falselist+1);
-                                  */
                                 }
           |expr GREATER_EQ expr	{
                                   fprintf(fp, "expr: expr GREATER_EQ expr at line %d --> %s\n", yylineno, yytext);
@@ -274,46 +265,12 @@ expr:     assignexpr            { fprintf(fp, "expr: assignexpr at line %d --> %
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
                                     emit(and, $1, $3, $$, -1, yylineno);
-
-                                    //---MERIKH APOTIMHSH---
-                                    /*
-                                    if($1->type != boolexpr_e){
-                                      emit(if_eq, newexpr_constbool(1), $1, NULL, 0, yylineno);
-                                      //$$->truelist = newlist(nextquad()-1);
-                                      emit(jump, NULL, NULL, NULL, 0, yylineno);
-                                      //$$->falselist = newlist(nextquad()-1);
-                                    }
-                                    if($4->type != boolexpr_e){
-                                      emit(if_eq, newexpr_constbool(1), $4, NULL, 0, yylineno);
-                                      emit(jump, NULL, NULL, NULL, 0, yylineno);
-                                    }
-
-                                    //---MERIKH APOTIMHSH---
-                                    fprintf(fp, "M = %d\n", $3+1);
-                                    patchlabel($1->truelist, $3);
-                                    $$->truelist = $4->truelist;
-                                    fprintf(fp, "True list = %d\n", $$->truelist+1);
-                                    fprintf(fp, "Merging falselist: $1->falselist = %d | $4->falselist = %d\n", $1->falselist+1, $4->falselist+1);
-                                    $$->falselist = mergelist($1->falselist, $4->falselist);
-                                    fprintf(fp, "False list = %d\n", $$->falselist+1);
-                                    */
                                 }
           |expr OR expr			    {
                                   fprintf(fp, "expr: expr OR expr at line %d --> %s\n", yylineno, yytext);
                                     $$ = newexpr(boolexpr_e);
                                     $$->sym = istempexpr($1) ? $1->sym : newtemp();
                                     emit(or, $1, $3, $$, -1, yylineno);
-
-                                    //---MERIKH APOTIMHSH---
-                                    /*
-                                    fprintf(fp, "M = %d\n", $3+1);
-                                    patchlabel($1->falselist, $3);
-                                    fprintf(fp, "Merging truelist: $1->truelist = %d | $4->truelist = %d\n", $1->truelist+1, $4->truelist+1);
-                                    $$->truelist = mergelist($1->truelist, $4->truelist);
-                                    fprintf(fp, "Truelist = %d\n", $$->truelist+1);
-                                    $$->falselist = $4->falselist;
-                                    fprintf(fp, "Falselist = %d\n", $$->falselist+1);
-                                    */
                                 }
           |term					        {	
                                   fprintf(fp, "expr: term at line %d --> %s\n", yylineno, yytext);
@@ -337,12 +294,6 @@ term:     L_PAR expr R_PAR			    {
                                       $$ = newexpr(boolexpr_e);
                                       $$->sym = istempexpr($2) ? $2->sym : newtemp();
                                       emit(not, $2, NULL, $$, -1, yylineno);
-
-                                      //---MERIKH APOTIMHSH---
-                                      /*  
-                                      $$->truelist = $2->falselist;
-                                      $$->falselist = $2->truelist;
-                                      */
                                     }
           |INCR lvalue              {
                                       fprintf(fp, "term: INCR lvalue at line %d --> %s\n", yylineno, yytext);
@@ -426,24 +377,6 @@ assignexpr: lvalue ASSIGN expr  {
                                     $$->sym = istempexpr($3) ? $3->sym : newtemp();
                                     emit(assign, $1, NULL, $$, -1, yylineno);
                                   }
-
-                                  //---MERIKH APOTIMHSH
-                                  /*
-                                   if($3->type == boolexpr_e){
-                                      fprintf(fp, "%s is boolexpr\n", $3->sym->name);
-                                    //EDW PREPEI NA GINEI TO TELIKO BACKPATCHING THS MERIKHS APOTIMHSHS
-                                    //KAI NA PROSTETHOUN TA 3 EXTRA QUADS.
-                                      patchlist($3->truelist, nextquad());
-                                      patchlist($3->falselist, nextquad()+2);
-                                    
-                                      emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
-                                      emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
-                                      emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
-                                      emit(assign, $3, NULL, $1, -1, yylineno);
-                                      emit(assign, $1, NULL, $$, -1, yylineno);
-                                    }
-                                    else{
-                                    */
                                 }
             ;
 
@@ -977,8 +910,8 @@ int main(int argc, char** argv){
     initialize();
     yyparse();
     printQuads();
-    //printScopeList();
-    //printErrorList();
+    printScopeList();
+    printErrorList();
 
     fclose(fp);
     return 0;
