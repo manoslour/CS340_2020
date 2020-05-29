@@ -437,10 +437,10 @@ void patch_incomplete_jumps(void){
 	 
 	incomplete_jump* tmp = ij_head;
 	while (tmp != NULL){
-		if (tmp->iaddress == total)
-			instructions[tmp->instrNo].result = totalInstructions; 
+		if (tmp->iaddress == currQuad) // Allaksa apo total se currQuad. Must see again!
+			instructions[tmp->instrNo].result->val = currInstr; // Nomizw thelei currInstr anti gia totalINstr. Must see again!
 		else
-			instructions[tmp->instrNo].result = quads[tmp->iaddress].taddress; 
+			instructions[tmp->instrNo].result->val = quads[tmp->iaddress].taddress; 
 		tmp = tmp->next; 
 	}
 }
