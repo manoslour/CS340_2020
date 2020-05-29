@@ -93,6 +93,7 @@ typedef struct symbol {
 	unsigned int scope;
 	unsigned int line;
 	unsigned int iaddress;
+	unsigned int taddress;
 	symbol_t type;
 	scopespace_t space;
 	unsigned int offset;
