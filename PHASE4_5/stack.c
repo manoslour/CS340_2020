@@ -83,3 +83,48 @@ unsigned int popCounter(counterStack **root){
         return counter;
     }
 }
+
+//-------------------------------------------------------------------
+
+funcStack* initFuncStack(){
+    funcStack *tmp = (funcStack*) malloc(sizeof(funcStack));
+    tmp->next = NULL;
+    return tmp;
+}
+
+int isEmptyFunc(funcStack *root){
+    if(root == NULL)
+        return 1;
+    else
+        return 0;
+}
+
+symbol* peekFunc(funcStack *root){
+    if(isEmptyFunc(root)){
+        printf("Stack is empty\n");
+        return NULL;
+    }
+    else{
+        return root->func;
+    }
+}
+
+void pushFunc(funcStack **root, symbol* func){
+    funcStack *newNode = (funcStack*) malloc(sizeof(funcStack));
+    newNode->func = func;
+    newNode->next = *root;
+    *root = newNode;
+    printf("%s pushed to stack\n", func->name);
+}
+
+symbol* popFunc(funcStack **root){
+    symbol* func;
+    if(isEmptyFunc(*root)){
+        return NULL;
+    }
+    else{
+        func = peekFunc(*root);
+        *root = (*root)->next;
+        return func;
+    }
+}
