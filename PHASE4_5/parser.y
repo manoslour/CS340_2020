@@ -110,7 +110,7 @@ stmt:     expr SEMICOLON        {
                                   printf("Entered stmt: whilestmt\n");
                                   $$ = $1;
                                 }
-          |forstmt				      {	
+          |forstmt				      {
                                   fprintf(fp, "stmt: forstmt at line %d --> %s\n", yylineno, yytext);
                                   $$ = $1;
                                 }
@@ -355,7 +355,8 @@ term:     L_PAR expr R_PAR			    {
                                       check_arith($2, "-expr");
                                       $$ = newexpr(arithexpr_e);
                                       $$->sym = istempexpr($2) ? $2->sym : newtemp();
-                                      emit(uminus, $2, NULL, $$, -1, yylineno);
+                                      $2->numConst = -1 * $2->numConst;
+                                      emit(mul, $2, NULL, $$, -1, yylineno);
                                     }
           |NOT expr	                {
                                       fprintf(fp, "term: NOT expr at line %d --> %s\n", yylineno, yytext);
@@ -364,7 +365,7 @@ term:     L_PAR expr R_PAR			    {
                                       emit(not, $2, NULL, $$, -1, yylineno);
 
                                       //---MERIKH APOTIMHSH---
-                                      /*  
+                                      /*
                                       $$->truelist = $2->falselist;
                                       $$->falselist = $2->truelist;
                                       */
@@ -461,7 +462,7 @@ assignexpr: lvalue ASSIGN expr  {
                                     //KAI NA PROSTETHOUN TA 3 EXTRA QUADS.
                                       patchlist($3->truelist, nextquad());
                                       patchlist($3->falselist, nextquad()+2);
-                                    
+
                                       emit(assign, newexpr_constbool(1), NULL, $$, -1, yylineno);
                                       emit(jump, NULL, NULL, NULL, nextquad()+2, yylineno);
                                       emit(assign, newexpr_constbool(0), NULL, $$, -1, yylineno);
@@ -605,7 +606,7 @@ methodcall: DDOT ID L_PAR elist R_PAR {
                                       }
 				    ;
 
-elist:      expr                { 
+elist:      expr                {
                                   fprintf(fp, "elist: expr at line %d --> %s\n", yylineno, yytext);
                                   $$ = $1;
                                 }
@@ -684,7 +685,7 @@ indexedelem:	LCURLY_BR expr COLON expr RCURLY_BR {
 				      ;
 
 block:  blockstart blockend
-        |blockstart	stmtlist blockend	{	
+        |blockstart	stmtlist blockend	{
                                         fprintf(fp, "block: LCURLY_BR  stmtlist at line %d --> %s\n", yylineno, yytext);
                                         if(loopcounter != 0){
                                           breakpointer = $2;
@@ -757,12 +758,12 @@ funcbody: block {
 funcblockstart: {
                   printf("Entered funcblockstart\n");
                   printf("loopcounter before push = %d\n", loopcounter);
-                  pushCounter(&loopcounterStack, loopcounter); 
+                  pushCounter(&loopcounterStack, loopcounter);
                   loopcounter = 0;
                   printf("loopcounter after push = %d\n", loopcounter);
                 }
 
-funcblockend:   { 
+funcblockend:   {
                   printf("Entered funcblockend\n");
                   printf("loopcounter before pop = %d\n", loopcounter);
                   loopcounter = popCounter(&loopcounterStack);
@@ -783,7 +784,7 @@ const: REAL 		{
                   fprintf(fp, "const: FLEX_STRING at line %d --> %s\n", yylineno, yytext);
                   $$ = newexpr_conststring($1);
                 }
-       |NIL		  {	
+       |NIL		  {
                   fprintf(fp, "const: NIL at line %d --> %s\n", yylineno, yytext);
                   $$ = newexpr_conststring("nil");
                 }
@@ -917,7 +918,7 @@ forstmt:  forprefix N elist R_PAR N loopstmt N          {
                                                           patchlabel($7, $2+1); //closure jump
 
                                                           if(breakcount != 0){
-                                                            printf("$6->breaklist = %d\n", $6->breaklist);  
+                                                            printf("$6->breaklist = %d\n", $6->breaklist);
                                                             patchlist($6->breaklist, nextquad());
                                                           }
                                                           if(contcount != 0){
@@ -947,10 +948,10 @@ loopstart: { fprintf(fp, "loopstart: at line %d --> %s\n", yylineno, yytext); ++
 
 loopend:   { fprintf(fp, "loopend: at line %d --> %s\n", yylineno, yytext); --loopcounter;}
 
-loopstmt: loopstart stmt loopend  { 
+loopstmt: loopstart stmt loopend  {
                                     fprintf(fp, "loopstmt: loopstart stmt loopend at line %d --> %s\n", yylineno, yytext);
-                                    printf("Entered loopstmt: loopstart stmt loopend\n"); 
-                                    
+                                    printf("Entered loopstmt: loopstart stmt loopend\n");
+
                                     if(breakcount != 0 || contcount != 0){
                                       if(breakpointer != NULL){
                                         printf("Some magic happens\n");

@@ -17,12 +17,6 @@ unsigned int functionLocalOffset = 0;
 unsigned int formalArgOffset = 0;
 unsigned int scopeSpaceCounter = 1;
 
-//----------------------------------------------------------------------------------------------
-
-
-
-
-
 void resettemp() {tempcounter = 0;}
 
 unsigned int currscope() {return currentscope;}
@@ -57,7 +51,7 @@ symbol* tempInsert(char *name, unsigned int scope){
 	new_sym->next =  NULL;
 	new_sym->scope_next =  NULL;
 	new_sym->isActive = true;
-
+	new_sym->offset = currscopeoffset();
 	new_sym->name = strdup(name);
 
 	scopeListInsert(new_sym,scope);
@@ -99,6 +93,7 @@ void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, 
 	p->result = result;
 	p->label = label;
 	p->line = line;
+	p->taddress = -1;
 }
 
 expr* lvalue_expr(symbol* sym){
@@ -273,7 +268,40 @@ void printQuads(){
 	if(quadOutput == NULL)
 		printf("Error, cant open file\n");
 
-	fprintf(quadOutput, "\nQuad#\t\topcode\t\tresult\t\targ1\t\targ2\t\tlabel");
+
+
+		for (i = 0; i<currQuad; i++){
+
+			if((quads+i)->result == NULL)
+				printf("%s ", " ");
+			else if ((quads+i)->result->sym == NULL)
+				printf("%s ", " ");
+			else
+				printf(" <%s> offset : %d ", (quads+i)->result->sym->name, (quads+i)->result->sym->offset);
+
+
+
+			if((quads+i)->arg1 == NULL)
+				printf("%s ", " ");
+			else if ((quads+i)->arg1->sym == NULL)
+				printf("%s ", " ");
+			else
+				printf(" <%s> offset : %d ", (quads+i)->arg1->sym->name, (quads+i)->arg1->sym->offset);
+
+
+			if((quads+i)->arg2 == NULL)
+				printf("%s ", " ");
+			else if ((quads+i)->arg2->sym == NULL)
+				printf("%s ", " ");
+			else
+			printf(" <%s> offset : %d ", (quads+i)->arg2->sym->name, (quads+i)->arg2->sym->offset);
+
+
+			printf("\n" );
+		}
+
+
+	fprintf(quadOutput, "\nQuad#\t\topcode\t\tresult\t\targ1\t\targ2\t\tlabel\t\t OFFSET");
 	fprintf(quadOutput, "\n-------------------------------------------------------------------------------------");
 	for (i = 0; i < currQuad; i++){
 		opcode = strdup(translateopcode((quads+i)->op));
@@ -289,11 +317,11 @@ void printQuads(){
 					case constbool_e:
 						tmp = (int)(quads+i)->result->boolConst;
 						if(tmp == 0){
-							fprintf(quadOutput, "%13s\t", "FALSE"); 
+							fprintf(quadOutput, "%13s\t", "FALSE");
 							break;
 						}
 						else{
-							fprintf(quadOutput, "%12s\t", "TRUE"); 
+							fprintf(quadOutput, "%12s\t", "TRUE");
 							break;
 						}
 					case conststring_e:
@@ -316,11 +344,11 @@ void printQuads(){
 					case constbool_e:
 						tmp = (int)(quads+i)->arg1->boolConst;
 						if(tmp == 0){
-							fprintf(quadOutput, "%13s\t", "FALSE"); 
+							fprintf(quadOutput, "%13s\t", "FALSE");
 							break;
 						}
 						else{
-							fprintf(quadOutput, "%12s\t", "TRUE"); 
+							fprintf(quadOutput, "%12s\t", "TRUE");
 							break;
 						}
 					case conststring_e:
@@ -343,11 +371,11 @@ void printQuads(){
 					case constbool_e:
 						tmp = (int)(quads+i)->arg2->boolConst;
 						if(tmp == 0){
-							fprintf(quadOutput, "%13s\t", "FALSE"); 
+							fprintf(quadOutput, "%13s\t", "FALSE");
 							break;
 						}
 						else{
-							fprintf(quadOutput, "%12s\t", "TRUE"); 
+							fprintf(quadOutput, "%12s\t", "TRUE");
 							break;
 						}
 					case conststring_e:
