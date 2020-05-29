@@ -33,11 +33,17 @@ symbol* newtemp(){
 	char* name = strdup(newtempname());
 	sym = scopelookup(name, currscope());
 
-	if(sym == NULL)
+	if(sym == NULL){
 		// !!! MUST SEE AGAIN !!!
-		return tempInsert(name, currscope());
-	else
-		return sym;
+		//return tempInsert(name, currscope());
+		sym =  hashInsert(name, currscope(), -1, var_s, currscopespace(), currscopeoffset());
+		inccurrscopeoffset();
+	}
+	else{
+		sym->scope = currscopespace();
+		sym->offset = currscopeoffset();
+	}
+	return sym;
 }
 
 symbol* tempInsert(char *name, unsigned int scope){
@@ -53,6 +59,7 @@ symbol* tempInsert(char *name, unsigned int scope){
 	new_sym->isActive = true;
 
 	new_sym->name = strdup(name);
+	new_sym->scope = scope;
 
 	scopeListInsert(new_sym,scope);
 	if (HashTable[pos] == NULL){
@@ -726,12 +733,12 @@ void printScopeList(){
 		printf("\n-----------------------------  "YEL"SCOPE #%d"RESET"  ----------------------------- \n\n",temp->scope );
 		tmp = temp->symbols;
 		while (tmp != NULL){
-			if (tmp->type == var_s) printf("\"%s\"\t [Variable]\t (line %d)\t (scope %d)"
-				,tmp->name,tmp->line,tmp->scope);
-			else if (tmp->type == programfunc_s)printf("\"%s\"\t [Program Function]\t (line %d)\t (scope %d)"
-				,tmp->name,tmp->line,tmp->scope);
-			else if (tmp->type == libraryfunc_s)printf("\"%s\"\t [Library Function]\t (line %d)\t (scope %d)"
-				,tmp->name,tmp->line,tmp->scope);
+			if (tmp->type == var_s) printf("\"%s\"\t [Variable]\t (line %d)\t (scope %d)\t (offset %d)"
+				,tmp->name,tmp->line,tmp->scope, tmp->offset);
+			else if (tmp->type == programfunc_s)printf("\"%s\"\t [Program Function]\t (line %d)\t (scope %d)\t (offset %d)"
+				,tmp->name,tmp->line,tmp->scope, tmp->offset);
+			else if (tmp->type == libraryfunc_s)printf("\"%s\"\t [Library Function]\t (line %d)\t (scope %d)\t (offset %d)"
+				,tmp->name,tmp->line,tmp->scope, tmp->offset);
 
 			printf("\n");
 			tmp = tmp->scope_next;
