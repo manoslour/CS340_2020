@@ -1,3 +1,4 @@
+#include "stack.h"
 #include "target.h"
 #include "symTable.h"
 
@@ -23,6 +24,8 @@ unsigned totalNamedLibfuncs = 0;
 
 userfunc* userFuncs = (userfunc*) 0;
 unsigned totalUserFuncs = 0;
+
+extern funcStack *funcstack;
 
 //-------------------------------------------------
 
@@ -407,6 +410,20 @@ void generate_GETRETVAL (quad* q){
 	make_operand(q->result, t->result);
 	make_retvaloperand(t->arg1); 
 	emit_instr(t); 
+}
+
+void generate_FUNCSTART(quad* q){
+	symbol* f = q->result->sym;
+	f->taddress = nextinstructionlabel();
+	q->taddress = nextinstructionlabel();
+
+	userfuncs_newfunc(f);
+	pushFunc(funcstack, f); // MUST SEE AGAIN!!
+
+	instruction* t = (instruction*) malloc(sizeof(instruction));
+	t->opcode = funcenter_v;
+	make_operand(q->result, t->result);
+	emit_instr(t);
 }
 
 void exec_generate(void){
