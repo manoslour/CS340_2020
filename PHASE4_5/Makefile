@@ -1,7 +1,7 @@
 all: calc
 
-calc: scanner.c parser.c symTable.o stack.o
-	gcc -o calc scanner.c parser.c symTable.o stack.o
+calc: scanner.c parser.c symTable.o stack.o target.o
+	gcc -o calc scanner.c parser.c symTable.o stack.o target.o
 
 scanner.c: scanner.l
 	flex --outfile=scanner.c scanner.l
@@ -14,6 +14,9 @@ symTable.o: symTable.c
 
 stack.o: stack.c
 	gcc -c stack.c
+
+target.o: target.c
+	gcc -c target.c
 
 clean:
 	rm *o
