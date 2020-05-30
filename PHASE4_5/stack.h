@@ -1,6 +1,9 @@
+
+#ifndef _STACK_H_
+#define _STACK_H_
+
 #include <stdio.h>
 #include <stdlib.h>
-#include "target.h"
 
 typedef struct offsetStack{
     unsigned int numoflocals;
@@ -11,11 +14,6 @@ typedef struct counterStack{
     unsigned int loopcounter;
     struct counterStack* next;
 }counterStack;
-
-typedef struct funcStack {
-    symbol* func;
-    struct funcStack* next;
-}funcStack;
 
 offsetStack* initOffsetStack();
 int isEmptyOffset(offsetStack *root);
@@ -29,8 +27,4 @@ unsigned int peekCounter(counterStack *root);
 void pushCounter(counterStack **root, unsigned int counter);
 unsigned int popCounter(counterStack **root);
 
-funcStack* initFuncStack();
-int isEmptyFunc(funcStack *root);
-symbol* peekFunc(funcStack *root);
-void pushFunc(funcStack **root, symbol* func);
-symbol* popFunc(funcStack **root);
+#endif
