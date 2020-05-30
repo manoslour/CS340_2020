@@ -25,10 +25,10 @@ typedef enum {
 }SymbolType;
 
 typedef enum {
-	assign,			add,			sub,
-	mul,			divide,			mod,
-	uminus,			and,			or,
-	not,			if_eq,			if_noteq,
+	add,			sub,			mul,			
+	divide,			mod,			tablecreate,
+	/*uminus,*/		and,			or,
+	not,			assign,if_eq,			if_noteq,
 	if_lesseq,		if_greatereq,	if_less,
 	if_greater,		call,			param,
 	ret,			getretval,		funcstart,
@@ -93,7 +93,8 @@ typedef struct symbol {
 	unsigned int scope;
 	unsigned int line;
 	unsigned int iaddress;
-	unsigned int taddress;
+	unsigned int taddress; //PHASE4
+	unsigned int returnList; //PHASE4
 	symbol_t type;
 	scopespace_t space;
 	unsigned int offset;
