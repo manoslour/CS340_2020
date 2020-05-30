@@ -34,7 +34,6 @@ symbol* newtemp(){
 	sym = scopelookup(name, currscope());
 
 	if(sym == NULL){
-		// !!! MUST SEE AGAIN !!!
 		//return tempInsert(name, currscope());
 		sym =  hashInsert(name, currscope(), 0, var_s, currscopespace(), currscopeoffset());
 		inccurrscopeoffset();
