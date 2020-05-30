@@ -1,7 +1,8 @@
  %{
   #include <stdio.h>
   #include "stack.h"
-  #include "symTable.h"
+  #include "target.h"
+
   int yyerror(char* yaccProvidedMessage);
   extern int yylex(void);
   FILE *fp;
@@ -21,7 +22,6 @@
   unsigned int funcJump = 0;
   offsetStack *scopeoffsetStack = NULL;
   counterStack *loopcounterStack = NULL;
-  funcStack *funcstack = NULL;
   stmt_t *breakpointer = NULL;
 %}
 
@@ -287,8 +287,9 @@ term:     L_PAR expr R_PAR			    {
                                       fprintf(fp, "term: MINUS expr at line %d --> %s\n", yylineno, yytext);
                                       check_arith($2, "-expr");
                                       $$ = newexpr(arithexpr_e);
+                                      $2->numConst = -1 * $2->numConst; 
                                       $$->sym = istempexpr($2) ? $2->sym : newtemp();
-                                      emit(uminus, $2, NULL, $$, -1, yylineno);
+                                      emit(mul, $2, NULL, $$, -1, yylineno);
                                     }
           |NOT expr	                {
                                       fprintf(fp, "term: NOT expr at line %d --> %s\n", yylineno, yytext);
@@ -907,7 +908,6 @@ int main(int argc, char** argv){
 
     scopeoffsetStack = initOffsetStack();
     loopcounterStack = initCounterStack();
-    funcstack = initFuncStack();
 
     initialize();
     yyparse();
@@ -915,6 +915,10 @@ int main(int argc, char** argv){
     printScopeList();
     printErrorList();
 
+    exec_generate();
+    patch_incomplete_jumps();
+    printInstrucrtions();
+  
     fclose(fp);
     return 0;
 }
