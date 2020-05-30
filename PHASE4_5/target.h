@@ -1,21 +1,15 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#include <unistd.h>
+#ifndef _TARGET_H_
+#define _TARGET_H_
+
 #include "symTable.h"
 
-#define AVM_STACKSIZE 4096
-#define AVM_WIPEOUT(m) memset(&(m), 0, sizeof(m))
-#define AVM_TABLE_HASHSIZE 211
 //--------------------------------------------------------------------------
-#define CURR_INSTR_SIZE (totalInstructions * sizeof(instruction))
-#define NEW_INSTR_SIZE (EXPAND_SIZE * sizeof(instruction) + CURR_INSTR_SIZE)
 #define EXPAND_INSTR_SIZE 1024
+#define CURR_INSTR_SIZE (totalInstructions * sizeof(struct instruction))
+#define NEW_INSTR_SIZE (EXPAND_INSTR_SIZE * sizeof(struct instruction) + CURR_INSTR_SIZE)
 
 #define ARRAY_SIZE 100
 #define EXPAND_ARRAYS_SIZE 10
-
 //--------------------------------------------------------------------------
 
 typedef enum {
@@ -43,17 +37,6 @@ typedef enum {
     retval_a
 }vmarg_t;
 
-typedef enum {
-    number_m,
-    string_m,
-    bool_m,
-    table_m,
-    userfunc_m,
-    libfunc_m,
-    nil_m,
-    undef_m
-}avm_memcell_t;
-
 typedef struct vmarg {
     vmarg_t type;
     unsigned val;
@@ -79,111 +62,54 @@ typedef struct incomplete_jump {
     struct incomplete_jump* next; 
 }incomplete_jump;
 
-typedef struct avm_memcell {
-    avm_memcell_t type;
-    union {
-        double numVal;
-        char* strVal;
-        unsigned char boolVal;
-        avm_table* tableVal;
-        unsigned funcVal;
-        char* libfuncVal;
-    }data;
-}avm_memcell;
-
-typedef struct avm_table_bucket {
-    avm_memcell key;
-    avm_memcell value;
-    struct avm_table_bucket* next;
-}avm_table_bucket;
-
-typedef struct avm_table{
-    unsigned refCounter;
-    avm_table_bucket* strIndexed[AVM_TABLE_HASHSIZE];
-    avm_table_bucket* numIndexed[AVM_TABLE_HASHSIZE];
-    unsigned total;
-}avm_table;
-
-avm_memcell stack[AVM_STACKSIZE];
-
-static void avm_initstack(void);
-void avm_tableincrefcounter(avm_table* t);
-void avm_tabledecrefcounter(avm_table* t);
-void avm_tablebucketsinit(avm_table_bucket** p);
-avm_table* avm_tablenew(void);
-void avm_memcellclear(avm_memcell* m);
-void avm_tablebucketsdestroy(avm_table_bucket** p);
-void avm_tabledestroy(avm_table* t);
-avm_memcell* avm_tablegetelem(avm_memcell* key);
-void avm_tablesetelem(avm_memcell* key, avm_memcell* value);
+typedef struct funcStack {
+    symbol* func;
+    struct funcStack* next;
+}funcStack;
 
 //-------------------------------------------------
 
 void expandInstr();
 void emit_instr(instruction *t);
 unsigned currprocessedquad();
+typedef void (*generator_func_t) (quad*); 
 
 //-------------------------------------------------
 
-extern void generate_ADD (quad*);
-extern void generate_SUB (quad*);
-extern void generate_MUL (quad*);
-extern void generate_DIV (quad*);
-extern void generate_MOD (quad*);
-extern void generate_NEWTABLE (quad*);
-extern void generate_TABLEGETELM (quad*);
-extern void generate_TABLESETELM (quad*);
-extern void generate_ASSIGN (quad*);
-extern void generate_NOP (quad*);
-extern void generate_JUMP (quad*);
-extern void generate_IF_EQ (quad*);
-extern void generate_IF_NOTEQ (quad*);
-extern void generate_IF_GREATER (quad*);
-extern void generate_IF_GREATEREQ (quad*);
-extern void generate_IF_LESS (quad*);
-extern void generate_IF_LESSEQ (quad*);
-extern void generate_NOT (quad*);
-extern void generate_OR (quad*);
-extern void generate_PARAM (quad*);
-extern void generate_CALL (quad*);
-extern void generate_GETRETVAL (quad*);
-extern void generate_FUNCSTART (quad*);
-extern void generate_RETURN (quad*);
-extern void generate_FUNCEND (quad*);
 
-typedef void (*generator_func_t) (quad*); 
-
-generator_func_t generators[] = {
-    generate_ADD,
-    generate_SUB,
-    generate_MUL,
-    generate_DIV,
-    generate_MOD,
-    generate_NEWTABLE,
-    generate_TABLEGETELM,
-    generate_TABLESETELM,
-    generate_ASSIGN,
-    generate_NOP,
-    generate_JUMP,
-    generate_IF_EQ,
-    generate_IF_NOTEQ,
-    generate_IF_GREATER,
-    generate_IF_GREATEREQ,
-    generate_IF_LESS,
-    generate_IF_LESSEQ,
-    generate_NOT,
-    generate_OR,
-    generate_PARAM,
-    generate_CALL,
-    generate_GETRETVAL,
-    generate_FUNCSTART,
-    generate_RETURN,
-    generate_FUNCEND,
-};
 
 void generate (vmopcode op, quad* quad);
 void generate_relational(vmopcode op, quad* quad);
 void exec_generate(void);
+
+
+void generate_ADD (quad*);
+void generate_SUB (quad*);
+void generate_MUL (quad*);
+void generate_DIV (quad*);
+void generate_MOD (quad*);
+void generate_NEWTABLE (quad*);
+void generate_TABLEGETELM (quad*);
+void generate_TABLESETELM (quad*);
+void generate_ASSIGN (quad*);
+void generate_NOP (quad*);
+void generate_JUMP (quad*);
+void generate_IF_EQ (quad*);
+void generate_IF_NOTEQ (quad*);
+void generate_IF_GREATER (quad*);
+void generate_IF_GREATEREQ (quad*);
+void generate_IF_LESS (quad*);
+void generate_IF_LESSEQ (quad*);
+void generate_NOT (quad*);
+void generate_OR (quad*);
+void generate_PARAM (quad*);
+void generate_CALL (quad*);
+void generate_GETRETVAL (quad*);
+void generate_FUNCSTART (quad*);
+void generate_RETURN (quad*);
+void generate_FUNCEND (quad*);
+
+
 
 void make_operand (expr* e, vmarg* arg);
 void make_numberoperand (vmarg* arg, double val);
@@ -200,3 +126,16 @@ unsigned consts_newstring (char* s);
 unsigned consts_newnumber (double n);
 unsigned libfuncs_newused (char* s); 
 unsigned userfuncs_newfunc (symbol* sym); 
+
+int isEmptyFunc();
+symbol* peekFunc();
+void pushFunc(symbol* func);
+symbol* popFunc();
+
+void append(symbol* sym, int label);
+void reset_operand(vmarg* v);
+void backpatch(symbol* sym, int label);
+
+void printInstrucrtions();
+
+#endif
