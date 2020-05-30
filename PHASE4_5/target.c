@@ -1,6 +1,4 @@
-#include "stack.h"
 #include "target.h"
-#include "symTable.h"
 
 extern quad *quads;
 extern unsigned total;
@@ -9,7 +7,7 @@ extern unsigned currQuad;
 unsigned ij_total = 0;
 incomplete_jump* ij_head = (incomplete_jump*) 0;
 
-instruction *instructions = (instruction*) 0;
+instruction* instructions = (instruction*) 0;
 unsigned totalInstructions = 0;
 unsigned currInstr = 0;
 
@@ -25,7 +23,35 @@ unsigned totalNamedLibfuncs = 0;
 userfunc* userFuncs = (userfunc*) 0;
 unsigned totalUserFuncs = 0;
 
-extern funcStack *funcstack;
+funcStack* funcstack = (funcStack*) 0;
+
+ generator_func_t generators[] = {
+    generate_ADD,
+    generate_SUB,
+    generate_MUL,
+    generate_DIV,
+    generate_MOD,
+    generate_NEWTABLE,
+    generate_TABLEGETELM,
+    generate_TABLESETELM,
+    generate_ASSIGN,
+    generate_NOP,
+    generate_JUMP,
+    generate_IF_EQ,
+    generate_IF_NOTEQ,
+    generate_IF_GREATER,
+    generate_IF_GREATEREQ,
+    generate_IF_LESS,
+    generate_IF_LESSEQ,
+    generate_NOT,
+    generate_OR,
+    generate_PARAM,
+    generate_CALL,
+    generate_GETRETVAL,
+    generate_FUNCSTART,
+    generate_RETURN,
+    generate_FUNCEND
+};
 
 //-------------------------------------------------
 
@@ -103,10 +129,13 @@ unsigned userfuncs_newfunc(symbol* sym){
 }
 
 void expandInstr(){
-
+	printf("Entered expand instr\n");
 	assert(totalInstructions == currInstr);
+	printf("Edw kala\n");
 	instruction* p = (instruction*) malloc(NEW_INSTR_SIZE);
+	printf("problema\n");
 	if(instructions){
+		printf("entered if\n");
 		memcpy(p, instructions, CURR_INSTR_SIZE);
 		free(instructions);
 	}
@@ -115,11 +144,24 @@ void expandInstr(){
 }
 
 void emit_instr(instruction *t){
+	printf("Entered emit_instr\n");
 
-	if(currInstr == totalInstructions)
-		expandInstr();
+	// if(currInstr == totalInstructions){
+	// 	printf("ENtereed expand\n");
+	// 	expandInstr();
+	// }
 
-	instruction* i = instructions + currInstr++;
+	if (instructions == NULL)
+		instructions = (instruction*) malloc(sizeof(instruction*));
+	else {
+		instruction* new_instr = (instruction*) realloc(instructions, (totalInstructions + 1) * sizeof(instruction));
+		instructions = new_instr; 
+	} 
+
+	printf("EXpand done\n");
+	instruction* i =(instruction*) malloc(sizeof(instruction));
+	i = instructions ;
+	currInstr++;
 	i->opcode = t->opcode;
 	i->result = t->result;
 	i->arg1 = t->arg1;
@@ -135,65 +177,50 @@ unsigned currprocessedquad(){
 	return currQuad;
 }
 
+int isEmptyFunc(){
+    if(funcstack == NULL)
+        return 1;
+    else
+        return 0;
+}
+
+symbol* peekFunc(){
+    if(isEmptyFunc()){
+        printf("Stack is empty\n");
+        return NULL;
+    }
+    else
+        return funcstack->func;
+}
+
+void pushFunc(symbol* func){
+    funcStack *newNode = (funcStack*) malloc(sizeof(funcStack));
+    newNode->func = func;
+    newNode->next = funcstack;
+    funcstack = newNode;
+    printf("%s pushed to stack\n", func->name);
+}
+
+symbol* popFunc(){
+    symbol* func;
+    if(isEmptyFunc())
+        return NULL;
+    else{
+        func = peekFunc();
+        funcstack = funcstack->next;
+        return func;
+    }
+}
+
 //-------------------------------------------------
 
-static void avm_initstack(void) {
-    for(unsigned int i = 0; i < AVM_STACKSIZE; ++i){
-        AVM_WIPEOUT(stack[i]);
-        stack[i].type = undef_m;
-    }
-}
-
-void avm_tableincrefcounter(avm_table* t){
-    ++t->refCounter;
-}
-
-void avm_tabledecrefcounter(avm_table* t){
-    assert(t->refCounter > 0);
-    if(!--t->refCounter)
-        avm_tabledestroy(t);
-}
-
-void avm_tablebucketsinit(avm_table_bucket** p){
-    for(unsigned i = 0; i < AVM_TABLE_HASHSIZE; ++i)
-        p[i] = (avm_table_bucket*) 0;
-}
-
-avm_table* avm_tablenew(void){
-    avm_table* t = (avm_table*) malloc(sizeof(avm_table));
-    AVM_WIPEOUT(*t);
-
-    t->refCounter = t->total = 0;
-    avm_tablebucketsinit(t->numIndexed);
-    avm_tablebucketsinit(t->strIndexed);
-
-    return t;
-}
-
-void avm_memcellclear(avm_memcell* m){
-    //MUST SEE!!
-}
-
-void avm_tablebucketsdestroy(avm_table_bucket** p){
-    for(unsigned i = 0; i < AVM_TABLE_HASHSIZE; ++i, ++p){
-        for(avm_table_bucket* b = *p; b;){
-            avm_table_bucket* del = b;
-            b = b->next;
-            avm_memcellclear(&del->key);
-            avm_memcellclear(&del->value);
-            free(del);
-        }
-        p[i] = (avm_table_bucket*) 0;
-    }
-}
-
-void avm_tabledestroy(avm_table* t){
-    avm_tablebucketsdestroy(t->strIndexed);
-    avm_tablebucketsdestroy(t->numIndexed);
-    free(t);
-}
-
 void make_operand (expr* e, vmarg* arg){
+
+	printf("Entered make_opernad\n");
+	if(e == NULL ) 
+		printf("e = null\n");
+	if (arg == NULL)
+		printf("arg = null\n");
 	
 	switch (e->type){
 		case var_e :
@@ -267,14 +294,23 @@ void make_retvaloperand (vmarg *arg){
 }
 
 void generate (vmopcode op, quad* quad ){
+	printf("Entered generate\n");
 	instruction* t = (instruction*) malloc(sizeof(instruction));  
 	t->opcode = op;
 	// MUST SEE IF IT WANTS POINTER(t->arg1) OR POINTER_ADDRESS(&t->arg1)
-	make_operand(quad->arg1, t->arg1);
-	make_operand(quad->arg2, t->arg2);
-	make_operand(quad->result, t->result);
+	if(quad->arg1 != NULL && t->arg1 != NULL)
+		make_operand(quad->arg1, t->arg1);
+	printf("Ok\n");
+	if(quad->arg2 != NULL && t->arg2 != NULL)
+		make_operand(quad->arg2, t->arg2);
+	printf("OK2\n");
+	if(quad->result != NULL && t->result != NULL)	
+		make_operand(quad->result, t->result);
+	printf("OK3\n");
 	quad->taddress = nextinstructionlabel();
+	printf("OK4\n");
 	emit_instr(t);
+	printf("Finished\n");
 }
 
 void generate_relational(vmopcode op, quad* quad){
@@ -301,12 +337,14 @@ void generate_MUL(quad* q) { generate(mul_v, q); }
 void generate_DIV(quad* q) { generate(div_v, q); }
 void generate_MOD(quad* q) { generate(mod_v, q); }
 
-void genetate_NEWTABLE (quad* q) { generate(newtable_v, q); }
-void genetate_TABLEGETELM (quad* q) { generate(tablegetelem_v, q); }
-void genetate_TABLESETELM (quad* q) { generate(tablesetelem_v, q); }
-void genetate_ASSIGN (quad* q) { generate(assign_v, q);}
+void generate_NEWTABLE (quad* q) { generate(newtable_v, q); }
+void generate_TABLEGETELM (quad* q) { generate(tablegetelem_v, q); }
+void generate_TABLESETELM (quad* q) { generate(tablesetelem_v, q); }
+void generate_ASSIGN (quad* q) { 
+	printf("Entered generate_assign\n");
+	generate(assign_v, q);}
 
-void genetate_NOP (quad* q){
+void generate_NOP (quad* q){
 	instruction* t = (instruction*) malloc(sizeof(instruction));  
 	t->opcode = nop_v;
 	emit_instr(t);
@@ -315,10 +353,10 @@ void genetate_NOP (quad* q){
 void generate_JUMP(quad* q) { generate_relational(jump_v, q); }
 void generate_IF_EQ(quad* q) { generate_relational(jeq_v, q); }
 void generate_IF_NOTEQ(quad* q) { generate_relational(jne_v, q); }
-void generate_GREATER(quad* q) { generate_relational(jgt_v, q); }
-void generate_GREATEREQ(quad* q) { generate_relational(jge_v, q); }
-void generate_LESS(quad* q) { generate_relational(jlt_v, q); }
-void generate_IFLESSEQ(quad* q) { generate_relational(jle_v, q); }
+void generate_IF_GREATER(quad* q) { generate_relational(jgt_v, q); }
+void generate_IF_GREATEREQ(quad* q) { generate_relational(jge_v, q); }
+void generate_IF_LESS(quad* q) { generate_relational(jlt_v, q); }
+void generate_IF_LESSEQ(quad* q) { generate_relational(jle_v, q); }
 
 void generate_NOT (quad* q){
 	q->taddress = nextinstructionlabel();
@@ -333,20 +371,20 @@ void generate_NOT (quad* q){
 
 	t->opcode = assign_v; 
 	make_booloperand(t->arg1, false); 
-	reset_operand(t->arg2); 
+	// reset_operand(t->arg2); 
 	make_operand(q->result, t->result); 
 	emit_instr(t);
 
 	t->opcode = jump_v; 
-	reset_operand(t->arg1);
-	reset_operand(t->arg2);
+	// reset_operand(t->arg1);
+	// reset_operand(t->arg2);
 	t->result->type = label_a; 
 	t->result->val = nextinstructionlabel() + 2; 
 	emit_instr(t);
 
 	t->opcode = assign_v; 
 	make_booloperand(t->arg1, true); 
-	reset_operand(t->arg2); 
+	// reset_operand(t->arg2); 
 	make_operand(q->result, t->result); 
 	emit_instr(t);
 }
@@ -368,20 +406,20 @@ void generate_OR (quad* q){
 
 	t->opcode = assign_v; 
 	make_booloperand(t->arg1, false); 
-	reset_operand(t->arg2); 
+	// reset_operand(t->arg2); 
 	make_operand(q->result, t->result); 
 	emit_instr(t); 
 
 	t->opcode = jump_v; 
-	reset_operand(t->arg1); 
-	reset_operand(t->arg2); 
+	// reset_operand(t->arg1); 
+	// reset_operand(t->arg2); 
 	t->result->type = label_a; 
 	t->result->val = nextinstructionlabel() + 2; 
 	emit_instr(t);
 
 	t->opcode = assign_v; 
 	make_booloperand(t->arg1, true); 
-	reset_operand(t->arg2);
+	// reset_operand(t->arg2);
 	make_operand(q->result, t->result); 
 	emit_instr(t);
 }
@@ -418,7 +456,7 @@ void generate_FUNCSTART(quad* q){
 	q->taddress = nextinstructionlabel();
 
 	userfuncs_newfunc(f);
-	pushFunc(funcstack, f); // MUST SEE AGAIN!!
+	pushFunc(f); // MUST SEE AGAIN!!
 
 	instruction* t = (instruction*) malloc(sizeof(instruction));
 	t->opcode = funcenter_v;
@@ -426,9 +464,55 @@ void generate_FUNCSTART(quad* q){
 	emit_instr(t);
 }
 
+void generate_RETURN(quad* q){
+	q->taddress = nextinstructionlabel();
+	instruction* t = (instruction*) malloc(sizeof(instruction));
+	t->opcode = assign_v;
+	make_retvaloperand(t->result);
+	make_operand(q->arg1, t->arg1);
+	emit_instr(t);
+
+	symbol* f = popFunc();
+	append(f, nextinstructionlabel());
+
+	t->opcode = jump_v;
+	reset_operand(t->arg1);
+	reset_operand(t->arg2);
+
+	t->result->type = label_a;
+	emit_instr(t);
+}
+
+void generate_FUNCEND(quad* q){
+	symbol* f = popFunc();
+	backpatch(f, nextinstructionlabel());
+
+	q->taddress = nextinstructionlabel();
+	instruction* t = (instruction*) malloc(sizeof(instruction));
+	t->opcode = funcexit_v;
+	make_operand(q->result, t->result);
+	emit_instr(t);	
+}
+
+void backpatch(symbol* sym, int label){
+	sym->returnList = label;
+}
+
+void reset_operand(vmarg* v){
+	v->type = nil_a;
+	v->val = -1;
+}
+
+void append(symbol* sym, int label){
+	sym->returnList = label; 
+}
+
 void exec_generate(void){
-	for(unsigned i = 0; i < total; ++i)
+	for(unsigned i = 0; i < total; ++i){
+		printf("Total = %d\n", total);
+		printf("opcode = %d\n", quads[i].op);
 		(*generators[quads[i].op])(quads+i);
+	}
 }
 
 void add_incomplete_jump(unsigned instNo, unsigned iaddress){
@@ -507,4 +591,26 @@ char *translateopcode_v(vmopcode opcode){
 		case 23 : name = "jump"; break;
 	}
 	return name;
+}
+
+void printInstrucrtions () {
+
+	printf("instrNo\topcode\targ1\targ2\tresult\tline\n");
+	printf("--------------------------------------------\n");
+
+	for(int i = 0; i < currInstr; i++){
+		printf("%d\t", i);
+		printf("%s\t", translateopcode_v(instructions[i].opcode));
+		
+		if(instructions[i].arg1 == NULL) printf("%s\t", "");
+		else printf("| %d , %d   ||", instructions[i].arg1->type, instructions[i].arg1->val);
+		
+		if(instructions[i].arg2 == NULL) printf("%s\t", "");
+		else printf("   %d , %d   ||", instructions[i].arg2->type, instructions[i].arg2->val);
+
+		if(instructions[i].result == NULL) printf("%s\t", "");
+		else printf("   %d , %d\t", instructions[i].result->type, instructions[i].result->val);
+
+		printf("%d\n", instructions[i].srcLine);
+	}
 }
