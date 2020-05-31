@@ -918,7 +918,6 @@ int main(int argc, char** argv){
     exec_generate();
     patch_incomplete_jumps();
     printInstrucrtions();
-  
     fclose(fp);
     return 0;
 }
