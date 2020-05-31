@@ -64,14 +64,10 @@ typedef struct funcStack {
     struct funcStack* next;
 }funcStack;
 
-//-------------------------------------------------
-
 void expandInstr();
 void emit_instr(instruction *t);
 unsigned currprocessedquad();
 typedef void (*generator_func_t) (quad*); 
-
-//-------------------------------------------------
 
 void generate (vmopcode op, quad* quad);
 void generate_relational(vmopcode op, quad* quad);
@@ -130,11 +126,10 @@ void append(symbol* sym, int label);
 void reset_operand(vmarg* v);
 void backpatch(symbol* sym, int label);
 
-void printInstrucrtions();
+void printInstructions();
 void print_array();
 
 instruction* createInstruction ();
-
 
 #endif
 

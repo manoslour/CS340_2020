@@ -143,10 +143,6 @@ unsigned userfuncs_newfunc(symbol* sym){
 
 void expandInstr(){
 
-
-
-
-
 	// printf("Entered expand instr\n");
 	// printf("TOtalinstr = %d | currINstr = %d\n", totalInstructions, currInstr);
 
@@ -167,7 +163,7 @@ void expandInstr(){
 void emit_instr(instruction *t){
 	printf("Entered emit_instr\n");
 
-
+	// EXPAND INSTRUCTIONS
 	if (instructions == NULL)
 		instructions = (instruction*) malloc(sizeof(instruction));
 	else {
@@ -183,17 +179,6 @@ void emit_instr(instruction *t){
 	i->arg1 = t->arg1;
 	i->arg2 = t->arg2;
 	i->srcLine = t->srcLine;
-
-	printf("CurrInstr = %d\n", currInstr);
-	printf("i->opcode = %d\n", i->opcode);
-	if(i->arg1)
-		printf("i->arg1 = %d, %d\n", i->arg1->type, i->arg1->val);
-	if(i->arg2)
-		printf("i->arg2 = %d, %d\n", i->arg2->type, i->arg2->val);
-	if(i->result)
-		printf("i->result = %d, %d\n", i->result->type, i->result->val);
-	if(i->srcLine)
-		printf("i->srcLine = %d\n", i->srcLine);
 
 	currInstr++;
 	printf("Exiting emit_instr\n");
@@ -233,18 +218,26 @@ void pushFunc(symbol* func){
 
 symbol* popFunc(){
 	peekFunc();
-	printf("Entered popFunc\n");
     symbol* func;
     if(isEmptyFunc()){
-		printf("Is empty\n");
         return NULL;
 	}
     else{
-		printf("Etered elese\n");
         func = peekFunc();
         funcstack = funcstack->next;
         return func;
     }
+}
+
+instruction* createInstruction (){
+
+	instruction* t = malloc(sizeof(instruction)); 
+
+	t->arg1 = malloc(sizeof(vmarg));
+	t->arg2 = malloc(sizeof(vmarg));
+	t->result = malloc(sizeof(vmarg));
+
+	return t; 
 }
 
 //-------------------------------------------------
@@ -299,8 +292,6 @@ void make_operand (expr* e, vmarg* arg){
 		case programfunc_e : {
 			printf("programfunc_e case \n");
 			arg->type = userfunc_a ; 
-			//arg->val = e->sym->taddress;
-			/*or alternatively*/
 			arg->val = userfuncs_newfunc(e->sym);
 			break; 
 		} 
@@ -312,10 +303,6 @@ void make_operand (expr* e, vmarg* arg){
 		}
 		default: assert(0);
 	}
-	if (arg != NULL){
-		printf("arg type = %d , val = %d\n\n", arg->type, arg->val);
-	}
-
 }
 
 void generate (vmopcode op, quad* quad ){
@@ -351,11 +338,8 @@ void make_numberoperand (vmarg* arg, double val){
 }
 
 void make_booloperand (vmarg *arg, unsigned val){
-	printf("ENtered make_booloperand\n");
 	arg->val = val; 
 	arg->type = bool_a;
-
-	printf("arg->val = %d\n", arg->val);
 }
 
 void make_retvaloperand (vmarg *arg){ 
@@ -367,28 +351,21 @@ void make_retvaloperand (vmarg *arg){
 void generate_relational(vmopcode op, quad* quad){
 	instruction* t = (instruction*) malloc(sizeof(instruction)); 
 	t->opcode = op;
-	printf("gen_realtional opcode = %d\n", t->opcode);
 	t->arg1 = malloc(sizeof(vmarg));
 	t->arg2 = malloc(sizeof(vmarg));
 	t->result = malloc(sizeof(vmarg));
 
-	if(quad->arg1){
-		printf("arg1 make_opernand\n");
+	if(quad->arg1)
 		make_operand(quad->arg1, t->arg1);
-	}
 	else
 		t->arg1->type = t->arg1->val = -1;
-	if(quad->arg2){
-		printf("arg2 make_opernand\n");
+	if(quad->arg2)
 		make_operand(quad->arg2, t->arg2);
-	}	
 	else
 		t->arg2->type = t->arg2->val = -1;
 
 	t->result->type = label_a;
 
-	printf("quad->label = %d\n", quad->label);
-	printf("currProcessedquad = %d\n", currprocessedquad());
 	if(quad->label < currprocessedquad())
 		t->result->val = quads[quad->label].taddress;
 	else
@@ -396,6 +373,7 @@ void generate_relational(vmopcode op, quad* quad){
 	
 	quad->taddress = nextinstructionlabel();
 	t->srcLine = quad->line;
+
 	emit_instr(t);
 }
 
@@ -408,20 +386,17 @@ void generate_UMINUS(quad* q) { /*DOES NOTHING*/ }
 void generate_NEWTABLE (quad* q) { generate(newtable_v, q); }
 void generate_TABLEGETELM (quad* q) { generate(tablegetelem_v, q); }
 void generate_TABLESETELM (quad* q) { generate(tablesetelem_v, q); }
-void generate_ASSIGN (quad* q) { 
-	printf("Entered generate_assign\n");
-	generate(assign_v, q);}
+void generate_ASSIGN (quad* q) { generate(assign_v, q); }
 
 void generate_NOP (quad* q){
-	
-	instruction* t = (instruction*) malloc(sizeof(instruction));  
+	instruction* t = createInstruction();
 	t->opcode = nop_v;
 	emit_instr(t);
 }
 void generate_JUMP(quad* q) { generate_relational(jump_v, q); }
 void generate_IF_EQ(quad* q) { generate_relational(jeq_v, q); }
 void generate_IF_NOTEQ(quad* q) { generate_relational(jne_v, q); }
-void generate_IF_GREATER(quad* q) { printf("Entered gen_IFGREATER\n");generate_relational(jgt_v, q); }
+void generate_IF_GREATER(quad* q) { generate_relational(jgt_v, q); }
 void generate_IF_GREATEREQ(quad* q) { generate_relational(jge_v, q); }
 void generate_IF_LESS(quad* q) { generate_relational(jlt_v, q); }
 void generate_IF_LESSEQ(quad* q) { generate_relational(jle_v, q); }
@@ -444,7 +419,6 @@ void generate_NOT (quad* q){
 	t2->opcode = assign_v; 
 	make_booloperand(t2->arg1, 0);
 	t2->arg2 = NULL;//reset_operant
-	printf("Entering result make_opernad\n");
 	make_operand(q->result, t2->result); 
 	emit_instr(t2);
 
@@ -477,7 +451,6 @@ void generate_OR (quad* q){
 	t->result->val = nextinstructionlabel() + 4;
 	emit_instr(t);
 
-
 	instruction* t1 = createInstruction();
 	t1->srcLine = q->line;
 	make_operand(q->arg2, t1->arg1);
@@ -485,7 +458,6 @@ void generate_OR (quad* q){
 	t1->result->type = label_a;
 	t1->result->val = nextinstructionlabel() + 3;
 	emit_instr(t1); 
-
 
 	instruction* t2 = createInstruction();
 	t2->srcLine = q->line;
@@ -524,7 +496,6 @@ void generate_AND (quad* q){
 	t->result->val = nextinstructionlabel() + 4;
 	emit_instr(t);
 
-
 	instruction* t1 = createInstruction();
 	t1->srcLine = q->line;
 	make_operand(q->arg2, t1->arg1);
@@ -532,7 +503,6 @@ void generate_AND (quad* q){
 	t1->result->type = label_a;
 	t1->result->val = nextinstructionlabel() + 3;
 	emit_instr(t1); 
-
 
 	instruction* t2 = createInstruction();
 	t2->srcLine = q->line;
@@ -566,7 +536,6 @@ void generate_PARAM (quad* q){
 	t->srcLine = q->line;
 	t->opcode = pusharg_v; 
 	make_operand(q->arg1, t->arg1); 
-	printf("emit the pusharg\n");
 	emit_instr(t); 
 }
 
@@ -578,7 +547,6 @@ void generate_CALL(quad* q){
 	t->arg2 = NULL;
 	t->result = NULL;
 	make_operand(q->arg1, t->arg1);
-	printf("emit the call\n"); 
 	emit_instr(t);
 }
 
@@ -590,21 +558,17 @@ void generate_GETRETVAL (quad* q){
 	t->arg2 = NULL; 
 	make_operand(q->result, t->result);
 	make_retvaloperand(t->arg1);
-	printf("emit the assign\n"); 
 	emit_instr(t); 
 }
 
 void generate_FUNCSTART(quad* q){
-	printf("executing generate_FUNCSTART\n");
 	symbol* f = q->result->sym;
 	f->taddress = nextinstructionlabel();
 	q->taddress = nextinstructionlabel();
 
 	userfuncs_newfunc(f);
-
-	pushFunc(f); // MUST SEE AGAIN!!
+	pushFunc(f);
 	symbol* b = peekFunc();
-	printf("b = %s\n", b->name);
 
 	instruction* t = createInstruction();
 	t->srcLine = q->line;
@@ -615,7 +579,6 @@ void generate_FUNCSTART(quad* q){
 }
 
 void generate_RETURN(quad* q){
-	printf("executing generate_RETURN\n");
 	q->taddress = nextinstructionlabel();	
 	instruction* t = createInstruction();
 	t->srcLine = q->line;
@@ -641,7 +604,6 @@ void generate_RETURN(quad* q){
 }
 
 void generate_FUNCEND(quad* q){
-	printf("executing generate_FUNCEND\n");
 	symbol* f = popFunc();
 	backpatch(f, nextinstructionlabel());
 	q->taddress = nextinstructionlabel();
@@ -650,13 +612,10 @@ void generate_FUNCEND(quad* q){
 	t->opcode = funcexit_v;
 	t->arg1 = t->arg2 = NULL;
 	make_operand(q->result, t->result);
-	
 	emit_instr(t);	
 }
 
 void backpatch(symbol* sym, int label){
-	printf("Entered backpatch\n");
-	//printf("\nEnterd backpatch with sym->name: %s, label: %d", sym->name , label);
 	sym->returnList = label;
 }
 
@@ -680,8 +639,6 @@ void exec_generate(void){
 }
 
 void add_incomplete_jump(unsigned instrNo, unsigned iaddress){
-	printf("Entered add_incomplete_jump\n");
-	printf("instrNo = %d, iadress = %d\n", instrNo, iaddress);
 
 	incomplete_jump* tmp = ij_head;
 	incomplete_jump* newNode = (incomplete_jump*) malloc(sizeof(incomplete_jump));
@@ -702,41 +659,13 @@ void add_incomplete_jump(unsigned instrNo, unsigned iaddress){
 
 void patch_incomplete_jumps(void){
 	 
-	printf("Entered patch_incomplete\n");
-	printf("currQuad = %d | currInstr = %d\n", currQuad, currInstr);
 	incomplete_jump* tmp = ij_head;
 	while (tmp != NULL){
-		printf("tmp->iaddress = %d\n", tmp->iaddress);
 		if (tmp->iaddress == currQuad) // Allaksa apo total se currQuad. Must see again!
 			instructions[tmp->instrNo].result->val = currInstr; // Nomizw thelei currInstr anti gia totalINstr. Must see again!
-		else{
+		else
 			instructions[tmp->instrNo].result->val = quads[tmp->iaddress].taddress; 
-			printf("instructions[%d].result->val = quads[%d].taddress(%d)", tmp->instrNo, tmp->iaddress, quads[tmp->iaddress].taddress);
-		}
 		tmp = tmp->next; 
-	}
-}
-
-void printInstructions () {
-	int i;
-	printf("\n\n\n\n\ninstrNo\topcode\t\targ1\t\targ2\t\tresult\t\tline\n");
-	printf("--------------------------------------------\n");
-
-	for(int i = 0; i < currInstr; i++){
-		printf("%d\t", i);
-		printf("%s\t", translateopcode_v(instructions[i].opcode));
-		
-		if(instructions[i].arg1 == NULL) printf("%s", "");
-		else printf("%d , %d ||", instructions[i].arg1->type, instructions[i].arg1->val);
-
-		if(instructions[i].arg2 == NULL) printf("%s", "");
-		else printf("%d , %d||", instructions[i].arg2->type, instructions[i].arg2->val);
-
-		if(instructions[i].result == NULL) printf("%s", "");
-		else printf("%d , %d\t", instructions[i].result->type, instructions[i].result->val);
-
-		printf("%d\n", instructions[i].srcLine);
-
 	}
 }
 
@@ -772,9 +701,9 @@ char *translateopcode_v(vmopcode opcode){
 	return name;
 }
 
-void printInstrucrtions () {
+void printInstructions() {
 
-	printf("instrNo\topcode\tresult\targ1\targ2\tline\n");
+	printf("Instr#\topcode\tresult\targ1\targ2\tline\n");
 	printf("--------------------------------------------\n");
 
 	for(int i = 0; i < currInstr; i++){
@@ -799,15 +728,4 @@ void printInstrucrtions () {
 
 		printf("%d\n", instructions[i].srcLine);
 	}
-}
-
-instruction* createInstruction (){
-
-	instruction* t = malloc(sizeof(instruction)); 
-
-	t->arg1 = malloc(sizeof(vmarg));
-	t->arg2 = malloc(sizeof(vmarg));
-	t->result = malloc(sizeof(vmarg));
-
-	return t; 
 }
