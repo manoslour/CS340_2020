@@ -1,3 +1,7 @@
+
+#ifndef _STACK_H_
+#define _STACK_H_
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -12,21 +16,15 @@ typedef struct counterStack{
 }counterStack;
 
 offsetStack* initOffsetStack();
-
 int isEmptyOffset(offsetStack *root);
-
 unsigned int peekOffset(offsetStack *root);
-
 void pushOffset(offsetStack **root, unsigned int offset);
-
 unsigned int popOffset(offsetStack **root);
 
 counterStack* initCounterStack();
-
 int isEmptyCounter(counterStack *root);
-
 unsigned int peekCounter(counterStack *root);
-
 void pushCounter(counterStack **root, unsigned int counter);
-
 unsigned int popCounter(counterStack **root);
+
+#endif

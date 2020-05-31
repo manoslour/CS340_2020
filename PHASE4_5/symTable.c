@@ -17,8 +17,6 @@ unsigned int functionLocalOffset = 0;
 unsigned int formalArgOffset = 0;
 unsigned int scopeSpaceCounter = 1;
 
-//----------------------------------------------------------------------------------------------
-
 void resettemp() {tempcounter = 0;}
 
 unsigned int currscope() {return currentscope;}
@@ -35,11 +33,16 @@ symbol* newtemp(){
 	char* name = strdup(newtempname());
 	sym = scopelookup(name, currscope());
 
-	if(sym == NULL)
-		// !!! MUST SEE AGAIN !!!
-		return tempInsert(name, currscope());
-	else
-		return sym;
+	if(sym == NULL){
+		//return tempInsert(name, currscope());
+		sym =  hashInsert(name, currscope(), 0, var_s, currscopespace(), currscopeoffset());
+		inccurrscopeoffset();
+	}
+	else{
+		sym->scope = currscopespace();
+		sym->offset = currscopeoffset();
+	}
+	return sym;
 }
 
 symbol* tempInsert(char *name, unsigned int scope){
@@ -55,6 +58,7 @@ symbol* tempInsert(char *name, unsigned int scope){
 	new_sym->isActive = true;
 
 	new_sym->name = strdup(name);
+	new_sym->scope = scope;
 
 	scopeListInsert(new_sym,scope);
 	if (HashTable[pos] == NULL){
@@ -95,6 +99,7 @@ void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, 
 	p->result = result;
 	p->label = label;
 	p->line = line;
+	p->taddress = -1;
 }
 
 expr* lvalue_expr(symbol* sym){
@@ -270,40 +275,36 @@ void printQuads(){
 		printf("Error, cant open file\n");
 
 	fprintf(quadOutput, "\nQuad#\t\topcode\t\tresult\t\targ1\t\targ2\t\tlabel");
-	fprintf(quadOutput, "\n-----------------------------------------------------------------");
+	fprintf(quadOutput, "\n-------------------------------------------------------------------------------------");
 	for (i = 0; i < currQuad; i++){
 		opcode = strdup(translateopcode((quads+i)->op));
 		fprintf(quadOutput, "\n%d:\t%14s\t", i+1, opcode);
 
 		if ((quads+i)->result == NULL )
-			fprintf(quadOutput, "%7s\t", "");
+			fprintf(quadOutput, "%11s\t", "");
 		else{
 			if((quads+i)->result->sym == NULL){
 				switch((quads+i)->result->type){
 					case constnum_e:
-						fprintf(quadOutput, "%7d\t", (int)(quads+i)->result->numConst); break;
+						fprintf(quadOutput, "%11d\t", (int)(quads+i)->result->numConst); break;
 					case constbool_e:
 						tmp = (int)(quads+i)->result->boolConst;
 						if(tmp == 0){
-							fprintf(quadOutput, "%9s\t", "FALSE"); 
+							fprintf(quadOutput, "%13s\t", "FALSE"); 
 							break;
 						}
 						else{
-							fprintf(quadOutput, "%8s\t", "TRUE"); 
+							fprintf(quadOutput, "%12s\t", "TRUE"); 
 							break;
 						}
 					case conststring_e:
-						fprintf(quadOutput, "%7s\t", (quads+i)->result->strConst); break;
+						fprintf(quadOutput, "%11s\t", (quads+i)->result->strConst); break;
 					default:
 						fprintf(quadOutput, "Unknown case\n");
 				}
 			}
-			else{
-				if(istempname((quads+i)->result->sym->name))
-					fprintf(quadOutput, "%7s\t", (quads+i)->result->sym->name);
-				else
-					fprintf(quadOutput, "%5s\t", (quads+i)->result->sym->name);
-			}	
+			else
+				fprintf(quadOutput, "%11s\t", (quads+i)->result->sym->name);
 		}
 
 		if((quads+i)->arg1 ==  NULL)
@@ -312,7 +313,7 @@ void printQuads(){
 			if((quads+i)->arg1->sym == NULL){
 				switch ((quads+i)->arg1->type) {
 					case constnum_e:
-						fprintf(quadOutput, "%11d\t", (int)(quads+i)->arg1->numConst); break;
+						fprintf(quadOutput, "%9d\t", (int)(quads+i)->arg1->numConst); break;
 					case constbool_e:
 						tmp = (int)(quads+i)->arg1->boolConst;
 						if(tmp == 0){
@@ -324,30 +325,26 @@ void printQuads(){
 							break;
 						}
 					case conststring_e:
-						fprintf(quadOutput, "%11s\t", (quads+i)->arg1->strConst); break;
+						fprintf(quadOutput, "%9s\t", (quads+i)->arg1->strConst); break;
 					default:
 						fprintf(quadOutput, "Unknown case");
 				}
 			}
-			else{
-				if(istempname((quads+i)->arg1->sym->name))
-					fprintf(quadOutput, "%11s\t", (quads+i)->arg1->sym->name);
-				else
-					fprintf(quadOutput, "%9s\t", (quads+i)->arg1->sym->name);
-			}
+			else
+				fprintf(quadOutput, "%9s\t", (quads+i)->arg1->sym->name);
 		}
 
-		if((quads+i)->arg2 == NULL)
+		if((quads+i)->arg2 ==  NULL)
 			fprintf(quadOutput, "%11s\t", "");
 		else{
 			if((quads+i)->arg2->sym == NULL){
 				switch ((quads+i)->arg2->type) {
 					case constnum_e:
-						fprintf(quadOutput, "%11d\t", (int)(quads+i)->arg2->numConst); break;
+						fprintf(quadOutput, "%9d\t", (int)(quads+i)->arg2->numConst); break;
 					case constbool_e:
 						tmp = (int)(quads+i)->arg2->boolConst;
 						if(tmp == 0){
-							fprintf(quadOutput, "%11s\t", "FALSE"); 
+							fprintf(quadOutput, "%13s\t", "FALSE"); 
 							break;
 						}
 						else{
@@ -355,16 +352,12 @@ void printQuads(){
 							break;
 						}
 					case conststring_e:
-						fprintf(quadOutput, "%11s\t", (quads+i)->arg2->strConst); break;
+						fprintf(quadOutput, "%9s\t", (quads+i)->arg2->strConst); break;
 				}
 			}
-			else{
-				if(istempname((quads+i)->arg2->sym->name))
-					fprintf(quadOutput, "%11s\t", (quads+i)->arg2->sym->name);
-				else
-					fprintf(quadOutput, "%9s\t", (quads+i)->arg2->sym->name);
-			}
-		}		
+			else
+				fprintf(quadOutput, "%9s\t", (quads+i)->arg2->sym->name);
+		}
 
 		if((quads+i)->label == -1 || ( (quads+i)->label == 0 && strcmp(opcode, "jump") != 0))
 			fprintf(quadOutput, "%9s", "");
@@ -548,7 +541,7 @@ void patchlist(int list, int label){
 	while(list > 0){
 		printf("Entered while\n");
 		int next = quads[list].label;
-		printf("Next = %d\n", next+1);
+		printf("Next = %d\n", next);
 		quads[list].label = label;
 		printf(" quads[%d].label = %d\n", list+1, label+1);
 		list = next;
@@ -739,12 +732,12 @@ void printScopeList(){
 		printf("\n-----------------------------  "YEL"SCOPE #%d"RESET"  ----------------------------- \n\n",temp->scope );
 		tmp = temp->symbols;
 		while (tmp != NULL){
-			if (tmp->type == var_s) printf("\"%s\"\t [Variable]\t (line %d)\t (scope %d)"
-				,tmp->name,tmp->line,tmp->scope);
-			else if (tmp->type == programfunc_s)printf("\"%s\"\t [Program Function]\t (line %d)\t (scope %d)"
-				,tmp->name,tmp->line,tmp->scope);
-			else if (tmp->type == libraryfunc_s)printf("\"%s\"\t [Library Function]\t (line %d)\t (scope %d)"
-				,tmp->name,tmp->line,tmp->scope);
+			if (tmp->type == var_s) printf("\"%s\"\t [Variable]\t (line %d)\t (scope %d)\t (offset %d)"
+				,tmp->name,tmp->line,tmp->scope, tmp->offset);
+			else if (tmp->type == programfunc_s)printf("\"%s\"\t [Program Function]\t (line %d)\t (scope %d)\t (offset %d)"
+				,tmp->name,tmp->line,tmp->scope, tmp->offset);
+			else if (tmp->type == libraryfunc_s)printf("\"%s\"\t [Library Function]\t (line %d)\t (scope %d)\t (offset %d)"
+				,tmp->name,tmp->line,tmp->scope, tmp->offset);
 
 			printf("\n");
 			tmp = tmp->scope_next;

@@ -1,6 +1,37 @@
-while(b){
-	a = 3;
-	y = 3;
-	b = 3;
-	break;
+//x = f(y)(a,b);
+//sprite..move(dx, dy);
+//function f(a,b){ x = a+b; }
+//a["3"].q[4]();
+//q[4](5);
+//x = a and b or c;
+/*
+while(x-y > z-w)
+    if(b)
+        x = x-w;
+    else
+        x = x-z;
+*/
+
+/*
+if(a or b)
+    x = y;
+else
+    y = z;
+*/
+
+/*
+for ( i = 0; i < N; ++i )
+    print("*");
+*/
+
+while(a){
+    a = f(a);
+
+    if(a)
+        break;
+    else
+        continue;
+    
+    continue;
+    break;
 }
