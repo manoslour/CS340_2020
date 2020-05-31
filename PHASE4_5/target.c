@@ -228,14 +228,19 @@ void pushFunc(symbol* func){
     newNode->func = func;
     newNode->next = funcstack;
     funcstack = newNode;
-    printf("%s pushed to stack\n", func->name);
+    printf("%s pushed to stack\n", newNode->func->name);
 }
 
 symbol* popFunc(){
+	peekFunc();
+	printf("Entered popFunc\n");
     symbol* func;
-    if(isEmptyFunc())
+    if(isEmptyFunc()){
+		printf("Is empty\n");
         return NULL;
+	}
     else{
+		printf("Etered elese\n");
         func = peekFunc();
         funcstack = funcstack->next;
         return func;
@@ -319,10 +324,19 @@ void generate (vmopcode op, quad* quad ){
 	t->opcode = op;
 	t->srcLine = quad->line;
 
-	make_operand(quad->arg1, t->arg1);	
-	make_operand(quad->arg2, t->arg2);
-	make_operand(quad->result, t->result);
-	
+	if(quad->arg1)
+		make_operand(quad->arg1, t->arg1);
+	else
+		t->arg1 = NULL;
+	if(quad->arg2)	
+		make_operand(quad->arg2, t->arg2);
+	else
+		t->arg2 = NULL;
+	if(quad->result)	
+		make_operand(quad->result, t->result);
+	else
+		t->result = NULL;
+
 	quad->taddress = nextinstructionlabel();
 	emit_instr(t);
 
@@ -589,6 +603,8 @@ void generate_FUNCSTART(quad* q){
 	userfuncs_newfunc(f);
 
 	pushFunc(f); // MUST SEE AGAIN!!
+	symbol* b = peekFunc();
+	printf("b = %s\n", b->name);
 
 	instruction* t = createInstruction();
 	t->srcLine = q->line;
@@ -606,10 +622,13 @@ void generate_RETURN(quad* q){
 	t->opcode = assign_v;
 	t->arg2 = NULL;
 	make_retvaloperand(t->result);
-	make_operand(q->arg1, t->arg1);
+	if(q->arg1)
+		make_operand(q->arg1, t->arg1);
+	else
+		t->arg1 = NULL;
 	emit_instr(t);
 
-	symbol* f = popFunc();
+	symbol* f = peekFunc();
 	append(f, nextinstructionlabel());
 
 	instruction* t1 = createInstruction();
@@ -617,7 +636,6 @@ void generate_RETURN(quad* q){
 	t1->opcode = jump_v;
 	t1->arg1 = NULL; // reset_operand;
 	t1->arg2 = NULL; // reset_operand;
-
 	t1->result->type = label_a;
 	emit_instr(t1);
 }
@@ -626,18 +644,19 @@ void generate_FUNCEND(quad* q){
 	printf("executing generate_FUNCEND\n");
 	symbol* f = popFunc();
 	backpatch(f, nextinstructionlabel());
-
 	q->taddress = nextinstructionlabel();
 	instruction* t = createInstruction();
 	t->srcLine = q->line;
 	t->opcode = funcexit_v;
 	t->arg1 = t->arg2 = NULL;
 	make_operand(q->result, t->result);
+	
 	emit_instr(t);	
 }
 
 void backpatch(symbol* sym, int label){
-	printf("\nEnterd backpatch with sym->name: %s, label: %d", sym->name , label);
+	printf("Entered backpatch\n");
+	//printf("\nEnterd backpatch with sym->name: %s, label: %d", sym->name , label);
 	sym->returnList = label;
 }
 
