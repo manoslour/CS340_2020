@@ -25,15 +25,15 @@ typedef enum {
 }SymbolType;
 
 typedef enum {
-	add,			sub,			mul,			
-	divide,			mod,			tablecreate,
-	/*uminus,*/		and,			or,
-	not,			assign,if_eq,			if_noteq,
+	assign,			add,			sub,			
+	mul,			divide,			mod,
+	uminus,			and,			or,
+	not,			if_eq,			if_noteq,
 	if_lesseq,		if_greatereq,	if_less,
 	if_greater,		call,			param,
 	ret,			getretval,		funcstart,
 	funcend,		tablecreate,	tablegetelem,
-	tablesetelem, jump
+	tablesetelem, 	jump
 }iopcode;
 
 typedef enum {
