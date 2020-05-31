@@ -26,31 +26,33 @@ unsigned totalUserFuncs = 0;
 funcStack* funcstack = (funcStack*) 0;
 
  generator_func_t generators[] = {
+    generate_ASSIGN,
     generate_ADD,
     generate_SUB,
     generate_MUL,
     generate_DIV,
     generate_MOD,
+	generate_UMINUS,
+	generate_AND, 
+    generate_OR,
+    generate_NOT,
+    generate_IF_EQ,
+    generate_IF_NOTEQ,
+    generate_IF_LESSEQ,
+    generate_IF_GREATEREQ,
+    generate_IF_LESS,
+    generate_IF_GREATER,
+    generate_CALL,
+    generate_PARAM,
+    generate_RETURN,
+    generate_GETRETVAL,
+    generate_FUNCSTART,
+    generate_FUNCEND,
     generate_NEWTABLE,
     generate_TABLEGETELM,
     generate_TABLESETELM,
-    generate_ASSIGN,
-    generate_NOP,
     generate_JUMP,
-    generate_IF_EQ,
-    generate_IF_NOTEQ,
-    generate_IF_GREATER,
-    generate_IF_GREATEREQ,
-    generate_IF_LESS,
-    generate_IF_LESSEQ,
-    generate_NOT,
-    generate_OR,
-    generate_PARAM,
-    generate_CALL,
-    generate_GETRETVAL,
-    generate_FUNCSTART,
-    generate_RETURN,
-    generate_FUNCEND
+    generate_NOP
 };
 
 //-------------------------------------------------
@@ -60,7 +62,7 @@ unsigned consts_newnumber (double n){
 	unsigned ret_index;
 
 	if(numConsts == NULL)
-		numConsts = (double*) malloc(sizeof(double*));
+		numConsts = (double*) malloc(sizeof(double));
 	else{
 		double* new_array = (double*) realloc(numConsts, (totalNumConsts + 1) * sizeof(double));
 		numConsts = new_array;
@@ -77,9 +79,9 @@ unsigned consts_newstring (char* s){
 	unsigned ret_index;
 
 	if(stringConsts == NULL)
-        stringConsts = (char**) malloc(sizeof(char*));
+        stringConsts = (char**) malloc(sizeof(char));
     else{
-        char** new_array = (char**) realloc(stringConsts, (totalStringConsts + 1) * sizeof(char*));
+        char** new_array = (char**) realloc(stringConsts, (totalStringConsts + 1) * sizeof(char));
         stringConsts = new_array;
     }
 
@@ -94,9 +96,9 @@ unsigned libfuncs_newused (char* s){
 	unsigned ret_index;
 
 	if(namedLibfuncs == NULL)
-		namedLibfuncs = (char**) malloc(sizeof(char*));
+		namedLibfuncs = (char**) malloc(sizeof(char));
 	else{
-		char** new_array = (char**) realloc(namedLibfuncs, (totalNamedLibfuncs + 1) * sizeof(char*));
+		char** new_array = (char**) realloc(namedLibfuncs, (totalNamedLibfuncs + 1) * sizeof(char));
         namedLibfuncs = new_array;
 	}
 
@@ -111,7 +113,7 @@ unsigned userfuncs_newfunc(symbol* sym){
 	unsigned ret_index;
 
 	if(userFuncs == NULL)
-		userFuncs = (userfunc*) malloc(sizeof(userfunc*));
+		userFuncs = (userfunc*) malloc(sizeof(userfunc));
 	else{
 		userfunc* new_array = (userfunc*) realloc(userFuncs, (totalUserFuncs + 1) * sizeof(userfunc));
 		userFuncs = new_array;
@@ -129,44 +131,59 @@ unsigned userfuncs_newfunc(symbol* sym){
 }
 
 void expandInstr(){
-	printf("Entered expand instr\n");
-	assert(totalInstructions == currInstr);
-	printf("Edw kala\n");
-	instruction* p = (instruction*) malloc(NEW_INSTR_SIZE);
-	printf("problema\n");
-	if(instructions){
-		printf("entered if\n");
-		memcpy(p, instructions, CURR_INSTR_SIZE);
-		free(instructions);
-	}
-	instructions = p;
-	totalInstructions += EXPAND_INSTR_SIZE;
+
+
+
+
+
+	// printf("Entered expand instr\n");
+	// printf("TOtalinstr = %d | currINstr = %d\n", totalInstructions, currInstr);
+
+	// assert(totalInstructions == currInstr);
+
+	// instruction* t = (instruction*) malloc(NEW_INSTR_SIZE);
+
+	// printf("problema\n");
+	// if(instructions){
+	// 	printf("entered if\n");
+	// 	memcpy(t, instructions, CURR_INSTR_SIZE);
+	// 	free(instructions);
+	// }
+	// instructions = t;
+	// totalInstructions += EXPAND_INSTR_SIZE;
 }
 
 void emit_instr(instruction *t){
 	printf("Entered emit_instr\n");
 
-	// if(currInstr == totalInstructions){
-	// 	printf("ENtereed expand\n");
-	// 	expandInstr();
-	// }
 
 	if (instructions == NULL)
-		instructions = (instruction*) malloc(sizeof(instruction*));
+		instructions = (instruction*) malloc(sizeof(instruction));
 	else {
 		instruction* new_instr = (instruction*) realloc(instructions, (totalInstructions + 1) * sizeof(instruction));
 		instructions = new_instr; 
 	} 
+	totalInstructions ++;
 
-	printf("EXpand done\n");
 	instruction* i =(instruction*) malloc(sizeof(instruction));
-	i = instructions ;
-	currInstr++;
+	i = instructions + currInstr ;
 	i->opcode = t->opcode;
 	i->result = t->result;
 	i->arg1 = t->arg1;
 	i->arg2 = t->arg2;
 	i->srcLine = t->srcLine;
+
+	printf("CurrInstr = %d\n", currInstr);
+	printf("i->opcode = %d\n", i->opcode);
+	if(i->arg1)
+		printf("i->arg1 = %d, %d\n", i->arg1->type, i->arg1->val);
+	if(i->arg2)
+		printf("i->arg2 = %d, %d\n", i->arg2->type, i->arg2->val);
+	if(i->result)
+		printf("i->result = %d, %d\n", i->result->type, i->result->val);
+	printf("i->srcLine = %d\n", i->srcLine);
+
+	currInstr++;
 }
 
 unsigned nextinstructionlabel(void){
@@ -215,23 +232,24 @@ symbol* popFunc(){
 //-------------------------------------------------
 
 void make_operand (expr* e, vmarg* arg){
-
-	printf("Entered make_opernad\n");
-	if(e == NULL ) 
-		printf("e = null\n");
-	if (arg == NULL)
-		printf("arg = null\n");
 	
+	printf("Entered make_operand\n");
+	if (e != NULL){
+		printf("type = %d\n", e->type);  
+	}
+	if(e->sym)
+		printf("e->sym->name = %s\n", e->sym->name);
+
+
 	switch (e->type){
 		case var_e :
+		case assignexpr_e:
 		case tableitem_e :
 		case arithexpr_e :
 		case boolexpr_e :
 		case newtable_e :{
-
 			assert(e->sym);
 			arg->val = e->sym->offset; 
-
 			switch (e->sym->space){
 				case programvar   : arg->type = global_a; break;
 				case functionlocal: arg->type = local_a;  break;
@@ -244,25 +262,30 @@ void make_operand (expr* e, vmarg* arg){
 		/* Constants */
 
 		case constbool_e: {
+			printf("constbool_e CASE \n");
 			arg->val = e->boolConst;
 			arg->type = bool_a;
 			break;
 		}
 		case conststring_e :{
+			printf("conststring_e CASE \n");
 			arg->val = consts_newstring(e->strConst); 
 			arg->type = string_a; 
 			break;
 		}
 		case constnum_e: {
+			printf("constnum_e case \n");
 			arg->val = consts_newnumber(e->numConst); 
 			arg->type = number_a; 
 			break;
 		}
 		case nil_e: {
+			printf("nil_e case \n");
 			arg->type = nil_a; 
 			break;
 		}
 		case programfunc_e : {
+			printf("programfunc_e case \n");
 			arg->type = userfunc_a ; 
 			//arg->val = e->sym->taddress;
 			/*or alternatively*/
@@ -270,14 +293,51 @@ void make_operand (expr* e, vmarg* arg){
 			break; 
 		} 
 		case libraryfunc_e: {
+			printf("libraryfunc_e case \n");
 			arg->type = libfunc_a; 
 			arg->val = libfuncs_newused(strdup(e->sym->name));
 			break;
 		}
-
 		default: assert(0);
 	}
+	if (arg != NULL){
+		printf("arg type = %d , val = %d\n\n", arg->type, arg->val);
+	}
+
 }
+
+void generate (vmopcode op, quad* quad ){
+	printf("Entered generate\n");
+	instruction* t = (instruction*) malloc(sizeof(instruction));  
+	t->opcode = op;
+	t->arg1 = malloc(sizeof(vmarg));
+	t->arg2 = malloc(sizeof(vmarg));
+	t->result = malloc(sizeof(vmarg));
+
+	if(quad->arg1 != NULL )
+		make_operand(quad->arg1, t->arg1);	
+	else 
+		t->arg1->type = t->arg1->val = -1;
+	
+	if(quad->arg2 != NULL )
+		make_operand(quad->arg2, t->arg2);
+	else
+		t->arg2->type = t->arg2->val = -1;
+
+	if(quad->result != NULL)
+		make_operand(quad->result, t->result);
+	else
+		t->result->type = t->result->val = -1;
+	
+
+	quad->taddress = nextinstructionlabel();
+	t->srcLine = quad->line;
+	emit_instr(t);
+
+	printf("-----------Finished generate------------\n\n");
+}
+
+
 
 void make_numberoperand (vmarg* arg, double val){
 	arg->val = consts_newnumber(val); 
@@ -293,25 +353,6 @@ void make_retvaloperand (vmarg *arg){
 	arg->type = retval_a; 
 }
 
-void generate (vmopcode op, quad* quad ){
-	printf("Entered generate\n");
-	instruction* t = (instruction*) malloc(sizeof(instruction));  
-	t->opcode = op;
-	// MUST SEE IF IT WANTS POINTER(t->arg1) OR POINTER_ADDRESS(&t->arg1)
-	if(quad->arg1 != NULL && t->arg1 != NULL)
-		make_operand(quad->arg1, t->arg1);
-	printf("Ok\n");
-	if(quad->arg2 != NULL && t->arg2 != NULL)
-		make_operand(quad->arg2, t->arg2);
-	printf("OK2\n");
-	if(quad->result != NULL && t->result != NULL)	
-		make_operand(quad->result, t->result);
-	printf("OK3\n");
-	quad->taddress = nextinstructionlabel();
-	printf("OK4\n");
-	emit_instr(t);
-	printf("Finished\n");
-}
 
 void generate_relational(vmopcode op, quad* quad){
 	instruction* t = (instruction*) malloc(sizeof(instruction)); 
@@ -336,6 +377,9 @@ void generate_SUB(quad* q) { generate(sub_v, q); }
 void generate_MUL(quad* q) { generate(mul_v, q); }
 void generate_DIV(quad* q) { generate(div_v, q); }
 void generate_MOD(quad* q) { generate(mod_v, q); }
+void generate_UMINUS(quad* q) { /*DOES NOTHING*/ }
+void generate_AND(quad* q) {/*same*/}
+
 
 void generate_NEWTABLE (quad* q) { generate(newtable_v, q); }
 void generate_TABLEGETELM (quad* q) { generate(tablegetelem_v, q); }
@@ -345,7 +389,9 @@ void generate_ASSIGN (quad* q) {
 	generate(assign_v, q);}
 
 void generate_NOP (quad* q){
+	
 	instruction* t = (instruction*) malloc(sizeof(instruction));  
+	t->arg1 = t->arg2 = t->result = malloc(sizeof(vmarg));
 	t->opcode = nop_v;
 	emit_instr(t);
 }
@@ -371,20 +417,20 @@ void generate_NOT (quad* q){
 
 	t->opcode = assign_v; 
 	make_booloperand(t->arg1, false); 
-	// reset_operand(t->arg2); 
+	reset_operand(t->arg2); 
 	make_operand(q->result, t->result); 
 	emit_instr(t);
 
 	t->opcode = jump_v; 
-	// reset_operand(t->arg1);
-	// reset_operand(t->arg2);
+	reset_operand(t->arg1);
+	reset_operand(t->arg2);
 	t->result->type = label_a; 
 	t->result->val = nextinstructionlabel() + 2; 
 	emit_instr(t);
 
 	t->opcode = assign_v; 
 	make_booloperand(t->arg1, true); 
-	// reset_operand(t->arg2); 
+	reset_operand(t->arg2); 
 	make_operand(q->result, t->result); 
 	emit_instr(t);
 }
@@ -406,20 +452,20 @@ void generate_OR (quad* q){
 
 	t->opcode = assign_v; 
 	make_booloperand(t->arg1, false); 
-	// reset_operand(t->arg2); 
+	reset_operand(t->arg2); 
 	make_operand(q->result, t->result); 
 	emit_instr(t); 
 
 	t->opcode = jump_v; 
-	// reset_operand(t->arg1); 
-	// reset_operand(t->arg2); 
+	reset_operand(t->arg1); 
+	reset_operand(t->arg2); 
 	t->result->type = label_a; 
 	t->result->val = nextinstructionlabel() + 2; 
 	emit_instr(t);
 
 	t->opcode = assign_v; 
 	make_booloperand(t->arg1, true); 
-	// reset_operand(t->arg2);
+	reset_operand(t->arg2);
 	make_operand(q->result, t->result); 
 	emit_instr(t);
 }
@@ -508,10 +554,12 @@ void append(symbol* sym, int label){
 }
 
 void exec_generate(void){
-	for(unsigned i = 0; i < total; ++i){
-		printf("Total = %d\n", total);
-		printf("opcode = %d\n", quads[i].op);
-		(*generators[quads[i].op])(quads+i);
+	for(unsigned i = 0; i <= currQuad; ++i){
+		printf("CurrQuad = %d\n", i);
+		if(currQuad == 0) generate_NOP(NULL);
+		else 
+			(*generators[quads[i].op])(quads+i);
+		
 	}
 }
 
@@ -547,18 +595,25 @@ void patch_incomplete_jumps(void){
 }
 
 void printInstructions () {
-	int i, tmp; 
-	char *arg1,*arg2,*result,*opcode; 
+	int i;
+	printf("\n\n\n\n\ninstrNo\topcode\t\targ1\t\targ2\t\tresult\t\tline\n");
+	printf("--------------------------------------------\n");
 
-	for(i = 0; i<totalInstructions; i++){
-		opcode = strdup(translateopcode_v((instructions + i)->opcode));
-		printf("\n%d:\t%14s\t",i, opcode); 
-		if((instructions+i)->result == NULL){
-			printf("%11s\t", "");
-		}
-		else {
+	for(int i = 0; i < currInstr; i++){
+		printf("%d\t", i);
+		printf("%s\t", translateopcode_v(instructions[i].opcode));
+		
+		if(instructions[i].arg1 == NULL) printf("%s", "");
+		else printf("%d , %d ||", instructions[i].arg1->type, instructions[i].arg1->val);
 
-		}
+		if(instructions[i].arg2 == NULL) printf("%s", "");
+		else printf("%d , %d||", instructions[i].arg2->type, instructions[i].arg2->val);
+
+		if(instructions[i].result == NULL) printf("%s", "");
+		else printf("%d , %d\t", instructions[i].result->type, instructions[i].result->val);
+
+		printf("%d\n", instructions[i].srcLine);
+
 	}
 }
 
@@ -602,14 +657,20 @@ void printInstrucrtions () {
 		printf("%d\t", i);
 		printf("%s\t", translateopcode_v(instructions[i].opcode));
 		
-		if(instructions[i].arg1 == NULL) printf("%s\t", "");
-		else printf("| %d , %d   ||", instructions[i].arg1->type, instructions[i].arg1->val);
+		if(instructions[i].arg1->type == -1)
+			printf("%s\t", "");
+		else 
+			printf("%d|%d\t", instructions[i].arg1->type, instructions[i].arg1->val);
 		
-		if(instructions[i].arg2 == NULL) printf("%s\t", "");
-		else printf("   %d , %d   ||", instructions[i].arg2->type, instructions[i].arg2->val);
+		if(instructions[i].arg2->type == -1)
+			printf("%s\t", "");
+		else 
+			printf("%d|%d\t", instructions[i].arg2->type, instructions[i].arg2->val);
 
-		if(instructions[i].result == NULL) printf("%s\t", "");
-		else printf("   %d , %d\t", instructions[i].result->type, instructions[i].result->val);
+		if(instructions[i].result->type == -1)
+			printf("%s\t", "");
+		else 
+			printf("%d|%d\t", instructions[i].result->type, instructions[i].result->val);
 
 		printf("%d\n", instructions[i].srcLine);
 	}
