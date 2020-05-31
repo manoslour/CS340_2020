@@ -5,17 +5,14 @@
 
 //--------------------------------------------------------------------------
 #define EXPAND_INSTR_SIZE 1024
-#define CURR_INSTR_SIZE (totalInstructions * sizeof(struct instruction))
-#define NEW_INSTR_SIZE (EXPAND_INSTR_SIZE * sizeof(struct instruction) + CURR_INSTR_SIZE)
-
-#define ARRAY_SIZE 100
-#define EXPAND_ARRAYS_SIZE 10
+#define CURR_INSTR_SIZE (totalInstructions * sizeof(instruction))
+#define NEW_INSTR_SIZE (EXPAND_INSTR_SIZE * sizeof(instruction) + CURR_INSTR_SIZE)
 //--------------------------------------------------------------------------
 
 typedef enum {
     assign_v,       add_v,          sub_v,
     mul_v,          div_v,          mod_v,
-    /*uminus_v,*/       and_v,          or_v,
+    uminus_v,       and_v,          or_v,
     not_v,          jeq_v,          jne_v,
     jle_v,          jge_v,          jlt_v,
     jgt_v,          call_v,         pusharg_v,
@@ -76,18 +73,17 @@ typedef void (*generator_func_t) (quad*);
 
 //-------------------------------------------------
 
-
-
 void generate (vmopcode op, quad* quad);
 void generate_relational(vmopcode op, quad* quad);
 void exec_generate(void);
 
-
+void generate_AND (quad*);
 void generate_ADD (quad*);
 void generate_SUB (quad*);
 void generate_MUL (quad*);
 void generate_DIV (quad*);
 void generate_MOD (quad*);
+void generate_UMINUS(quad* q);
 void generate_NEWTABLE (quad*);
 void generate_TABLEGETELM (quad*);
 void generate_TABLESETELM (quad*);
@@ -108,8 +104,6 @@ void generate_GETRETVAL (quad*);
 void generate_FUNCSTART (quad*);
 void generate_RETURN (quad*);
 void generate_FUNCEND (quad*);
-
-
 
 void make_operand (expr* e, vmarg* arg);
 void make_numberoperand (vmarg* arg, double val);
@@ -137,5 +131,5 @@ void reset_operand(vmarg* v);
 void backpatch(symbol* sym, int label);
 
 void printInstrucrtions();
-
+void print_array();
 #endif
