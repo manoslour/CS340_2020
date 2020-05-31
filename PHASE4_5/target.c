@@ -4,6 +4,8 @@ extern quad *quads;
 extern unsigned total;
 extern unsigned currQuad;
 
+unsigned currProcessedQuad = 0;
+
 unsigned ij_total = 0;
 incomplete_jump* ij_head = (incomplete_jump*) 0;
 
@@ -110,8 +112,18 @@ unsigned libfuncs_newused (char* s){
 
 unsigned userfuncs_newfunc(symbol* sym){
 
-	unsigned ret_index;
+	printf("Entered userfuncs_newfunc\n");
+	if(totalUserFuncs){
+		for(int i = 0; i <= totalUserFuncs; i++){
+			if(strcmp(sym->name, userFuncs[i].id) == 0){
+				printf("Function %s already in userFuncs Array\n", sym->name);
+				return i;
+			}
+		}
+	}
 
+	unsigned ret_index;
+	printf("\n\nEnterd userfucnk to the array of userfuck\n\n");
 	if(userFuncs == NULL)
 		userFuncs = (userfunc*) malloc(sizeof(userfunc));
 	else{
@@ -126,7 +138,6 @@ unsigned userfuncs_newfunc(symbol* sym){
 	userFuncs[totalUserFuncs].id = strdup(sym->name);
 
 	totalUserFuncs++;
-
 	return ret_index;
 }
 
@@ -181,9 +192,11 @@ void emit_instr(instruction *t){
 		printf("i->arg2 = %d, %d\n", i->arg2->type, i->arg2->val);
 	if(i->result)
 		printf("i->result = %d, %d\n", i->result->type, i->result->val);
-	printf("i->srcLine = %d\n", i->srcLine);
+	if(i->srcLine)
+		printf("i->srcLine = %d\n", i->srcLine);
 
 	currInstr++;
+	printf("Exiting emit_instr\n");
 }
 
 unsigned nextinstructionlabel(void){
@@ -191,7 +204,7 @@ unsigned nextinstructionlabel(void){
 }
 
 unsigned currprocessedquad(){
-	return currQuad;
+	return currProcessedQuad;
 }
 
 int isEmptyFunc(){
@@ -234,12 +247,6 @@ symbol* popFunc(){
 void make_operand (expr* e, vmarg* arg){
 	
 	printf("Entered make_operand\n");
-	if (e != NULL){
-		printf("type = %d\n", e->type);  
-	}
-	if(e->sym)
-		printf("e->sym->name = %s\n", e->sym->name);
-
 
 	switch (e->type){
 		case var_e :
@@ -308,30 +315,15 @@ void make_operand (expr* e, vmarg* arg){
 
 void generate (vmopcode op, quad* quad ){
 	printf("Entered generate\n");
-	instruction* t = (instruction*) malloc(sizeof(instruction));  
+	instruction* t = createInstruction();  
 	t->opcode = op;
-	t->arg1 = malloc(sizeof(vmarg));
-	t->arg2 = malloc(sizeof(vmarg));
-	t->result = malloc(sizeof(vmarg));
-
-	if(quad->arg1 != NULL )
-		make_operand(quad->arg1, t->arg1);	
-	else 
-		t->arg1->type = t->arg1->val = -1;
-	
-	if(quad->arg2 != NULL )
-		make_operand(quad->arg2, t->arg2);
-	else
-		t->arg2->type = t->arg2->val = -1;
-
-	if(quad->result != NULL)
-		make_operand(quad->result, t->result);
-	else
-		t->result->type = t->result->val = -1;
-	
-
-	quad->taddress = nextinstructionlabel();
 	t->srcLine = quad->line;
+
+	make_operand(quad->arg1, t->arg1);	
+	make_operand(quad->arg2, t->arg2);
+	make_operand(quad->result, t->result);
+	
+	quad->taddress = nextinstructionlabel();
 	emit_instr(t);
 
 	printf("-----------Finished generate------------\n\n");
@@ -345,30 +337,51 @@ void make_numberoperand (vmarg* arg, double val){
 }
 
 void make_booloperand (vmarg *arg, unsigned val){
+	printf("ENtered make_booloperand\n");
 	arg->val = val; 
 	arg->type = bool_a;
+
+	printf("arg->val = %d\n", arg->val);
 }
 
 void make_retvaloperand (vmarg *arg){ 
-	arg->type = retval_a; 
+	arg->type = retval_a;
+	arg->val = -1; 
 }
 
 
 void generate_relational(vmopcode op, quad* quad){
 	instruction* t = (instruction*) malloc(sizeof(instruction)); 
 	t->opcode = op;
-	make_operand(quad->arg1, t->arg1);
-	make_operand(quad->arg2, t->arg2);
+	printf("gen_realtional opcode = %d\n", t->opcode);
+	t->arg1 = malloc(sizeof(vmarg));
+	t->arg2 = malloc(sizeof(vmarg));
+	t->result = malloc(sizeof(vmarg));
+
+	if(quad->arg1){
+		printf("arg1 make_opernand\n");
+		make_operand(quad->arg1, t->arg1);
+	}
+	else
+		t->arg1->type = t->arg1->val = -1;
+	if(quad->arg2){
+		printf("arg2 make_opernand\n");
+		make_operand(quad->arg2, t->arg2);
+	}	
+	else
+		t->arg2->type = t->arg2->val = -1;
 
 	t->result->type = label_a;
 
-	// MUST SEE IF nextquad() CALL IS CORRECT OR EVEN WORKS
+	printf("quad->label = %d\n", quad->label);
+	printf("currProcessedquad = %d\n", currprocessedquad());
 	if(quad->label < currprocessedquad())
 		t->result->val = quads[quad->label].taddress;
 	else
 		add_incomplete_jump(nextinstructionlabel(), quad->label);
 	
 	quad->taddress = nextinstructionlabel();
+	t->srcLine = quad->line;
 	emit_instr(t);
 }
 
@@ -378,9 +391,6 @@ void generate_MUL(quad* q) { generate(mul_v, q); }
 void generate_DIV(quad* q) { generate(div_v, q); }
 void generate_MOD(quad* q) { generate(mod_v, q); }
 void generate_UMINUS(quad* q) { /*DOES NOTHING*/ }
-void generate_AND(quad* q) {/*same*/}
-
-
 void generate_NEWTABLE (quad* q) { generate(newtable_v, q); }
 void generate_TABLEGETELM (quad* q) { generate(tablegetelem_v, q); }
 void generate_TABLESETELM (quad* q) { generate(tablesetelem_v, q); }
@@ -391,129 +401,210 @@ void generate_ASSIGN (quad* q) {
 void generate_NOP (quad* q){
 	
 	instruction* t = (instruction*) malloc(sizeof(instruction));  
-	t->arg1 = t->arg2 = t->result = malloc(sizeof(vmarg));
 	t->opcode = nop_v;
 	emit_instr(t);
 }
-
 void generate_JUMP(quad* q) { generate_relational(jump_v, q); }
 void generate_IF_EQ(quad* q) { generate_relational(jeq_v, q); }
 void generate_IF_NOTEQ(quad* q) { generate_relational(jne_v, q); }
-void generate_IF_GREATER(quad* q) { generate_relational(jgt_v, q); }
+void generate_IF_GREATER(quad* q) { printf("Entered gen_IFGREATER\n");generate_relational(jgt_v, q); }
 void generate_IF_GREATEREQ(quad* q) { generate_relational(jge_v, q); }
 void generate_IF_LESS(quad* q) { generate_relational(jlt_v, q); }
 void generate_IF_LESSEQ(quad* q) { generate_relational(jle_v, q); }
 
 void generate_NOT (quad* q){
 	q->taddress = nextinstructionlabel();
-	instruction* t = (instruction*) malloc(sizeof(instruction));  
+	instruction* t =  createInstruction();
 
 	t->opcode = jeq_v; 
+	t->srcLine = q->line;
+
 	make_operand(q->arg1, t->arg1);
-	make_booloperand(t->arg2, false); 
+	make_booloperand(t->arg2, 0); 
 	t->result->type = label_a;
 	t->result->val = nextinstructionlabel() + 3;
 	emit_instr(t);
 
-	t->opcode = assign_v; 
-	make_booloperand(t->arg1, false); 
-	reset_operand(t->arg2); 
-	make_operand(q->result, t->result); 
-	emit_instr(t);
+	instruction* t2 = createInstruction();
+	t2->srcLine = q->line;
+	t2->opcode = assign_v; 
+	make_booloperand(t2->arg1, 0);
+	t2->arg2 = NULL;//reset_operant
+	printf("Entering result make_opernad\n");
+	make_operand(q->result, t2->result); 
+	emit_instr(t2);
 
-	t->opcode = jump_v; 
-	reset_operand(t->arg1);
-	reset_operand(t->arg2);
-	t->result->type = label_a; 
-	t->result->val = nextinstructionlabel() + 2; 
-	emit_instr(t);
+	instruction* t3  = createInstruction();
+	t3->srcLine = q->line;
+	t3->opcode = jump_v; 
+	t3->arg1 = NULL;//reset_operant
+	t3->arg2 = NULL;//reset_operant
+	t3->result->type = label_a; 
+	t3->result->val = nextinstructionlabel() + 2; 
+	emit_instr(t3);
 
-	t->opcode = assign_v; 
-	make_booloperand(t->arg1, true); 
-	reset_operand(t->arg2); 
-	make_operand(q->result, t->result); 
-	emit_instr(t);
+	instruction* t4  = createInstruction();
+	t4->srcLine = q->line;
+	t4->opcode = assign_v;
+	make_booloperand(t4->arg1, 1); 
+	t4->arg2 = NULL; //reset_operant
+	make_operand(q->result, t4->result); 
+	emit_instr(t4);
 }
 
 void generate_OR (quad* q){
 	q->taddress = nextinstructionlabel(); 
-	instruction* t = (instruction*) malloc(sizeof(instruction));  
-
+	instruction* t = createInstruction();
+	t->srcLine = q->line;
 	t->opcode = jeq_v; 
 	make_operand(q->arg1, t->arg1); 
-	make_booloperand(t->arg2, true); 
+	make_booloperand(t->arg2, 1); 
 	t->result->type = label_a;
 	t->result->val = nextinstructionlabel() + 4;
 	emit_instr(t);
 
-	make_operand(q->arg2, t->arg1); 
-	t->result->val = nextinstructionlabel() + 3;
-	emit_instr(t); 
 
-	t->opcode = assign_v; 
-	make_booloperand(t->arg1, false); 
-	reset_operand(t->arg2); 
-	make_operand(q->result, t->result); 
-	emit_instr(t); 
+	instruction* t1 = createInstruction();
+	t1->srcLine = q->line;
+	make_operand(q->arg2, t1->arg1);
+	make_booloperand(t1->arg2, 1); 
+	t1->result->type = label_a;
+	t1->result->val = nextinstructionlabel() + 3;
+	emit_instr(t1); 
 
-	t->opcode = jump_v; 
-	reset_operand(t->arg1); 
-	reset_operand(t->arg2); 
-	t->result->type = label_a; 
-	t->result->val = nextinstructionlabel() + 2; 
+
+	instruction* t2 = createInstruction();
+	t2->srcLine = q->line;
+	t2->opcode = assign_v; 
+	make_booloperand(t2->arg1, 0); 
+	t2->arg2 = NULL; // reset_operand; 
+	make_operand(q->result, t2->result); 
+	emit_instr(t2); 
+
+	instruction* t3 = createInstruction();
+	t3->srcLine = q->line;
+	t3->opcode = jump_v; 
+	t3->arg1 = NULL; // reset_operand;
+	t3->arg2 = NULL; // reset_operand;
+	t3->result->type = label_a; 
+	t3->result->val = nextinstructionlabel() + 2; 
+	emit_instr(t3);
+
+	instruction* t4 = createInstruction();
+	t4->srcLine = q->line;
+	t4->opcode = assign_v; 
+	make_booloperand(t4->arg1, 1); 
+	t4->arg2 = NULL; //reset_operand
+	make_operand(q->result, t4->result); 
+	emit_instr(t4);
+}
+
+void generate_AND (quad* q){
+	q->taddress = nextinstructionlabel(); 
+	instruction* t = createInstruction();
+	t->srcLine = q->line;
+	t->opcode = jeq_v; 
+	make_operand(q->arg1, t->arg1); 
+	make_booloperand(t->arg2, 0); 
+	t->result->type = label_a;
+	t->result->val = nextinstructionlabel() + 4;
 	emit_instr(t);
 
-	t->opcode = assign_v; 
-	make_booloperand(t->arg1, true); 
-	reset_operand(t->arg2);
-	make_operand(q->result, t->result); 
-	emit_instr(t);
+
+	instruction* t1 = createInstruction();
+	t1->srcLine = q->line;
+	make_operand(q->arg2, t1->arg1);
+	make_booloperand(t1->arg2, 0); 
+	t1->result->type = label_a;
+	t1->result->val = nextinstructionlabel() + 3;
+	emit_instr(t1); 
+
+
+	instruction* t2 = createInstruction();
+	t2->srcLine = q->line;
+	t2->opcode = assign_v; 
+	make_booloperand(t2->arg1, 1); 
+	t2->arg2 = NULL; // reset_operand; 
+	make_operand(q->result, t2->result); 
+	emit_instr(t2); 
+
+	instruction* t3 = createInstruction();
+	t3->srcLine = q->line;
+	t3->opcode = jump_v; 
+	t3->arg1 = NULL; // reset_operand;
+	t3->arg2 = NULL; // reset_operand;
+	t3->result->type = label_a; 
+	t3->result->val = nextinstructionlabel() + 2; 
+	emit_instr(t3);
+
+	instruction* t4 = createInstruction();
+	t4->srcLine = q->line;
+	t4->opcode = assign_v; 
+	make_booloperand(t4->arg1, 0); 
+	t4->arg2 = NULL; //reset_operand
+	make_operand(q->result, t4->result); 
+	emit_instr(t4);
 }
 
 void generate_PARAM (quad* q){
 	q->taddress = nextinstructionlabel(); 
-	instruction* t = (instruction*) malloc(sizeof(instruction));
+	instruction* t = createInstruction();
+	t->srcLine = q->line;
 	t->opcode = pusharg_v; 
 	make_operand(q->arg1, t->arg1); 
+	printf("emit the pusharg\n");
 	emit_instr(t); 
 }
 
 void generate_CALL(quad* q){
 	q->taddress = nextinstructionlabel();
-	instruction* t = (instruction*) malloc(sizeof(instruction));
+	instruction* t = createInstruction();
+	t->srcLine = q->line;
 	t->opcode = call_v; 
-	make_operand(q->arg1, t->arg1); 
+	t->arg2 = NULL;
+	t->result = NULL;
+	make_operand(q->arg1, t->arg1);
+	printf("emit the call\n"); 
 	emit_instr(t);
-
 }
 
 void generate_GETRETVAL (quad* q){
 	q->taddress = nextinstructionlabel(); 
-	instruction* t = (instruction*) malloc(sizeof(instruction)); 
-	t->opcode = assign_v; 
+	instruction* t= createInstruction();
+	t->srcLine = q->line;
+	t->opcode = assign_v;
+	t->arg2 = NULL; 
 	make_operand(q->result, t->result);
-	make_retvaloperand(t->arg1); 
+	make_retvaloperand(t->arg1);
+	printf("emit the assign\n"); 
 	emit_instr(t); 
 }
 
 void generate_FUNCSTART(quad* q){
+	printf("executing generate_FUNCSTART\n");
 	symbol* f = q->result->sym;
 	f->taddress = nextinstructionlabel();
 	q->taddress = nextinstructionlabel();
 
 	userfuncs_newfunc(f);
+
 	pushFunc(f); // MUST SEE AGAIN!!
 
-	instruction* t = (instruction*) malloc(sizeof(instruction));
+	instruction* t = createInstruction();
+	t->srcLine = q->line;
 	t->opcode = funcenter_v;
+	t->arg1 = t->arg2 = NULL;
 	make_operand(q->result, t->result);
 	emit_instr(t);
 }
 
 void generate_RETURN(quad* q){
-	q->taddress = nextinstructionlabel();
-	instruction* t = (instruction*) malloc(sizeof(instruction));
+	printf("executing generate_RETURN\n");
+	q->taddress = nextinstructionlabel();	
+	instruction* t = createInstruction();
+	t->srcLine = q->line;
 	t->opcode = assign_v;
+	t->arg2 = NULL;
 	make_retvaloperand(t->result);
 	make_operand(q->arg1, t->arg1);
 	emit_instr(t);
@@ -521,54 +612,62 @@ void generate_RETURN(quad* q){
 	symbol* f = popFunc();
 	append(f, nextinstructionlabel());
 
-	t->opcode = jump_v;
-	reset_operand(t->arg1);
-	reset_operand(t->arg2);
+	instruction* t1 = createInstruction();
+	t1->srcLine = q->line;
+	t1->opcode = jump_v;
+	t1->arg1 = NULL; // reset_operand;
+	t1->arg2 = NULL; // reset_operand;
 
-	t->result->type = label_a;
-	emit_instr(t);
+	t1->result->type = label_a;
+	emit_instr(t1);
 }
 
 void generate_FUNCEND(quad* q){
+	printf("executing generate_FUNCEND\n");
 	symbol* f = popFunc();
 	backpatch(f, nextinstructionlabel());
 
 	q->taddress = nextinstructionlabel();
-	instruction* t = (instruction*) malloc(sizeof(instruction));
+	instruction* t = createInstruction();
+	t->srcLine = q->line;
 	t->opcode = funcexit_v;
+	t->arg1 = t->arg2 = NULL;
 	make_operand(q->result, t->result);
 	emit_instr(t);	
 }
 
 void backpatch(symbol* sym, int label){
+	printf("\nEnterd backpatch with sym->name: %s, label: %d", sym->name , label);
 	sym->returnList = label;
 }
 
 void reset_operand(vmarg* v){
-	v->type = nil_a;
-	v->val = -1;
+	v = NULL;
 }
 
 void append(symbol* sym, int label){
+	printf("\nEnterd append with sym->name: %s, label: %d", sym->name , label);
 	sym->returnList = label; 
 }
 
 void exec_generate(void){
-	for(unsigned i = 0; i <= currQuad; ++i){
-		printf("CurrQuad = %d\n", i);
-		if(currQuad == 0) generate_NOP(NULL);
-		else 
-			(*generators[quads[i].op])(quads+i);
-		
+	for(unsigned i = 0; i < currQuad; ++i){
+		printf("---------------------------------EXEC GENERATE---------------------------------");
+		printf("\nmake generatee with op  = %d, curr quad : %d\n", quads[i].op, currProcessedQuad);
+		(*generators[quads[i].op])(quads+i);
+		currProcessedQuad++;
 	}
+	patch_incomplete_jumps();
 }
 
-void add_incomplete_jump(unsigned instNo, unsigned iaddress){
+void add_incomplete_jump(unsigned instrNo, unsigned iaddress){
+	printf("Entered add_incomplete_jump\n");
+	printf("instrNo = %d, iadress = %d\n", instrNo, iaddress);
 
 	incomplete_jump* tmp = ij_head;
 	incomplete_jump* newNode = (incomplete_jump*) malloc(sizeof(incomplete_jump));
 
-	newNode->instrNo = instNo;
+	newNode->instrNo = instrNo;
 	newNode->iaddress = iaddress;
 	newNode->next = NULL;
 
@@ -584,12 +683,17 @@ void add_incomplete_jump(unsigned instNo, unsigned iaddress){
 
 void patch_incomplete_jumps(void){
 	 
+	printf("Entered patch_incomplete\n");
+	printf("currQuad = %d | currInstr = %d\n", currQuad, currInstr);
 	incomplete_jump* tmp = ij_head;
 	while (tmp != NULL){
+		printf("tmp->iaddress = %d\n", tmp->iaddress);
 		if (tmp->iaddress == currQuad) // Allaksa apo total se currQuad. Must see again!
 			instructions[tmp->instrNo].result->val = currInstr; // Nomizw thelei currInstr anti gia totalINstr. Must see again!
-		else
+		else{
 			instructions[tmp->instrNo].result->val = quads[tmp->iaddress].taddress; 
+			printf("instructions[%d].result->val = quads[%d].taddress(%d)", tmp->instrNo, tmp->iaddress, quads[tmp->iaddress].taddress);
+		}
 		tmp = tmp->next; 
 	}
 }
@@ -626,52 +730,65 @@ char *translateopcode_v(vmopcode opcode){
 		case 3  : name = "mul"; break;
 		case 4  : name = "div"; break;
 		case 5  : name = "mod"; break;
-		case 6  : name = "and"; break;
-		case 7  : name = "or"; break;
-		case 8  : name = "not"; break;
-		case 9  : name = "jeq"; break;
-		case 10 : name = "jne"; break;
-		case 11 : name = "jle"; break;
-		case 12 : name = "jge"; break;
-		case 13 : name = "jlt"; break;
-		case 14 : name = "jgt"; break;
-		case 15 : name = "call"; break;
-		case 16 : name = "pusharg"; break;
-		case 17 : name = "funcenter"; break;
-		case 18 : name = "funcexit"; break;
-		case 19 : name = "newtable"; break;
-		case 20 : name = "tablegetelem"; break;
-		case 21 : name = "tablesetelem"; break;
-		case 22 : name = "nop"; break;
+		case 6	: name = "uminus"; break;
+		case 7  : name = "and"; break;
+		case 8  : name = "or"; break;
+		case 9  : name = "not"; break;
+		case 10  : name = "jeq"; break;
+		case 11 : name = "jne"; break;
+		case 12 : name = "jle"; break;
+		case 13 : name = "jge"; break;
+		case 14 : name = "jlt"; break;
+		case 15 : name = "jgt"; break;
+		case 16 : name = "call"; break;
+		case 17 : name = "pusharg"; break;
+		case 18 : name = "funcenter"; break;
+		case 19 : name = "funcexit"; break;
+		case 20 : name = "newtable"; break;
+		case 21 : name = "tablegetelem"; break;
+		case 22 : name = "tablesetelem"; break;
 		case 23 : name = "jump"; break;
+		case 24 : name = "nop"; break;
 	}
 	return name;
 }
 
 void printInstrucrtions () {
 
-	printf("instrNo\topcode\targ1\targ2\tresult\tline\n");
+	printf("instrNo\topcode\tresult\targ1\targ2\tline\n");
 	printf("--------------------------------------------\n");
 
 	for(int i = 0; i < currInstr; i++){
+
 		printf("%d\t", i);
 		printf("%s\t", translateopcode_v(instructions[i].opcode));
 		
-		if(instructions[i].arg1->type == -1)
+
+		if(	instructions[i].result == NULL || (instructions[i].result->type == -1 || instructions[i].result->val == -1))
+			printf("%s\t", "");
+		else 
+			printf("%d|%d\t", instructions[i].result->type, instructions[i].result->val);
+		if(instructions[i].arg1 == NULL || (instructions[i].arg1->type == -1 || instructions[i].arg1->val == -1))
 			printf("%s\t", "");
 		else 
 			printf("%d|%d\t", instructions[i].arg1->type, instructions[i].arg1->val);
 		
-		if(instructions[i].arg2->type == -1)
+		if(instructions[i].arg2 == NULL || (instructions[i].arg2->type == -1 || instructions[i].arg2->val == -1))
 			printf("%s\t", "");
 		else 
 			printf("%d|%d\t", instructions[i].arg2->type, instructions[i].arg2->val);
 
-		if(instructions[i].result->type == -1)
-			printf("%s\t", "");
-		else 
-			printf("%d|%d\t", instructions[i].result->type, instructions[i].result->val);
-
 		printf("%d\n", instructions[i].srcLine);
 	}
+}
+
+instruction* createInstruction (){
+
+	instruction* t = malloc(sizeof(instruction)); 
+
+	t->arg1 = malloc(sizeof(vmarg));
+	t->arg2 = malloc(sizeof(vmarg));
+	t->result = malloc(sizeof(vmarg));
+
+	return t; 
 }

@@ -17,7 +17,7 @@ typedef enum {
     jle_v,          jge_v,          jlt_v,
     jgt_v,          call_v,         pusharg_v,
     funcenter_v,    funcexit_v,     newtable_v,
-    tablegetelem_v, tablesetelem_v, nop_v,  jump_v
+    tablegetelem_v, tablesetelem_v, jump_v, nop_v
 }vmopcode;
 
 typedef enum {
@@ -110,7 +110,7 @@ void make_numberoperand (vmarg* arg, double val);
 void make_booloperand (vmarg *arg, unsigned val);
 void make_retvaloperand (vmarg *arg);
 
-void add_incomplete_jump(unsigned instNo, unsigned iaddress);
+void add_incomplete_jump(unsigned instrNo, unsigned iaddress);
 void patch_incomplete_jumps(void);
 void printInstructions ();
 
@@ -132,4 +132,9 @@ void backpatch(symbol* sym, int label);
 
 void printInstrucrtions();
 void print_array();
+
+instruction* createInstruction ();
+
+
 #endif
+
