@@ -917,7 +917,7 @@ int main(int argc, char** argv){
 
     exec_generate();
     patch_incomplete_jumps();
-    printInstructions();
     fclose(fp);
+    avmbinaryfile();
     return 0;
 }
