@@ -2,8 +2,11 @@
 #include <unistd.h>
 #include "target.h"
 
+#define AVM_STACKSIZE	4096
+#define AVM_WIPEOUT(m) memset(&(m), 0, sizeof(m))	
 #define AVM_STACKENV_SIZE	4
 #define	AVM_MAX_INSTRUCTIONS (unsigned)	nop_v
+#define AVM_TABLE_HASHSIZE	211
 #define execute_add execute_arithmetic
 #define execute_sub execute_arithmetic
 #define execute_mul execute_arithmetic
@@ -11,10 +14,70 @@
 #define execute_mod execute_arithmetic
 
 
+
+
+
+typedef enum avm_mem_cell_t	{
+	number_m,
+	string_m,
+	bool_m,
+	table_m,
+	userfunc_m,
+	libfunc_m,
+	nil_m,
+	undef_m
+} avm_mem_cell_t;
+
+typedef struct avm_table avm_table;
+typedef struct avm_memcell	{
+
+	avm_mem_cell_t type;
+	union {
+		double numVal;
+		char* strVal;
+		unsigned char boolVal;
+		avm_table* tableVal;
+		unsigned funcVal;
+		char* libfuncVal;
+	}data;
+} avm_memcell;
+
+typedef struct avm_table_bucket {
+	avm_memcell key;
+	avm_memcell value;
+	avm_table_bucket* next;
+
+} avm_table_bucket;
+
+struct avm_table {
+	unsigned refCounter;
+	avm_table_bucket* strIndexed[AVM_TABLE_HASHSIZE];
+	avm_table_bucket* numIndexed[AVM_TABLE_HASHSIZE];
+	unsigned total;
+};
+
+
+
+avm_table* avm_tablenew (void);
+
+void avmtabledestroy (avm_table* t);
+
+void avm_tableincrefcounter (avm_table* t);
+
+void avm_tabledecrefcounter (avm_table* t);
+
+avm_tablebucketsinit (avm_table_bucket** p);
+
+void avm_tablebucketdestroy (avm_table_bucket** p);
+
+avm_memcell stack[AVM_STACKSIZE]; 
 avm_memcell	ax, bx, cx;
 avm_memcell	retval;
 unsigned top, topsp;
 
+
+
+static void avm_initstack(void);
 
 double	consts_getnumber (unsigned index);
 char*	consts_getstring (unsigned index);
@@ -31,7 +94,6 @@ extern void execute_sub (instruction * );
 extern void execute_mul (instruction * );
 extern void execute_div (instruction * );
 extern void execute_mod (instruction * );
-/*
 
 extern void execute_uminus (instruction * );
 
@@ -40,7 +102,7 @@ extern void execute_and (instruction * );
 extern void execute_or (instruction * );
 extern void execute_not (instruction * );
 
-*/
+
 
 extern void execute_jeq (instruction * );
 extern void execute_jne (instruction * );
@@ -145,7 +207,6 @@ unsigned avm_totalactuals (void);
 
 avm_memcell* avm_getactual (unsigned i);
 
-void libfunc_print (void);
 
 void avm_registerlibfunc(char *id, library_func_t addr);
 
@@ -228,7 +289,6 @@ char *typeStrings[] = {
 	"undef"
 };
 
-void libfunc_typeof (void);
 
 avm_memcell* avm_tablegetelem (avm_table* table, avm_memcell* index);
 
@@ -236,4 +296,8 @@ void avm_tablesetelem (avm_table* table, avm_memcell* index, avm_memcell* conten
 
 void avm_initialize (void);
 
+void libfunc_print (void);
+
 void libfunc_totalarguments (void);
+
+void libfunc_typeof (void);

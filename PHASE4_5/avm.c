@@ -1,4 +1,5 @@
 #include "avm.h"
+#include <assert.h>
 
 unsigned char	executionFinished = 0 ;
 unsigned 		pc = 0 ;
@@ -15,9 +16,72 @@ unsigned		totalActuals = 0 ;
 #define	AVM_SAVEDTOPSP_OFFSET	+1
 
 
+static void avm_initstack(void) {
+	for (unsigned i = 0; i < AVM_STACKSIZE; i++) {
+		AVM_WIPEOUT (stack[i]); 
+		stack[i].type= undef_m;
+	}
+}
 
+
+
+
+void avm_tableincrefcounter (avm_table* t) {
+
+	++t->refCounter;
+
+}
+
+void avm_tabledecrefcounter (avm_table* t) {
+
+	assert(t->refCounter);
+	if (!--t->refCounter > 0)	avmtabledestroy(t);
+
+}
+
+avm_tablebucketsinit (avm_table_bucket** p) {
+
+	for (unsigned i = 0; i < AVM_TABLE_HASHSIZE; ++i) {
+		p[i] = (avm_table_bucket*) 0 ;
+	}
+}
+
+void avm_tablebucketdestroy (avm_table_bucket** p) {
+
+	for (unsigned i = 0; i < AVM_TABLE_HASHSIZE; ++i , ++p) {
+
+		for (avm_table_bucket* b = *p; b;){
+			avm_table_bucket* del = b;
+			b = b->next;
+			avm_memcellclear (&del->key);
+			avm_memcellclear (&del->value);
+			free (del);
+		}
+		
+		p[i] = (avm_table_bucket*) 0;
+	}
+}
+
+avm_table* avm_tablenew (void) {
+
+	avm_table* t = (avm_table*) malloc (sizeof(avm_table));
+	AVM_WIPEOUT(*t);
+
+	t->refCounter = t->total = 0;
+	avm_tablebucketsinit (t->numIndexed);
+	avm_tablebucketsinit (t->strIndexed);
+
+	return t;
+}
+
+void avmtabledestroy (avm_table* t) {
+
+	avm_tablebucketdestroy (t->strIndexed);
+	avm_tablebucketdestroy (t->numIndexed);
+	free(t);
+}
 avm_memcell* avm_translate_operand (vmarg * arg, avm_memcell *reg){
-	swith (arg->type){
+	switch (arg->type){
 
 		case global_a:	return &stack[AVM_STACKSIZE - 1 - arg->val];
 
@@ -43,7 +107,7 @@ avm_memcell* avm_translate_operand (vmarg * arg, avm_memcell *reg){
 
 		case bool_a:	{
 
-			reg->tpe = bool_m;
+			reg->type = bool_m;
 			reg->data.boolVal = arg->val;
 			return reg;
 		}
@@ -374,7 +438,7 @@ unsigned char string_tobool (avm_memcell* m)	{
 		return m->data.strVal[0] != 0;
 }
 unsigned char bool_tobool (avm_memcell* m)	{
-	return m->bool.numVal;
+	return m->data.boolVal;
 }
 unsigned char table_tobool (avm_memcell* m)	{
 	return 1;
@@ -409,11 +473,11 @@ void execute_jeq (instruction* instr) {
 
 	if (rv1->type == undef_m || rv2->type == undef_m)
 		avm_error(" undef involved in equality!");
-	else if (rv->type== nil_m || rv2->type == nil_m)
+	else if (rv1->type== nil_m || rv2->type == nil_m)
 		result = rv1->type == nil_m && rv2->type == nil_m;
-	else if (rv->type== nil_m || rv2->type == nil_m)
+	else if (rv1->type== nil_m || rv2->type == nil_m)
 		result = (avm_tobool (rv1) == avm_tobool (rv2));
-	else if (rv->type != rv2->type) {
+	else if (rv1->type != rv2->type) {
 		avm_error(" %s == %s is illegal!", typeStrings[rv1->type],typeStrings[rv2->type]);
 	}
 	else {
@@ -494,24 +558,24 @@ void execute_tablesetelem (instruction* instr)	{
 	if (t->type != table_m)
 		avm_error("illegal use of type %s as table", typeStrings[t->type]);
 	else
-		avm_tablesetelem(t->data.tableVal, i, c)l
+		avm_tablesetelem(t->data.tableVal, i, c);
 }
 
 void avm_initialize (void)	{
 
 	avm_initstack();
 	avm_registerlibfunc ("print", libfunc_print);
-	avm_registerlibfunc ("input", libfunc_input);
-	avm_registerlibfunc ("objectmemberkeys", libfunc_objectmemberkeys);
-	avm_registerlibfunc ("objecttotalmembers", libfunc_objecttotalmembers);
-	avm_registerlibfunc ("objectcopy", libfunc_objectcopy);
+	//avm_registerlibfunc ("input", libfunc_input);
+	//avm_registerlibfunc ("objectmemberkeys", libfunc_objectmemberkeys);
+	//avm_registerlibfunc ("objecttotalmembers", libfunc_objecttotalmembers);
+	//avm_registerlibfunc ("objectcopy", libfunc_objectcopy);
 	avm_registerlibfunc ("totalarguments", libfunc_totalarguments);
-	avm_registerlibfunc ("argument", libfunc_argument);
+	//avm_registerlibfunc ("argument", libfunc_argument);
 	avm_registerlibfunc ("typeof", libfunc_typeof);
-	avm_registerlibfunc ("strtonum", libfunc_strtonum);
-	avm_registerlibfunc ("sqrt", libfunc_sqrt);
-	avm_registerlibfunc ("cos", libfunc_cos);
-	avm_registerlibfunc ("sin", libfunc_sin);
+	//avm_registerlibfunc ("strtonum", libfunc_strtonum);
+	//avm_registerlibfunc ("sqrt", libfunc_sqrt);
+	//avm_registerlibfunc ("cos", libfunc_cos);
+	//avm_registerlibfunc ("sin", libfunc_sin);
 
 }
 
