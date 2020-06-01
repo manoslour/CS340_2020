@@ -131,5 +131,14 @@ void print_array();
 
 instruction* createInstruction ();
 
+void avmbinaryfile();
+unsigned magicnumber();
+void arrays();
+void strings();
+void numbers();
+void userfunctions();
+void initLibfuncs();
+void libfunctions();
+
 #endif
 

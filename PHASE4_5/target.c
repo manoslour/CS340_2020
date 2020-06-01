@@ -1,5 +1,7 @@
 #include "target.h"
 
+FILE* fp;
+
 extern quad *quads;
 extern unsigned total;
 extern unsigned currQuad;
@@ -59,6 +61,62 @@ funcStack* funcstack = (funcStack*) 0;
 
 //-------------------------------------------------
 
+
+void avmbinaryfile(){
+	fp = fopen("target.abc", "w+");
+	fprintf(fp, "%d\n", magicnumber());
+	arrays();
+	printInstructions();
+	fclose(fp);
+}
+
+unsigned magicnumber(){
+	return 42069;
+}
+
+void arrays(){
+	strings();
+	numbers();
+	userfunctions();
+	libfunctions();
+}
+
+void strings(){
+	for(int i = 0; i < totalStringConsts; i++)
+		fprintf(fp, "%d %s\n", i, stringConsts[i]);
+}
+
+void numbers(){
+	for(int i = 0; i < totalNumConsts; i++)
+		fprintf(fp, "%d %f\n", i, numConsts[i]);
+}
+
+void userfunctions(){
+	for(int i = 0; i < totalUserFuncs; i++)
+		fprintf(fp, "%d %d %d %s\n", i, userFuncs[i].address, userFuncs[i].localSize, userFuncs[i].id);
+}
+
+void libfunctions(){
+	initLibfuncs();
+	for(int i = 0; i < totalNamedLibfuncs; i++)
+		fprintf(fp, "%d %s\n", i, namedLibfuncs[i]);
+}
+
+void initLibfuncs(){
+	libfuncs_newused("print");
+	libfuncs_newused("input");
+	libfuncs_newused("objectmemberkeys");
+	libfuncs_newused("objecttotalmembers");
+	libfuncs_newused("objectcopy");
+	libfuncs_newused("tootalarguments");
+	libfuncs_newused("argument");
+	libfuncs_newused("typeof");
+	libfuncs_newused("strtonum");
+	libfuncs_newused("sqrt");
+	libfuncs_newused("cos");
+	libfuncs_newused("sin");
+}
+
 unsigned consts_newnumber (double n){
 
 	unsigned ret_index;
@@ -94,16 +152,10 @@ unsigned consts_newstring (char* s){
 }
 
 unsigned libfuncs_newused (char* s){
-
 	unsigned ret_index;
 
 	if(namedLibfuncs == NULL)
-		namedLibfuncs = (char**) malloc(sizeof(char));
-	else{
-		char** new_array = (char**) realloc(namedLibfuncs, (totalNamedLibfuncs + 1) * sizeof(char));
-        namedLibfuncs = new_array;
-	}
-
+		namedLibfuncs = (char**) malloc((sizeof(char) + 8) * 12);
 	ret_index = totalNamedLibfuncs;
 	namedLibfuncs[totalNamedLibfuncs++] = strdup(s);
 	
@@ -112,9 +164,8 @@ unsigned libfuncs_newused (char* s){
 
 unsigned userfuncs_newfunc(symbol* sym){
 
-	printf("Entered userfuncs_newfunc\n");
 	if(totalUserFuncs){
-		for(int i = 0; i <= totalUserFuncs; i++){
+		for(int i = 0; i < totalUserFuncs; i++){
 			if(strcmp(sym->name, userFuncs[i].id) == 0){
 				printf("Function %s already in userFuncs Array\n", sym->name);
 				return i;
@@ -123,7 +174,6 @@ unsigned userfuncs_newfunc(symbol* sym){
 	}
 
 	unsigned ret_index;
-	printf("\n\nEnterd userfucnk to the array of userfuck\n\n");
 	if(userFuncs == NULL)
 		userFuncs = (userfunc*) malloc(sizeof(userfunc));
 	else{
@@ -326,11 +376,7 @@ void generate (vmopcode op, quad* quad ){
 
 	quad->taddress = nextinstructionlabel();
 	emit_instr(t);
-
-	printf("-----------Finished generate------------\n\n");
 }
-
-
 
 void make_numberoperand (vmarg* arg, double val){
 	arg->val = consts_newnumber(val); 
@@ -629,6 +675,7 @@ void append(symbol* sym, int label){
 }
 
 void exec_generate(void){
+
 	for(unsigned i = 0; i < currQuad; ++i){
 		printf("---------------------------------EXEC GENERATE---------------------------------");
 		printf("\nmake generatee with op  = %d, curr quad : %d\n", quads[i].op, currProcessedQuad);
@@ -703,29 +750,28 @@ char *translateopcode_v(vmopcode opcode){
 
 void printInstructions() {
 
-	printf("Instr#\topcode\tresult\targ1\targ2\tline\n");
-	printf("--------------------------------------------\n");
+	fprintf(fp, "Instr#\t\topcode\t\tresult\t\targ1\t\targ2\t\tline\n");
+	fprintf(fp, "----------------------------------------------------------------\n");
 
 	for(int i = 0; i < currInstr; i++){
 
-		printf("%d\t", i);
-		printf("%s\t", translateopcode_v(instructions[i].opcode));
-		
+		fprintf(fp, "%d\t\t", i);
+		fprintf(fp, "%s\t\t", translateopcode_v(instructions[i].opcode));
 
-		if(	instructions[i].result == NULL || (instructions[i].result->type == -1 || instructions[i].result->val == -1))
-			printf("%s\t", "");
+		if(	instructions[i].result == NULL || instructions[i].result->type == -1 || instructions[i].result->val == -1)
+			fprintf(fp, "%s\t\t", "");
 		else 
-			printf("%d|%d\t", instructions[i].result->type, instructions[i].result->val);
+			fprintf(fp, "%d|%d\t\t", instructions[i].result->type, instructions[i].result->val);
 		if(instructions[i].arg1 == NULL || (instructions[i].arg1->type == -1 || instructions[i].arg1->val == -1))
-			printf("%s\t", "");
+			fprintf(fp, "%s\t\t", "");
 		else 
-			printf("%d|%d\t", instructions[i].arg1->type, instructions[i].arg1->val);
+			fprintf(fp, "%d|%d\t\t", instructions[i].arg1->type, instructions[i].arg1->val);
 		
 		if(instructions[i].arg2 == NULL || (instructions[i].arg2->type == -1 || instructions[i].arg2->val == -1))
-			printf("%s\t", "");
+			fprintf(fp, "%s\t\t", "");
 		else 
-			printf("%d|%d\t", instructions[i].arg2->type, instructions[i].arg2->val);
+			fprintf(fp, "%d|%d\t\t", instructions[i].arg2->type, instructions[i].arg2->val);
 
-		printf("%d\n", instructions[i].srcLine);
+		fprintf(fp, "%d\n", instructions[i].srcLine);
 	}
 }
