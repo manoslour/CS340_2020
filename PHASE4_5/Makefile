@@ -20,4 +20,4 @@ target.o: target.c
 
 clean:
 	rm *o
-	rm parser.c parser.h scanner.c calc syntaxAnalysis parser.output quads.txt
+	rm parser.c parser.h scanner.c calc syntaxAnalysis parser.output quads.txt target.abc
