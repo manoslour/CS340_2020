@@ -81,21 +81,21 @@ void arrays(){
 }
 
 void strings(){
-	fprintf(fp, "#String Consts Array\n");
+	fprintf(fp, "#String Consts Array\n%d\n",totalStringConsts);
 	for(int i = 0; i < totalStringConsts; i++)
 		fprintf(fp, "%d %s\n", i, stringConsts[i]);
 	fprintf(fp, "\n");
 }
 
 void numbers(){
-	fprintf(fp, "#Number Consts Array\n");
+	fprintf(fp, "#Number Consts Array\n%d\n",totalNumConsts);
 	for(int i = 0; i < totalNumConsts; i++)
 		fprintf(fp, "%d %f\n", i, numConsts[i]);
 	fprintf(fp, "\n");
 }
 
 void userfunctions(){
-	fprintf(fp, "#Userfunc Consts Array\n");
+	fprintf(fp, "#Userfunc Consts Array\n%d\n",totalUserFuncs);
 	for(int i = 0; i < totalUserFuncs; i++)
 		fprintf(fp, "%d %d %d %s\n", i, userFuncs[i].address, userFuncs[i].localSize, userFuncs[i].id);
 	fprintf(fp, "\n");
@@ -103,7 +103,7 @@ void userfunctions(){
 
 void libfunctions(){
 	initLibfuncs();
-	fprintf(fp, "#Libfunc Consts Array\n");
+	fprintf(fp, "#Libfunc Consts Array\n%d\n", totalNamedLibfuncs);
 	for(int i = 0; i < totalNamedLibfuncs; i++)
 		fprintf(fp, "%d %s\n", i, namedLibfuncs[i]);
 	fprintf(fp, "\n");
