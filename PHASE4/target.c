@@ -324,13 +324,13 @@ void make_operand (expr* e, vmarg* arg){
 		/* Constants */
 
 		case constbool_e: {
-			printf("constbool_e CASE \n");
+			printf("constbool_e case \n");
 			arg->val = e->boolConst;
 			arg->type = bool_a;
 			break;
 		}
 		case conststring_e :{
-			printf("conststring_e CASE \n");
+			printf("conststring_e case \n");
 			arg->val = consts_newstring(e->strConst); 
 			arg->type = string_a; 
 			break;
@@ -613,6 +613,7 @@ void generate_CALL(quad* q){
 }
 
 void generate_GETRETVAL (quad* q){
+	printf("Entered gen_GETRETVAL\n");
 	q->taddress = nextinstructionlabel(); 
 	instruction* t= createInstruction();
 	t->srcLine = q->line;
@@ -644,6 +645,8 @@ void generate_FUNCSTART(quad* q){
 }
 
 void generate_RETURN(quad* q){
+	printf("Entered get_RETURN\n");
+
 	q->taddress = nextinstructionlabel();	
 	instruction* t = createInstruction();
 	t->srcLine = q->line;
@@ -657,7 +660,7 @@ void generate_RETURN(quad* q){
 	emit_instr(t);
 
 	symbol* f = peekFunc();
-	append(f, nextinstructionlabel());
+	f->returnList = append(f->returnList, nextinstructionlabel());
 
 	instruction* t1 = createInstruction();
 	t1->srcLine = q->line;
@@ -669,9 +672,12 @@ void generate_RETURN(quad* q){
 }
 
 void generate_FUNCEND(quad* q){
+
 	symbol* f = popFunc();
-	backpatch(f, nextinstructionlabel());
+	backpatch(f->returnList, nextinstructionlabel());
 	q->taddress = nextinstructionlabel();
+	printf("q->taddress = %d\n", q->taddress);
+
 	instruction* t = createInstruction();
 	t->srcLine = q->line;
 	t->opcode = funcexit_v;
@@ -680,16 +686,24 @@ void generate_FUNCEND(quad* q){
 	emit_instr(t);	
 }
 
-void backpatch(symbol* sym, int label){
+void backpatch(returnlist* list, int label){
 	printf("Entered backpatch\n");
-	printf("Sym = %s | label = %d\n", sym->name, label);
-	sym->returnList = label;
+	printf("list->label = %d\n", list->label);
+	returnlist *tmp = list;
+	while(tmp != NULL){
+		instructions[tmp->label].result->val = label;
+		tmp = tmp->next;
+	}
 }
 
-void append(symbol* sym, int label){
+returnlist* append(returnlist *list, int label){
 	printf("Enterd append\n");
-	printf("Sym = %s | label = %d\n", sym->name , label);
-	sym->returnList = label; 
+	returnlist* newNode = (returnlist*) malloc(sizeof(returnlist));
+	newNode->label = label;
+	newNode->next = list;
+	list = newNode;
+	printf("Exiting append\n");
+	return list;
 }
 
 void exec_generate(void){
