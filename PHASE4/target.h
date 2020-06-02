@@ -123,7 +123,6 @@ void pushFunc(symbol* func);
 symbol* popFunc();
 
 void append(symbol* sym, int label);
-void reset_operand(vmarg* v);
 void backpatch(symbol* sym, int label);
 
 void printInstructions();
