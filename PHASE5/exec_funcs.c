@@ -144,7 +144,7 @@ unsigned avm_totalactuals (void)	{
 
 avm_memcell* avm_getactual (unsigned i)	{
 	assert (i < avm_totalactuals());
-	return &stack[topsp + AVM_STACKENV_SIZE + 1+ i];
+	return &stack[topsp + AVM_STACKENV_SIZE + 1 + i];
 }
 
 /* implementation of the lib function print
