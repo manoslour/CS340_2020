@@ -678,7 +678,6 @@ void generate_FUNCEND(quad* q){
 
 void backpatch(returnlist* list, int label){
 	printf("Entered backpatch\n");
-	printf("list->label = %d\n", list->label);
 	returnlist *tmp = list;
 	while(tmp != NULL){
 		instructions[tmp->label].result->val = label;
