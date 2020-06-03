@@ -178,7 +178,6 @@ unsigned userfuncs_newfunc(symbol* sym){
 	if(totalUserFuncs){
 		for(int i = 0; i < totalUserFuncs; i++){
 			if(strcmp(sym->name, userFuncs[i].id) == 0){
-				printf("Function %s already in userFuncs Array\n", sym->name);
 				return i;
 			}
 		}
@@ -194,7 +193,7 @@ unsigned userfuncs_newfunc(symbol* sym){
 
 	ret_index = totalUserFuncs;
 
-	userFuncs[totalUserFuncs].address = sym->offset; // Is offset the wanted field?
+	userFuncs[totalUserFuncs].address = sym->offset;
 	userFuncs[totalUserFuncs].localSize = sym->totalLocals;
 	userFuncs[totalUserFuncs].id = strdup(sym->name);
 
@@ -202,24 +201,19 @@ unsigned userfuncs_newfunc(symbol* sym){
 	return ret_index;
 }
 
+/*
 void expandInstr(){
 
-	// printf("Entered expand instr\n");
-	// printf("TOtalinstr = %d | currINstr = %d\n", totalInstructions, currInstr);
-
-	// assert(totalInstructions == currInstr);
-
-	// instruction* t = (instruction*) malloc(NEW_INSTR_SIZE);
-
-	// printf("problema\n");
-	// if(instructions){
-	// 	printf("entered if\n");
-	// 	memcpy(t, instructions, CURR_INSTR_SIZE);
-	// 	free(instructions);
-	// }
-	// instructions = t;
-	// totalInstructions += EXPAND_INSTR_SIZE;
+	assert(totalInstructions == currInstr);
+	instruction* t = (instruction*) malloc(NEW_INSTR_SIZE);
+	if(instructions){
+		memcpy(t, instructions, CURR_INSTR_SIZE);
+		free(instructions);
+	}
+	instructions = t;
+	totalInstructions += EXPAND_INSTR_SIZE;
 }
+*/
 
 void emit_instr(instruction *t){
 	printf("Entered emit_instr\n");
@@ -301,11 +295,7 @@ instruction* createInstruction (){
 	return t; 
 }
 
-//-------------------------------------------------
-
 void make_operand (expr* e, vmarg* arg){
-	
-	printf("Entered make_operand\n");
 
 	switch (e->type){
 		case var_e :
@@ -324,9 +314,7 @@ void make_operand (expr* e, vmarg* arg){
 			}
 			break; /* from case newtable_e */
 		}
-
 		/* Constants */
-
 		case constbool_e: {
 			printf("constbool_e case \n");
 			arg->val = e->boolConst;
@@ -403,7 +391,6 @@ void make_retvaloperand (vmarg *arg){
 	arg->type = retval_a;
 	arg->val = -1; 
 }
-
 
 void generate_relational(vmopcode op, quad* quad){
 	instruction* t = (instruction*) malloc(sizeof(instruction)); 
@@ -744,8 +731,8 @@ void patch_incomplete_jumps(void){
 	 
 	incomplete_jump* tmp = ij_head;
 	while (tmp != NULL){
-		if (tmp->iaddress == currQuad) // Allaksa apo total se currQuad. Must see again!
-			instructions[tmp->instrNo].result->val = currInstr; // Nomizw thelei currInstr anti gia totalINstr. Must see again!
+		if (tmp->iaddress == currQuad)
+			instructions[tmp->instrNo].result->val = currInstr;
 		else
 			instructions[tmp->instrNo].result->val = quads[tmp->iaddress].taddress; 
 		tmp = tmp->next; 
