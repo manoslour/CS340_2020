@@ -122,9 +122,8 @@ symbol* peekFunc();
 void pushFunc(symbol* func);
 symbol* popFunc();
 
-void append(symbol* sym, int label);
-void reset_operand(vmarg* v);
-void backpatch(symbol* sym, int label);
+returnlist* append(returnlist* list, int label);
+void backpatch(returnlist* list, int label);
 
 void printInstructions();
 void print_array();

@@ -1,3 +1,6 @@
-function play(x, v){
-    return v;
+function f(x, y){
+    return x * y;
+    return a;
+    return b;
+    return xd;
 }

@@ -82,6 +82,7 @@ void arrays(){
 
 void strings(){
 	fprintf(fp, "#String Consts Array\n");
+	fprintf(fp, "%d\n", totalStringConsts);
 	for(int i = 0; i < totalStringConsts; i++)
 		fprintf(fp, "%d %s\n", i, stringConsts[i]);
 	fprintf(fp, "\n");
@@ -89,6 +90,7 @@ void strings(){
 
 void numbers(){
 	fprintf(fp, "#Number Consts Array\n");
+	fprintf(fp, "%d\n", totalNumConsts);
 	for(int i = 0; i < totalNumConsts; i++)
 		fprintf(fp, "%d %f\n", i, numConsts[i]);
 	fprintf(fp, "\n");
@@ -96,6 +98,7 @@ void numbers(){
 
 void userfunctions(){
 	fprintf(fp, "#Userfunc Consts Array\n");
+	fprintf(fp, "%d\n", totalUserFuncs);
 	for(int i = 0; i < totalUserFuncs; i++)
 		fprintf(fp, "%d %d %d %s\n", i, userFuncs[i].address, userFuncs[i].localSize, userFuncs[i].id);
 	fprintf(fp, "\n");
@@ -104,6 +107,7 @@ void userfunctions(){
 void libfunctions(){
 	initLibfuncs();
 	fprintf(fp, "#Libfunc Consts Array\n");
+	fprintf(fp, "%d\n", totalNamedLibfuncs);
 	for(int i = 0; i < totalNamedLibfuncs; i++)
 		fprintf(fp, "%d %s\n", i, namedLibfuncs[i]);
 	fprintf(fp, "\n");
@@ -174,7 +178,6 @@ unsigned userfuncs_newfunc(symbol* sym){
 	if(totalUserFuncs){
 		for(int i = 0; i < totalUserFuncs; i++){
 			if(strcmp(sym->name, userFuncs[i].id) == 0){
-				printf("Function %s already in userFuncs Array\n", sym->name);
 				return i;
 			}
 		}
@@ -190,7 +193,7 @@ unsigned userfuncs_newfunc(symbol* sym){
 
 	ret_index = totalUserFuncs;
 
-	userFuncs[totalUserFuncs].address = sym->offset; // Is offset the wanted field?
+	userFuncs[totalUserFuncs].address = sym->offset;
 	userFuncs[totalUserFuncs].localSize = sym->totalLocals;
 	userFuncs[totalUserFuncs].id = strdup(sym->name);
 
@@ -198,24 +201,19 @@ unsigned userfuncs_newfunc(symbol* sym){
 	return ret_index;
 }
 
+/*
 void expandInstr(){
 
-	// printf("Entered expand instr\n");
-	// printf("TOtalinstr = %d | currINstr = %d\n", totalInstructions, currInstr);
-
-	// assert(totalInstructions == currInstr);
-
-	// instruction* t = (instruction*) malloc(NEW_INSTR_SIZE);
-
-	// printf("problema\n");
-	// if(instructions){
-	// 	printf("entered if\n");
-	// 	memcpy(t, instructions, CURR_INSTR_SIZE);
-	// 	free(instructions);
-	// }
-	// instructions = t;
-	// totalInstructions += EXPAND_INSTR_SIZE;
+	assert(totalInstructions == currInstr);
+	instruction* t = (instruction*) malloc(NEW_INSTR_SIZE);
+	if(instructions){
+		memcpy(t, instructions, CURR_INSTR_SIZE);
+		free(instructions);
+	}
+	instructions = t;
+	totalInstructions += EXPAND_INSTR_SIZE;
 }
+*/
 
 void emit_instr(instruction *t){
 	printf("Entered emit_instr\n");
@@ -297,11 +295,7 @@ instruction* createInstruction (){
 	return t; 
 }
 
-//-------------------------------------------------
-
 void make_operand (expr* e, vmarg* arg){
-	
-	printf("Entered make_operand\n");
 
 	switch (e->type){
 		case var_e :
@@ -320,17 +314,15 @@ void make_operand (expr* e, vmarg* arg){
 			}
 			break; /* from case newtable_e */
 		}
-
 		/* Constants */
-
 		case constbool_e: {
-			printf("constbool_e CASE \n");
+			printf("constbool_e case \n");
 			arg->val = e->boolConst;
 			arg->type = bool_a;
 			break;
 		}
 		case conststring_e :{
-			printf("conststring_e CASE \n");
+			printf("conststring_e case \n");
 			arg->val = consts_newstring(e->strConst); 
 			arg->type = string_a; 
 			break;
@@ -399,7 +391,6 @@ void make_retvaloperand (vmarg *arg){
 	arg->type = retval_a;
 	arg->val = -1; 
 }
-
 
 void generate_relational(vmopcode op, quad* quad){
 	instruction* t = (instruction*) malloc(sizeof(instruction)); 
@@ -584,11 +575,17 @@ void generate_AND (quad* q){
 }
 
 void generate_PARAM (quad* q){
+	printf("Entered generate_PARAM\n");
 	q->taddress = nextinstructionlabel(); 
 	instruction* t = createInstruction();
 	t->srcLine = q->line;
-	t->opcode = pusharg_v; 
-	make_operand(q->arg1, t->arg1); 
+	t->opcode = pusharg_v;
+
+	t->arg2 = NULL;
+	t->result = NULL;
+	
+	if(q->arg1)
+		make_operand(q->arg1, t->arg1); 
 	emit_instr(t); 
 }
 
@@ -596,20 +593,27 @@ void generate_CALL(quad* q){
 	q->taddress = nextinstructionlabel();
 	instruction* t = createInstruction();
 	t->srcLine = q->line;
-	t->opcode = call_v; 
+	t->opcode = call_v;
+
 	t->arg2 = NULL;
 	t->result = NULL;
-	make_operand(q->arg1, t->arg1);
+	
+	if(q->arg1)
+		make_operand(q->arg1, t->arg1);
 	emit_instr(t);
 }
 
 void generate_GETRETVAL (quad* q){
+	printf("Entered gen_GETRETVAL\n");
 	q->taddress = nextinstructionlabel(); 
 	instruction* t= createInstruction();
 	t->srcLine = q->line;
 	t->opcode = assign_v;
-	t->arg2 = NULL; 
-	make_operand(q->result, t->result);
+
+	t->arg2 = NULL;
+
+	if(q->result) 
+		make_operand(q->result, t->result);
 	make_retvaloperand(t->arg1);
 	emit_instr(t); 
 }
@@ -632,6 +636,8 @@ void generate_FUNCSTART(quad* q){
 }
 
 void generate_RETURN(quad* q){
+	printf("Entered get_RETURN\n");
+
 	q->taddress = nextinstructionlabel();	
 	instruction* t = createInstruction();
 	t->srcLine = q->line;
@@ -645,7 +651,7 @@ void generate_RETURN(quad* q){
 	emit_instr(t);
 
 	symbol* f = peekFunc();
-	append(f, nextinstructionlabel());
+	f->returnList = append(f->returnList, nextinstructionlabel());
 
 	instruction* t1 = createInstruction();
 	t1->srcLine = q->line;
@@ -657,9 +663,12 @@ void generate_RETURN(quad* q){
 }
 
 void generate_FUNCEND(quad* q){
+
 	symbol* f = popFunc();
-	backpatch(f, nextinstructionlabel());
+	backpatch(f->returnList, nextinstructionlabel());
 	q->taddress = nextinstructionlabel();
+	printf("q->taddress = %d\n", q->taddress);
+
 	instruction* t = createInstruction();
 	t->srcLine = q->line;
 	t->opcode = funcexit_v;
@@ -668,24 +677,31 @@ void generate_FUNCEND(quad* q){
 	emit_instr(t);	
 }
 
-void backpatch(symbol* sym, int label){
-	sym->returnList = label;
+void backpatch(returnlist* list, int label){
+	printf("Entered backpatch\n");
+	printf("list->label = %d\n", list->label);
+	returnlist *tmp = list;
+	while(tmp != NULL){
+		instructions[tmp->label].result->val = label;
+		tmp = tmp->next;
+	}
 }
 
-void reset_operand(vmarg* v){
-	v = NULL;
-}
-
-void append(symbol* sym, int label){
-	printf("\nEnterd append with sym->name: %s, label: %d", sym->name , label);
-	sym->returnList = label; 
+returnlist* append(returnlist *list, int label){
+	printf("Enterd append\n");
+	returnlist* newNode = (returnlist*) malloc(sizeof(returnlist));
+	newNode->label = label;
+	newNode->next = list;
+	list = newNode;
+	printf("Exiting append\n");
+	return list;
 }
 
 void exec_generate(void){
 
 	for(unsigned i = 0; i < currQuad; ++i){
 		printf("---------------------------------EXEC GENERATE---------------------------------");
-		printf("\nmake generatee with op  = %d, curr quad : %d\n", quads[i].op, currProcessedQuad);
+		printf("\nmake generatee with op  = %d, curr quad : %d\n", quads[i].op, currProcessedQuad+1);
 		(*generators[quads[i].op])(quads+i);
 		currProcessedQuad++;
 	}
@@ -715,8 +731,8 @@ void patch_incomplete_jumps(void){
 	 
 	incomplete_jump* tmp = ij_head;
 	while (tmp != NULL){
-		if (tmp->iaddress == currQuad) // Allaksa apo total se currQuad. Must see again!
-			instructions[tmp->instrNo].result->val = currInstr; // Nomizw thelei currInstr anti gia totalINstr. Must see again!
+		if (tmp->iaddress == currQuad)
+			instructions[tmp->instrNo].result->val = currInstr;
 		else
 			instructions[tmp->instrNo].result->val = quads[tmp->iaddress].taddress; 
 		tmp = tmp->next; 
@@ -757,28 +773,28 @@ char *translateopcode_v(vmopcode opcode){
 
 void printInstructions() {
 
-	fprintf(fp, "Instr#\t\topcode\t\tresult\t\targ1\t\targ2\t\tline\n");
-	fprintf(fp, "----------------------------------------------------------------\n");
+	fprintf(fp, "Instr#\t\topcode\t\t\tresult\t\targ1\t\targ2\t\tline\n");
+	fprintf(fp, "--------------------------------------------------------------------\n");
 
 	for(int i = 0; i < currInstr; i++){
 
-		fprintf(fp, "%d\t\t", i);
-		fprintf(fp, "%s\t\t", translateopcode_v(instructions[i].opcode));
+		fprintf(fp, "%-6d\t\t", i);
+		fprintf(fp, "%-6s\t\t\t", translateopcode_v(instructions[i].opcode));
 
 		if(	instructions[i].result == NULL || instructions[i].result->type == -1 || instructions[i].result->val == -1)
-			fprintf(fp, "%s\t\t", "");
+			fprintf(fp, "%-6s\t\t", "");
 		else 
-			fprintf(fp, "%d|%d\t\t", instructions[i].result->type, instructions[i].result->val);
+			fprintf(fp, "%d|%-3d\t\t", instructions[i].result->type, instructions[i].result->val);
 		if(instructions[i].arg1 == NULL || (instructions[i].arg1->type == -1 || instructions[i].arg1->val == -1))
-			fprintf(fp, "%s\t\t", "");
+			fprintf(fp, "%-6s\t\t", "");
 		else 
-			fprintf(fp, "%d|%d\t\t", instructions[i].arg1->type, instructions[i].arg1->val);
+			fprintf(fp, "%d|%-3d\t\t", instructions[i].arg1->type, instructions[i].arg1->val);
 		
 		if(instructions[i].arg2 == NULL || (instructions[i].arg2->type == -1 || instructions[i].arg2->val == -1))
-			fprintf(fp, "%s\t\t", "");
+			fprintf(fp, "%-6s\t\t", "");
 		else 
-			fprintf(fp, "%d|%d\t\t", instructions[i].arg2->type, instructions[i].arg2->val);
+			fprintf(fp, "%d|%-3d\t\t", instructions[i].arg2->type, instructions[i].arg2->val);
 
-		fprintf(fp, "%d\n", instructions[i].srcLine);
+		fprintf(fp, "%-6d\n", instructions[i].srcLine);
 	}
 }

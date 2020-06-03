@@ -87,6 +87,11 @@ typedef struct quad {
 	unsigned int taddress; //PHASE_4 ADDITION.
 }quad;
 
+typedef struct returnlist {
+	unsigned label;
+	struct returnlist *next;
+}returnlist;
+
 typedef struct symbol {
 	char *name;
 	bool isActive;
@@ -94,7 +99,7 @@ typedef struct symbol {
 	unsigned int line;
 	unsigned int iaddress;
 	unsigned int taddress; //PHASE4
-	unsigned int returnList; //PHASE4
+	struct returnlist *returnList; //PHASE4
 	symbol_t type;
 	scopespace_t space;
 	unsigned int offset;
