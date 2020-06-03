@@ -62,7 +62,7 @@ generator_func_t generators[] = {
 //-------------------------------------------------
 
 void avmbinaryfile(){
-	fp = fopen("target.abc", "w+");
+	fp = fopen("../target.abc", "w+");
 	fprintf(fp, "%d\n\n", magicnumber());
 	arrays();
 	printInstructions();
