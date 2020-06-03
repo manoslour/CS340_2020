@@ -4,23 +4,25 @@ extern avm_memcell stack[AVM_STACKSIZE];
 extern avm_memcell	ax, bx;
 extern avm_memcell	retval;
 extern unsigned top;
+extern char* avm_tostring (avm_memcell*);
+extern void avm_assign (avm_memcell* lv, avm_memcell* rv);
 
 void execute_newtable (instruction* instr)	{
-	avm_memcell* lv = avm_translate_operand (&instr->result, (avm_memcell*) 0);
+	avm_memcell* lv = avm_translate_operand (instr->result, (avm_memcell*) 0);
 	assert (lv && (&stack[AVM_STACKSIZE-1] >= lv && lv > &stack[top] || lv == &retval));
 
 	avm_memcellclear (lv);
 
 	lv->type = table_m;
-	lv->data.tableVal = avm_table_new ();
+	lv->data.tableVal = avm_tablenew();
 	avm_tableincrefcounter (lv->data.tableVal);
 }
 
 void execute_tablegetelem (instruction* instr)	{
     
-	avm_memcell* lv = avm_translate_operand (&instr->result, (avm_memcell*) 0);
-	avm_memcell* t = avm_translate_operand (&instr->arg1, (avm_memcell*) 0);
-	avm_memcell *i = avm_translate_operand (&instr->arg2, &ax);
+	avm_memcell* lv = avm_translate_operand (instr->result, (avm_memcell*) 0);
+	avm_memcell* t = avm_translate_operand (instr->arg1, (avm_memcell*) 0);
+	avm_memcell *i = avm_translate_operand (instr->arg2, &ax);
 
 	assert (lv && (&stack[AVM_STACKSIZE-1] >=lv && lv > &stack[top] || lv == &retval ));
 	assert (t && (&stack[AVM_STACKSIZE-1] >= t && t > &stack[top] ));
@@ -48,9 +50,9 @@ void execute_tablegetelem (instruction* instr)	{
 
 void execute_tablesetelem (instruction* instr)	{
 
-	avm_memcell* t = avm_translate_operand (&instr->result, (avm_memcell*) 0);
-	avm_memcell* i = avm_translate_operand (&instr->arg1, &ax);
-	avm_memcell *c = avm_translate_operand (&instr->arg2, &bx);
+	avm_memcell* t = avm_translate_operand (instr->result, (avm_memcell*) 0);
+	avm_memcell* i = avm_translate_operand (instr->arg1, &ax);
+	avm_memcell *c = avm_translate_operand (instr->arg2, &bx);
 
 	assert(t && (&stack[AVM_STACKSIZE-1] >= t && t > &stack[top]));
 	assert(i && c);
@@ -61,3 +63,6 @@ void execute_tablesetelem (instruction* instr)	{
 	else
 		avm_tablesetelem(t->data.tableVal, i, c);
 }
+
+avm_memcell* avm_tablegetelem (avm_table* table, avm_memcell* index){/* ADD CODE*/}
+void avm_tablesetelem (avm_table* table, avm_memcell* index, avm_memcell* content){/* ADD CODE */}
