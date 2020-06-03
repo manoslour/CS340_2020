@@ -1,3 +1,6 @@
+#ifndef _EXEC_ARITH_H_
+#define _EXEC_ARITH_H_
+
 #include "avm.h"
 
 #define execute_add execute_arithmetic
@@ -21,3 +24,5 @@ double mod_impl (double x, double y);
 
 void execute_arithmetic (instruction* instr);
 typedef double (*arithmetic_func_t) (double x, double y);
+
+#endif

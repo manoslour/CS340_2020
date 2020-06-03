@@ -1,3 +1,6 @@
+#ifndef _EXEC_FUNCS_H_
+#define _EXEC_FUNCS_H_
+
 #include "avm.h"
 
 #define AVM_NUMACTUALS_OFFSET	+4
@@ -21,7 +24,7 @@ unsigned avm_get_envvalue (unsigned i);
 userfunc* avm_getfuncinfo (unsigned address);
 
 typedef void (*library_func_t) (void);
-library_func_t* avm_getlibraryfunc (char* id); /*Typical hashing*/
+library_func_t avm_getlibraryfunc (char* id); /*Typical hashing*/
 
 unsigned avm_totalactuals (void);
 avm_memcell* avm_getactual (unsigned i);
@@ -43,3 +46,5 @@ char* userfunc_tostring (avm_memcell*);
 char* libfunc_tostring (avm_memcell*);
 char* nil_tostring (avm_memcell*);
 char* undef_tostring (avm_memcell*);
+
+#endif

@@ -5,8 +5,8 @@ extern avm_memcell	ax, bx, cx;
 extern avm_memcell	retval;
 extern unsigned top, topsp;
 
-extern unsigned char executionFinished = 0 ;
-extern unsigned pc = 0 ;
+extern unsigned char executionFinished;
+extern unsigned pc;
 
 tobool_func_t toboolFuncs[] = {
 	number_tobool,
@@ -36,8 +36,8 @@ unsigned char avm_tobool (avm_memcell* m) {
 void execute_jeq (instruction* instr) {
 
 	assert(instr->result->type == label_a);
-	avm_memcell* rv1 = avm_translate_operand(&instr->arg1, &ax);
-	avm_memcell* rv2 = avm_translate_operand(&instr->arg2, &bx);
+	avm_memcell* rv1 = avm_translate_operand(instr->arg1, &ax);
+	avm_memcell* rv2 = avm_translate_operand(instr->arg2, &bx);
 
 	unsigned char result = 0;
 
@@ -56,3 +56,9 @@ void execute_jeq (instruction* instr) {
 	if(!executionFinished && result)
 		pc = instr->result->val;
 }
+
+extern void execute_jne (instruction* instr){/* ADD CODE */}
+extern void execute_jle (instruction* instr){/* ADD CODE */}
+extern void execute_jge (instruction* instr){/* ADD CODE */}
+extern void execute_jlt (instruction* instr){/* ADD CODE */}
+extern void execute_jgt (instruction* instr){/* ADD CODE */}

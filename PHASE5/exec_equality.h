@@ -1,3 +1,6 @@
+#ifndef _EXEC_EQUALITY_H_
+#define _EXEC_EQUALITY_H_
+
 #include "avm.h"
 
 unsigned char number_tobool (avm_memcell* m);
@@ -18,3 +21,5 @@ extern void execute_jlt (instruction*);
 extern void execute_jgt (instruction*);
 
 typedef unsigned char (*tobool_func_t)(avm_memcell*);
+
+#endif

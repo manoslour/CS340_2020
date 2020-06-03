@@ -26,9 +26,9 @@ execute_func_t executeFuncs[] = {
 	execute_div,
 	execute_mod,
 	//execute_uminus,
-	execute_and,
-	execute_or,
-	execute_not,
+	//execute_and,
+	//execute_or,
+	//execute_not,
 	execute_jeq,
 	execute_jne,
 	execute_jle,
@@ -42,7 +42,7 @@ execute_func_t executeFuncs[] = {
 	execute_newtable,
 	execute_tablegetelem,
 	execute_tablesetelem,
-	execute_nop
+	//execute_nop
 };
 
 memclear_func_t memclearFuncs[] = {
@@ -93,8 +93,8 @@ void avm_tablebucketsdestroy (avm_table_bucket** p) {
 }
 
 void avmtabledestroy (avm_table* t) {
-	avm_tablebucketdestroy (t->strIndexed);
-	avm_tablebucketdestroy (t->numIndexed);
+	avm_tablebucketsdestroy (t->strIndexed);
+	avm_tablebucketsdestroy (t->numIndexed);
 	free(t);
 }
 
@@ -196,3 +196,12 @@ void memclear_table (avm_memcell* m) {
 
 void avm_warning( char* format){/*ADD CODE*/}
 void avm_error (char* format, char* s){/*ADD CODE*/}
+
+double	consts_getnumber (unsigned index){/*ADD CODE*/}
+char*	consts_getstring (unsigned index){/*ADD CODE*/}
+char*	libfuncs_getused (unsigned index){/*ADD CODE*/}
+
+int main(){
+	printf("LETS DO IT\n");
+	return 0;
+}

@@ -4,7 +4,7 @@ extern avm_memcell stack[AVM_STACKSIZE];
 extern avm_memcell	ax, bx;
 extern avm_memcell	retval;
 extern unsigned top;
-extern unsigned char executionFinished = 0 ;
+extern unsigned char executionFinished;
 
 arithmetic_func_t arithmeticFuncs[] = {
 	add_impl,
@@ -21,10 +21,10 @@ double div_impl (double x, double y)	{ /* error check ? */return x/y;}
 double mod_impl (double x, double y)	{ /* error check ? */return ((unsigned) x) % ((unsigned) y);}
 
 void execute_arithmetic (instruction* instr) {
-	avm_memcell* lv = avm_translate_operand (&instr->result, (avm_memcell*) 0);
-	avm_memcell* rv1 = avm_translate_operand (&instr->arg1, &ax);
-	avm_memcell* rv2 = avm_translate_operand (&instr->arg2, &bx);
-	assert(lv && (&stack[AVM_STACKSIZE-1] >= lv > &stack[top] || lv==&retval));
+	avm_memcell* lv = avm_translate_operand (instr->result, (avm_memcell*) 0);
+	avm_memcell* rv1 = avm_translate_operand (instr->arg1, &ax);
+	avm_memcell* rv2 = avm_translate_operand (instr->arg2, &bx);
+	assert(lv && (&stack[AVM_STACKSIZE-1] >= lv && lv > &stack[top] || lv == &retval));
 	assert(rv1 && rv2);
 
 	if (rv1->type != number_m || rv2->type != number_m) {

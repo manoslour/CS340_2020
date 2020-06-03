@@ -4,12 +4,13 @@ extern avm_memcell stack[AVM_STACKSIZE];
 extern avm_memcell	ax, bx, cx;
 extern avm_memcell	retval;
 extern unsigned top, topsp;
-extern unsigned char executionFinished = 0 ;
-extern unsigned pc = 0 ;
-extern unsigned currLine = 0 ;
-extern unsigned codeSize = 0 ;
-extern instruction* code = (instruction*) 0 ;
-extern unsigned totalActuals = 0 ;
+extern unsigned char executionFinished;
+extern unsigned pc;
+extern unsigned currLine;
+extern unsigned codeSize;
+extern instruction* code;
+extern unsigned totalActuals;
+extern void avm_assign (avm_memcell* lv, avm_memcell* rv);
 
 tostring_func_t tostringFuncs[] = {
 	number_tostring,
@@ -33,9 +34,18 @@ char *typeStrings[] = {
 	"undef"
 };
 
+char* number_tostring (avm_memcell* cell){/*ADD CODE*/}
+char* string_tostring (avm_memcell* cell){/*ADD CODE*/}
+char* bool_tostring (avm_memcell* cell){/*ADD CODE*/}
+char* table_tostring (avm_memcell* cell){/*ADD CODE*/}
+char* userfunc_tostring (avm_memcell* cell){/*ADD CODE*/}
+char* libfunc_tostring (avm_memcell* cell){/*ADD CODE*/}
+char* nil_tostring (avm_memcell* cell){/*ADD CODE*/}
+char* undef_tostring (avm_memcell* cell){/*ADD CODE*/}
+
 void execute_call (instruction *instr){
 
-	avm_memcell *func = avm_translate_operand (&instr->result, &ax); //&????
+	avm_memcell *func = avm_translate_operand (instr->result, &ax); //&????
 	assert (func);
 	avm_callsaveenvironment();
 
@@ -118,12 +128,12 @@ void execute_funcexit (instruction* unused) {
 		avm_memcellclear(&stack[oldTop]);
 }
 
-library_func_t* avm_getlibraryfunc(char* id){
+library_func_t avm_getlibraryfunc(char* id){
     //needs implementation;
 }
 
 void avm_calllibfunc (char* id)	{
-	library_func_t f = avm_getlibraryfunc (id);
+	library_func_t f = avm_getlibraryfunc(id);
 	if (!f) {
 		//avm_error("unsupported lib func '%s' called! ", id);
 		executionFinished = 1;
@@ -152,10 +162,10 @@ avm_memcell* avm_getactual (unsigned i)	{
 
 void libfunc_print (void)	{
 	unsigned n = avm_totalactuals();
-	for (unsigned i = 0 ; i < n ; ++i ) {
-		char* s = avm_getactual(i);
-		puts (s);
-		free (s);
+	for (unsigned i = 0; i < n; ++i ) {
+		//char* s = avm_getactual(i); | NEEDS FIX - WE HAVE INCOMPATIBLE TYPES
+		//puts (s);
+		//free (s);
 	}
 }
 
@@ -169,8 +179,9 @@ void execute_pusharg (instruction* instr){
 
 void libfunc_typeof (void) {
 	unsigned n = avm_totalactuals();
-	if (n != 1)
-		avm_error ("one argument (not %d) expected in 'typeof'", n);
+	if (n != 1){
+		//avm_error ("one argument (not %d) expected in 'typeof'", n);
+	}
 	else {
 		/* That's how a libfunc returns a result
 			It has to only set the 'retval' register
@@ -187,7 +198,7 @@ void avm_registerlibfunc(char *id, library_func_t addr){
 
 void avm_initialize (void)	{
 
-	avm_initstack();
+	//avm_initstack(); --> MUST FIX IN MAKEFILE
 	avm_registerlibfunc ("print", libfunc_print);
 	//avm_registerlibfunc ("input", libfunc_input);
 	//avm_registerlibfunc ("objectmemberkeys", libfunc_objectmemberkeys);
