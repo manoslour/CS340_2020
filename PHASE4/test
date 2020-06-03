@@ -1,9 +1,3 @@
-x = "manos";
-y = "loukas";
-a = 1;
-b = 2;
-w = f + g;
 function play(x, v){
-    x = v;
     return v;
 }
