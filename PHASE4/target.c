@@ -636,7 +636,6 @@ void generate_FUNCSTART(quad* q){
 }
 
 void generate_RETURN(quad* q){
-	printf("Entered get_RETURN\n");
 
 	q->taddress = nextinstructionlabel();	
 	instruction* t = createInstruction();
@@ -644,8 +643,8 @@ void generate_RETURN(quad* q){
 	t->opcode = assign_v;
 	t->arg2 = NULL;
 	make_retvaloperand(t->result);
-	if(q->arg1)
-		make_operand(q->arg1, t->arg1);
+	if(q->result)
+		make_operand(q->result, t->arg1);
 	else
 		t->arg1 = NULL;
 	emit_instr(t);
