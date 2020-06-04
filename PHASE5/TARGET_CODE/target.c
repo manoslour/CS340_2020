@@ -5,6 +5,7 @@ FILE* fp;
 extern quad *quads;
 extern unsigned total;
 extern unsigned currQuad;
+extern unsigned int programVarOffset;
 
 unsigned currProcessedQuad = 0;
 
@@ -63,7 +64,8 @@ generator_func_t generators[] = {
 
 void avmbinaryfile(){
 	fp = fopen("../target.abc", "w+");
-	fprintf(fp, "%d\n\n", magicnumber());
+	fprintf(fp, "%d\n", magicnumber());
+	fprintf(fp, "%d\n", programVarOffset);
 	arrays();
 	printInstructions();
 	fclose(fp);
@@ -784,7 +786,7 @@ char *translateopcode_v(vmopcode opcode){
 	}
 	return name;
 }
-
+/*
 void printInstructions() {
 
 	fprintf(fp, "Instr#\t\topcode\t\t\tresult\t\targ1\t\targ2\t\tline\n");
@@ -810,5 +812,35 @@ void printInstructions() {
 			fprintf(fp, "%d|%-3d\t\t", instructions[i].arg2->type, instructions[i].arg2->val);
 
 		fprintf(fp, "%-6d\n", instructions[i].srcLine);
+	}
+}
+*/
+
+void printInstructions() {
+
+	fprintf(fp, "Instr#\t\topcode\t\t\tresult\t\targ1\t\targ2\t\tline\n");
+	fprintf(fp, "--------------------------------------------------------------------\n");
+
+	for(int i = 0; i < currInstr; i++){
+
+		fprintf(fp, "%d ", i);
+		fprintf(fp, "%s", translateopcode_v(instructions[i].opcode));
+
+		if(	instructions[i].result == NULL || instructions[i].result->type == -1 || instructions[i].result->val == -1)
+			fprintf(fp, "<%s >", "");
+		else 
+			fprintf(fp, "<%d %d>", instructions[i].result->type, instructions[i].result->val);
+		
+		if(instructions[i].arg1 == NULL || (instructions[i].arg1->type == -1 || instructions[i].arg1->val == -1))
+			fprintf(fp, "{%s }", "");
+		else 
+			fprintf(fp, "{%d %d}", instructions[i].arg1->type, instructions[i].arg1->val);
+		
+		if(instructions[i].arg2 == NULL || (instructions[i].arg2->type == -1 || instructions[i].arg2->val == -1))
+			fprintf(fp, "[%s ]", "");
+		else 
+			fprintf(fp, "[%d %d]", instructions[i].arg2->type, instructions[i].arg2->val);
+
+		fprintf(fp, "%d\n", instructions[i].srcLine);
 	}
 }
