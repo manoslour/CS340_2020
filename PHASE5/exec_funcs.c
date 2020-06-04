@@ -180,7 +180,7 @@ void execute_pusharg (instruction* instr){
 void libfunc_typeof (void) {
 	unsigned n = avm_totalactuals();
 	if (n != 1)
-		printf("Error, one argument (not %d) expected in 'typeof'\n", n);
+		printf("Error, one argument (not %d) expected in 'typeof'\n", n); //AVM_ERROR
 	else {
 		/* That's how a libfunc returns a result
 			It has to only set the 'retval' register
@@ -220,7 +220,7 @@ void libfunc_totalarguments (void) {
 	avm_memcellclear (&retval);
 
 	if (!p_topsp) { 	/* if 0, no previous activ record */
-		printf("Error, totalarguments called outside a function\n");
+		printf("Error, totalarguments called outside a function\n"); //AVM_ERROR
 		retval.type = nil_m;
 	}
 	else {
