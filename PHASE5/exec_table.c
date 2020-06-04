@@ -6,6 +6,7 @@ extern avm_memcell	retval;
 extern unsigned top;
 extern char* avm_tostring (avm_memcell*);
 extern void avm_assign (avm_memcell* lv, avm_memcell* rv);
+extern char *typeStrings[];
 
 void execute_newtable (instruction* instr)	{
 	avm_memcell* lv = avm_translate_operand (instr->result, (avm_memcell*) 0);
@@ -32,7 +33,7 @@ void execute_tablegetelem (instruction* instr)	{
 	lv->type = nil_m; /* Default value */
 
 	if (t->type != table_m)	{
-		//avm_error("illegal use of type %s as table!", typeStrings[t->type]);
+		printf("Error, illegal use of type %s as table!", typeStrings[t->type]); //AVM_ERROR
 	}
 	else {
 		avm_memcell* content = avm_tablegetelem(t->data.tableVal, i);
@@ -41,7 +42,7 @@ void execute_tablegetelem (instruction* instr)	{
 		else {
 			char* ts = avm_tostring (t);
 			char* is = avm_tostring (i);
-			//avm_warning ("%s[%s] not found!", ts, is);
+			printf("Warning, %s[%s] not found!", ts, is); //AVM_WARNING
 			free (ts);
 			free (is);
 		}
@@ -58,7 +59,7 @@ void execute_tablesetelem (instruction* instr)	{
 	assert(i && c);
 
 	if (t->type != table_m){
-		//avm_error("illegal use of type %s as table", typeStrings[t->type]);
+		printf("Error, illegal use of type %s as table", typeStrings[t->type]); //AVM_ERROR
 	}
 	else
 		avm_tablesetelem(t->data.tableVal, i, c);

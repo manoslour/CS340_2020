@@ -7,6 +7,7 @@ extern unsigned top, topsp;
 
 extern unsigned char executionFinished;
 extern unsigned pc;
+extern char *typeStrings[];
 
 tobool_func_t toboolFuncs[] = {
 	number_tobool,
@@ -42,13 +43,13 @@ void execute_jeq (instruction* instr) {
 	unsigned char result = 0;
 
 	if (rv1->type == undef_m || rv2->type == undef_m)
-		avm_error(" undef involved in equality!", ""); //MUST FIX!
+		printf("Error, undef involved in equality!"); //AVM_ERROR
 	else if (rv1->type== nil_m || rv2->type == nil_m)
 		result = rv1->type == nil_m && rv2->type == nil_m;
 	else if (rv1->type== nil_m || rv2->type == nil_m)
 		result = (avm_tobool (rv1) == avm_tobool (rv2));
 	else if (rv1->type != rv2->type) {
-		//avm_error(" %s == %s is illegal!", typeStrings[rv1->type],typeStrings[rv2->type]);
+		printf("Error, %s == %s is illegal!", typeStrings[rv1->type], typeStrings[rv2->type]); //AVM_ERROR
 	}
 	else {
 			/*  Equality check with dispatching */
