@@ -1,4 +1,7 @@
-all: calc
+all: run_test
+
+run_test: calc test
+	./calc test
 
 calc: scanner.c parser.c symTable.o stack.o target.o
 	gcc -o calc scanner.c parser.c symTable.o stack.o target.o
