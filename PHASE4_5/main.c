@@ -6,12 +6,21 @@ unsigned magicNumber;
 
 unsigned int totalStringconsts; 
 unsigned int totalGlobals; 
+unsigned int totalVars;
 unsigned int totalUserFuncs;
 unsigned int totalLibFuncs;
 int instNo = 0;
+int currInst = 0;
 
 
 int pos = 0;
+
+typedef struct userfunc
+{
+	int address;
+	int localSize;
+	char* id;	
+}userfunc;
 
 
 typedef struct vmarg
@@ -22,7 +31,7 @@ typedef struct vmarg
 
 typedef struct instruction
 {
-	char* op;
+	int op;
 	vmarg *result; 
 	vmarg *arg1; 
 	vmarg *arg2; 
@@ -32,184 +41,342 @@ typedef struct instruction
 instruction* code = (instruction*) 0 ;
 
 
+int translate_instr_op(char* name){
 
-void printInst(){
-
-
-    for (int i=0; i<instNo; i++){
-        printf( "%d ", i);
-        printf( "%s", code[i].op);
-
-        if( code[i].result == NULL || code[i].result->type == -1 || code[i].result->val == -1)
-            printf("<%s >", "");
-        else 
-            printf("<%d %d>", code[i].result->type, code[i].result->val);
-        if(code[i].arg1 == NULL || (code[i].arg1->type == -1 || code[i].arg1->val == -1))
-            printf( "{%s }", "");
-        else 
-            printf("{%d %d}", code[i].arg1->type, code[i].arg1->val);
-        
-        if(code[i].arg2 == NULL || (code[i].arg2->type == -1 || code[i].arg2->val == -1))
-            printf("[%s ]", "");
-        else 
-            printf( "[%d %d]", code[i].arg2->type, code[i].arg2->val);
-
-       printf("\n");
-    }
+	if(!strcmp(name, "assign"))				return 0;
+	else if(!strcmp(name, "add"))			return 1;
+	else if(!strcmp(name, "sub"))			return 2;
+	else if(!strcmp(name, "mul"))			return 3;
+	else if(!strcmp(name, "div"))			return 4; 
+	else if(!strcmp(name, "mod"))			return 5;
+	else if(!strcmp(name, "uminus"))		return 6;
+	else if(!strcmp(name, "and"))			return 7;
+	else if(!strcmp(name, "or"))			return 8;
+	else if(!strcmp(name, "not"))			return 9;
+	else if(!strcmp(name, "jeq"))			return 10;
+	else if(!strcmp(name, "jne"))			return 11; 
+	else if(!strcmp(name, "jle"))			return 12;
+	else if(!strcmp(name, "jge")) 			return 13;
+	else if(!strcmp(name, "jlt"))			return 14;
+	else if(!strcmp(name, "jgt"))			return 15;
+	else if(!strcmp(name, "call"))			return 16;
+	else if(!strcmp(name, "pusharg"))		return 17;
+	else if(!strcmp(name, "funcenter"))		return 18;
+	else if(!strcmp(name, "funcexit"))		return 19; 
+	else if(!strcmp(name, "newtable"))		return 20;
+	else if(!strcmp(name, "tablegetelem"))	return 21;
+	else if(!strcmp(name, "tablesetelem"))	return 22;
+	else if(!strcmp(name, "jump"))			return 23; 
+	else if(!strcmp(name, "nop"))			return 24;
 }
 
 
+void emit_avm_instruction(char* op, int rtype, int rval, int arg1type, int arg1val, int arg2type, int arg2val, int line){
+ 
 
-void makeInstruction(char* s, int instrNo){
+	if (code == NULL){
+		code = (instruction*)malloc(sizeof(instruction)); 
+	}
+	else {
+		instruction* new_instr = (instruction*)realloc(code, (instNo + 1)*sizeof(instruction));
+		code = new_instr;	
+	}
+	instNo++;
+	instruction* i = (instruction*)malloc(sizeof(instruction));
 
+	vmarg *result , *arg1, *arg2;
+	result = malloc(sizeof(struct vmarg)); 
+	arg1 = malloc(sizeof(struct vmarg)); 
+	arg2 = malloc(sizeof(struct vmarg)); 
+
+	i = code + currInst;
+	
+	i->op = translate_instr_op(op);
+	result->type = rtype;
+	result->val = rval;
+
+	arg1->type = arg1type; 
+	arg1->val = arg1val;
+
+	arg2->type = arg2type;
+	arg2->val = arg2val;
+	currInst++;
+
+	i->result = result;
+	i->arg1 = arg1; 
+	i->arg2 = arg2; 
+	i->srcLine = line ;
+}
+
+void makeInstruction(char* s, int instrNo, int line ){
 
 	int ch;
-    
+    int rval , rtype , val1 , type1 , val2 , type2 = 0 ;	
 	int size = strlen(s);
-	char *No, *op, *line;
-	vmarg *result , *arg1, *arg2;
-	result = arg1 = arg2 = malloc(sizeof(vmarg)); 
-	struct instruction *new_instr;
-    int instructionNum;
+	char *No, *op ;
+	int instructionNum; 
 
-	new_instr = malloc(sizeof(instruction));
-
-	new_instr->result = result; 
-	new_instr->arg1 = arg1; 
-	new_instr->arg2 = arg2;
-
+	
     No = malloc(sizeof(int));
 	 
-    // printf("infunc with ch: %c\n",*s);
     int i; 
     No = strtok(s, " ");
     sscanf(No, "%d", &instructionNum); 
 
     while ( No != NULL){
-        //printf(" %s", No);
         No = strtok(NULL, "<");
         op = strdup(No);
-        new_instr->op = op;
+        
         No = strtok(NULL, ">"); 
-        // printf("TWRA P DEN EXW EXW : %s\n", No);
         if (!strcmp(No, " ")) {
-            new_instr->result->type = -1;
-            new_instr->result->val = -1;
+           rtype = -1;
+            rval = -1;
         }
         else {
             char *tmp = malloc(sizeof(int));
             char *tmp2 = malloc(sizeof(int));
-            // /printf("TO no IENAI :%s\n", No);
             for(i = 0; i<strlen(No); i++){
                 *(tmp + i) = *(No +i);
                 if (*(No +i) == ' ') {
 
                     *(tmp + i) = '\0';
-                    sscanf(tmp, "%d", &new_instr->result->type);
+                    sscanf(tmp, "%d", &rtype);
                     *tmp = '\0';
-                    for (int j=i; j<strlen(No); j++){
+                    int j;
+                    for (j=i; j<strlen(No); j++){
                         *(tmp2 + j - i) = *(No + j);
                     }
-                    sscanf(tmp2, "%d", &new_instr->result->val);
+                    *(tmp2 + j - i) = '\0';
+                    sscanf(tmp2, "%d", &rval);
+                    free(tmp); 
+                    free(tmp2);
                     break;
                 }
             }
         }
-                    printf("res type  : %d ", new_instr->result->type);
-                    printf("res val : %d\n", new_instr->result->val);
-
         
         No = strtok(NULL, "}");
         if (!strcmp(No, "{ ")) {
-            new_instr->arg1->type = -1;
-            new_instr->arg1->val = -1;
+            val1= -1;
+            type1 = -1;
         }
         else {
-            char* tmp = malloc(sizeof(int));
-            char* tmp2 = malloc(sizeof(int));
-            // printf("TO no IENAI :%s\n", No);
+            char* tmp3 = malloc(sizeof(int));
+            char* tmp4 = malloc(sizeof(int));
             for(i = 0; i<strlen(No); i++){
-                *(tmp + i) = *(No +i+1);
+                *(tmp3 + i) = *(No +i+1);
                 if (*(No +i) == ' ') {
 
-                    *(tmp + i) = '\0';
-                    sscanf(tmp, "%d", &new_instr->result->type);
-                    *tmp = '\0';
-                    for (int j=i; j<strlen(No); j++){
-                        *(tmp2 + j - i) = *(No + j);
+                    *(tmp3 + i) = '\0';
+                    sscanf(tmp3, "%d", &type1);
+                    *tmp3 = '\0';
+                    int j;
+                    for (j=i; j<strlen(No); j++){
+                        *(tmp4 + j - i) = *(No + j);
                     }
-                    sscanf(tmp2, "%d", &new_instr->result->val);
+                    *(tmp4 + j - i) = '\0';
+                    sscanf(tmp4, "%d", &val1);
+                    free(tmp3); 
+                    free(tmp4);
                     break;
                 }
             }
         }
-                    printf("arg1 type : %d ", new_instr->result->type);
-                    printf("arg1 val : %d\n", new_instr->result->val);
 
         No = strtok(NULL, "]");
         if (!strcmp(No, "[ ")){
-            new_instr->arg2->type = -1;
-            new_instr->arg2->val = -1;
+            type2 = -1;
+            val2 = -1;
         }
         else {
-            char* tmp = malloc(sizeof(int));
-            char* tmp2 = malloc(sizeof(int));
-            // printf("TO no IENAI :%s\n", No);
+            char* tmp5 = malloc(sizeof(int));
+            char* tmp6 = malloc(sizeof(int));
             for(i = 0; i<strlen(No); i++){
-                *(tmp + i) = *(No +i+1);
+                *(tmp5 + i) = *(No +i+1);
                 if (*(No +i) == ' ') {
-
-                    *(tmp + i) = '\0';
-                    sscanf(tmp, "%d", &new_instr->result->type);
-                    *tmp = '\0';
-                    for (int j=i; j<strlen(No); j++){
-                        *(tmp2 + j - i) = *(No + j);
+                    *(tmp5 + i) = '\0';
+                    sscanf(tmp5, "%d", &type2);
+                    *tmp5 = '\0';
+                    int j;
+                    for (j=i; j<strlen(No); j++){
+                        *(tmp6 + j - i) = *(No + j);
                     }
-                    sscanf(tmp2, "%d", &new_instr->result->val);
+                    *(tmp6 + j - i) = '\0';
+                    sscanf(tmp6, "%d", &val2);
+                    free(tmp5); 
+                    free(tmp6);
                     break;
                 }
             }
         }
-                    printf("arg2 type : %d", new_instr->result->type);
-                    printf(" arg2 val : %d\n", new_instr->result->val);
-        
-        i=0;
-        printf("\n");
-
-
-
-       
-
-       /* if (code == NULL) {
-            code = (instruction*)malloc(sizeof(instruction)); 
-        }
-        else {
-            instruction* newinstr = (instruction*)realloc(code,(instNo +1) * sizeof(instruction));
-            code = newinstr;
-        }
-
-        instruction* i = (instruction*) malloc(sizeof(instruction));
-        i = code + instNo; 
-       
-        i->op = new_instr->op;
-        i->result = new_instr->result;
-        i->arg1 = new_instr->arg1;
-        i->arg2 = new_instr->arg2;
-*/
-        // DEN EXW VALEI NA PERNEI LINE .... :(
-        
-        
+        emit_avm_instruction(op, rtype, rval, type1, val1, type2, val2, line);
         break;
-
     }
-     // printf("InstrNo:%d opcode : %s  result : <%d %d>  arg1 : {%d %d} arg2 : [%d %d]}  ",
-     //        instNo, new_instr->op, new_instr->result->type,  new_instr->result->val, 
-     //         new_instr->arg1->type, new_instr->arg1->val, 
-     //         new_instr->arg2->type, new_instr->arg1->val );
-
-
 };
 
+int get_instr_line(char* s){
+
+ 	
+ 	char *line = malloc(sizeof(int)), *tmp = strdup(s);
+ 	int j = 0;
+ 	int i = strlen(tmp); 
+ 	int k;
+ 	int line_no;
+ 	
+ 	for(i = 0; i<=strlen(tmp); i++){
+ 		if (*(tmp + i) == ']') {
+ 			i++;
+ 			for( k = i; k<=strlen(tmp); k++){
+ 				*(line + j++) = *(tmp + k); 
+ 			}
+ 			*(line + j++) = '\0';	
+ 			sscanf(line , "%d", &line_no);
+
+ 			return line_no;
+ 		}
+ 	}
+
+
+
+ }
+
+
+double* numConsts = (double*)0; 
+unsigned currNumConst = 0;
+
+char** stringConsts = (char**)0;
+unsigned curStringConsts = 0;
+
+char** namedLibFuncs = (char**)0; 
+unsigned currLibFuncs = 0;
+
+userfunc* userFuncs = (userfunc*)0;
+unsigned currUserFunc = 0;  
+
+void printL(){
+	FILE *file;
+	file = fopen("constArrays.txt", "w+");
+	fprintf(file, "Total global vars : %d\n", totalGlobals );
+	fprintf(file, "Const String Array :\n");
+	for(int i=0; i<curStringConsts; i++){
+		fprintf(file, "%d: %s \n",i, stringConsts[i] );			
+	}
+
+	fprintf(file, "Const Nums Array :\n");
+
+	for(int i=0; i<currNumConst; i++){
+		fprintf(file, "%d: %lf \n",i, numConsts[i] );			
+	}
+	
+	fprintf(file, "User Functions Array :\n");
+
+	for(int i=0; i<currUserFunc; i++){
+		fprintf(file, "%d: %d, %d, %s\n",i,
+			userFuncs[i].address,
+			userFuncs[i].localSize,
+			userFuncs[i].id );			
+	}
+
+	fprintf(file, "Named Libfuncs Array :\n");
+
+	for(int i=0; i<currLibFuncs; i++){
+		fprintf(file, "%d: %s \n",i, namedLibFuncs[i] );			
+	}
+
+	fprintf(file, "\n\nInstructions :\n" );
+
+	for(int i=0; i<currInst; i++){
+		fprintf(file, "%d ",i );
+		fprintf(file, " %d ", code[i].op);
+
+		if(code[i].result->type == -1 || code[i].result->val == -1)
+			fprintf(file, "%s", " ");
+		else 
+			fprintf(file, " %d,%d ",code[i].result->type, code[i].result->val );
+
+		if(code[i].arg1->type == -1 || code[i].arg1->val == -1)
+			fprintf(file, "%s", " ");
+		else 
+			fprintf(file, " %d,%d ",code[i].arg1->type, code[i].arg1->val );
+
+		if(code[i].arg2->type == -1 || code[i].arg2->val == -1)
+			fprintf(file, "%s", " ");
+		else 
+			fprintf(file, " %d,%d ",code[i].arg2->type, code[i].arg2->val );
+		
+		fprintf(file, "%d\n",code[i].srcLine);
+	}
+}
+
+
+//function to add libFuncs to namedLibfuncs global array
+void add_lib_func(char* name){
+
+	if (namedLibFuncs == NULL){
+		namedLibFuncs = (char**)malloc((sizeof(char) + 8) * 12);
+	}
+	namedLibFuncs[currLibFuncs++] = strdup(name);
+}
+
+
+//function to add userfuncs to userfuncs global array
+void add_user_func(int address, int localsize, char* name){
+
+
+	if(userFuncs == NULL){
+		userFuncs = malloc(sizeof(userfunc) * totalUserFuncs + 1000 );
+	}
+	userFuncs[currUserFunc].address = address;
+	userFuncs[currUserFunc].localSize = localsize; 
+	userFuncs[currUserFunc].id = strdup(name);
+	currUserFunc++;
+}
+
+
+// tokenize the string to take the info about userfunc
+void make_user_func(char* s){
+	int address, localsize;
+
+	if (*(s) == '\0')
+		return;
+
+	int i=0;
+	int pos =0;
+	char* token = strtok(s, " ");
+	while (token != NULL){
+		
+		if(pos == 0 ) pos++; 
+		else if (pos == 1) {pos++;sscanf(token, "%d", &address);}
+		else if (pos == 2) {pos++;sscanf(token, "%d", &localsize);}
+		else if (pos == 3) {break;}
+
+		token = strtok(NULL, " ");
+	}
+	add_user_func(address, localsize, token);
+}
+
+//add string to stringConsts global array 
+void add_string_const(char* s){
+
+	if (stringConsts == NULL){
+		stringConsts = malloc(sizeof(char*) * totalStringconsts);
+	}
+	stringConsts[curStringConsts++] = strdup(s); 
+}
+
+//add num to numConsts global array 
+void add_num_consts(char* s){
+
+	if (numConsts == NULL){
+		numConsts = malloc(sizeof(double) * totalVars);
+	}
+
+	double num ; 
+	sscanf(s, "%lf", &num); 
+
+	numConsts[currNumConst++] = num;
+
+}
 
 int main (){
 
@@ -217,29 +384,37 @@ int main (){
 
 	FILE *fp ; 
 	fp = fopen("test", "r"); 
-	char *s = malloc(1000000); 
+	char *s = malloc(sizeof(int)); 
 	int  i = 0;
 	int ch;
 	int n=0;
     char *line_buf;
     int line_buf_size = 0;
-	while ((ch = fgetc(fp)) != EOF)
-    {
-        printf("+%c", ch);
-        
+	while ((ch = fgetc(fp)) != EOF){   
         *(s+i++) = (char) ch;
-        if (ch == '\n' && pos == 0) {
+        if (ch == '\n' && pos == 0) {		//read the magic number and check if its the same
         	pos ++;
         	sscanf(s, "%d", &magicNumber);
 	        if(magicNumber != 42069){
-	        	printf("Wrong magicNumber execution failed "); 
+	        	printf("Wrong magicNumber execution failed \n"); 
 				return 0;
 	        }
+	        ch = fgetc(fp);
+	        char* globalChar = malloc(sizeof(int));
+	        i=0;
+	        while (ch != '\n'){
+	        	*(globalChar + i++) = (char) ch;
+	        	ch = fgetc(fp);
+ 	        }  
+ 	        *(globalChar + i) = '\0';
+ 	        sscanf(globalChar, "%d", &totalGlobals);
         }
+
         if( ch == '#') {
-        	if (pos == 1){ // ENTER THE STRING CONST ARRAY 
+        	// ENTER THE STRING CONST ARRAY and obtein info about the const strings
+        	if (pos == 1){ 
         		pos++;
-        		printf("Mpika pos = 1\n\n");
+        		
         		while (1){
         			ch = fgetc(fp); 
         			if (ch == '\n') break;
@@ -253,43 +428,64 @@ int main (){
 
         		}   
         		sscanf(totalStringconstsChar, "%d", &totalStringconsts);     		
-        		printf("\nTotal string consts%d\n", totalStringconsts);
 
         		while (1){
+        			int instring = 0;
+        			if (ch == '#') break; 
         			ch = fgetc(fp);
-        			if (ch = '#') break; 
-        			//theloyme ta conststring array  ? 
+        			char* string = malloc(sizeof(char*));
+        			if(ch == '\"') {
+        				int i = 0;
+        				if (instring == 0){
+        					instring ++;
+        					ch = fgetc(fp); 
+        					while (1){
+        						*(string + i++) = (char)ch;
+        						ch = fgetc(fp); 
+        						if (ch == '\"') break;
+        					}
+        					add_string_const(string);
+        				}
+        			}	
         		}
-        		
         	}
         	if (pos == 2   ){
-        		//we have num consts
-        		printf("mpika pos 2\n");
+        		// ENTER THE Num CONST ARRAY and obtein info about the const nums
+        		
         		pos++;
         		while(1){
         			ch = fgetc(fp); 
         			if (ch == '\n') break;
         		}
         		i = 0;
-        		char *totalGlobalsChar = malloc(sizeof(int)); 
+        		char *totalVarChar = malloc(sizeof(int)); 
         		while (1){
         			ch = fgetc(fp); 
-        			*(totalGlobalsChar + i++) = (char) ch;
+        			*(totalVarChar + i++) = (char) ch;
         			if (ch == '\n') break;
         		}  
-        		sscanf(totalGlobalsChar, "%d", &totalGlobals);
-        		printf("total globals einai %d\n\n", totalGlobals);
+        		sscanf(totalVarChar, "%d", &totalVars);
         		
-        		//prepeui na apothikeysoume tis times  ????
         		while(1){
-        			ch = fgetc(fp); 
         			if (ch == '#') break;
+        			ch = fgetc(fp); 
+        			double num;
+        			char* tmp = malloc(sizeof(double)); 
+        			if (ch == ' ') {
+        				int i = 0;
+        				while (ch != '\n'){
+        					ch = fgetc(fp);
+        					if (ch == '\n') break;
+        					*(tmp + i++) = (char)ch;
+        				}
+        				add_num_consts(tmp);
+        			}
         		}
 
         	}
         	if (pos == 3){
         		pos++;
-        		printf("MPIKA POS 3 me char : %c\n", ch);
+        		//ENTER THE userfunc ARRAY and obtein info about the usefuncs
         		while (1){
         			ch = fgetc(fp); 
         			if (ch == '\n') break;
@@ -302,16 +498,25 @@ int main (){
         			if (ch == '\n') break;
         		}
         		sscanf(totalUserFuncsChar, "%d", &totalUserFuncs); 
-        		printf("Total User funcs : %d\n",totalUserFuncs );
-
+        	
+        		char* name = malloc(sizeof(char*));
+        		int i;
         		while(1){
-        			ch = fgetc(fp); 
+        			ch = fgetc(fp);
+
+        			if (ch == '#') break;
+        			i=0;
+        			while (ch != '\n'  ) {
+        				*(name +i++) = (char)ch;
+        				ch = fgetc(fp);
+        			}
+        			*(name +i) = '\0';
+        			make_user_func(name);
         			if (ch == '#') break;
         		}
-
         	}
         	if (pos == 4){
-        		printf("mpika pos 4\n");
+        		//add the lib funcs to the namedLibFunc array
         		pos++;
 	        	while (1){
 	    			ch = fgetc(fp); 
@@ -325,17 +530,27 @@ int main (){
 	    			if (ch == '\n') break;
 	    		}
 	    		sscanf(totalLibFuncsChar, "%d", &totalLibFuncs);
-	    		printf("Total Lib funcs : %d", totalLibFuncs);
 	        	
 	        	while(1){
 	    			ch = fgetc(fp); 
-	    			if (ch == '#') break;
+	    			if (ch == 'I') break;
 	        	}
+	        	add_lib_func("print");
+    			add_lib_func("input");
+    			add_lib_func("objectmemberkeys");
+    			add_lib_func("objecttotalmembers");
+    			add_lib_func("objectcopy");
+    			add_lib_func("tootalarguments");
+    			add_lib_func("argument");
+    			add_lib_func("typeof");
+    			add_lib_func("strtonum");
+    			add_lib_func("sqrt");
+    			add_lib_func("cos");
+    			add_lib_func("sin");
         	}
         	if (pos == 5){
-        		printf("\nMpika pos 5\n");
+        		//Finaly tokenize the instrucrions and add them to the global array code
         		pos++;
-
         		for (i=0; i<2; i++){
 	        		while (1){
 	        			ch = fgetc(fp);
@@ -346,33 +561,23 @@ int main (){
         		char* instruction_n = malloc (500) ; 
         		while ((ch = fgetc(fp)) != EOF){
         			*(instruction_n + i++) = (char) ch; 
-                   
             		if (ch == '\n') {
-                        *(instruction_n + i) = '\0' ;
-                        makeInstruction(instruction_n, instNo); 
+                        *(instruction_n + i) = '\0' ; 
+                        int line = get_instr_line(instruction_n);
+                        makeInstruction(instruction_n, instNo, line); 
                         i = 0;
                         *(instruction_n + i) = '\0' ;
                         instNo++;
                     }     
-
                 }
                 *(instruction_n + i) = '\0' ;
-                
-                makeInstruction(instruction_n, instNo); 
-
-
+                int line = get_instr_line(instruction_n);
+                makeInstruction(instruction_n, instNo, line); 
         	}
         }
-
-
-
-
-
-
     }
-  	printf("\n");
 	fclose(fp);
-    //printInst();
+  	printL();
 	return 0;
 
 
