@@ -14,11 +14,21 @@ arithmetic_func_t arithmeticFuncs[] = {
 	mod_impl
 };
 
-double add_impl (double x, double y)	{return x + y;}
-double sub_impl (double x, double y)	{return x - y;}
-double mul_impl (double x, double y)	{return x * y;}
-double div_impl (double x, double y)	{ /* error check ? */return x/y;}
-double mod_impl (double x, double y)	{ /* error check ? */return ((unsigned) x) % ((unsigned) y);}
+double add_impl(double x, double y) {return x + y;}
+double sub_impl(double x, double y) {return x - y;}
+double mul_impl(double x, double y) {return x * y;}
+
+double div_impl(double x, double y) { 
+	if(y == 0)
+		avm_error("Error, trying to divide with zero", NULL);
+	return x/y;
+}
+
+double mod_impl(double x, double y)	{
+	if(y == 0)
+		avm_error("Error, trying to divide with zero", NULL);
+	return ((unsigned) x) % ((unsigned) y);
+}
 
 void execute_arithmetic (instruction* instr) {
 	avm_memcell* lv = avm_translate_operand (instr->result, (avm_memcell*) 0);
