@@ -18,6 +18,27 @@ unsigned codeSize = 0 ;
 instruction* code = (instruction*) 0 ;
 unsigned totalActuals = 0 ;
 
+//------------------------------------------
+unsigned magicNumber;
+unsigned int totalStringconsts; 
+unsigned int totalGlobals; 
+unsigned int totalVars;
+unsigned int totalUserFuncs;
+unsigned int totalLibFuncs;
+
+double* numConsts = (double*)0; 
+unsigned currNumConst = 0;
+
+char** stringConsts = (char**)0;
+unsigned curStringConsts = 0;
+
+char** namedLibFuncs = (char**)0; 
+unsigned currLibFuncs = 0;
+
+userfunc* userFuncs = (userfunc*)0;
+unsigned currUserFunc = 0; 
+//------------------------------------------
+
 execute_func_t executeFuncs[] = {
 	execute_assign,
 	execute_add,
