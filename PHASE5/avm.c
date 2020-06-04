@@ -194,9 +194,6 @@ void memclear_table (avm_memcell* m) {
 	avm_tabledecrefcounter(m->data.tableVal);
 }
 
-void avm_warning( char* format){/*ADD CODE*/}
-void avm_error (char* format, char* s){/*ADD CODE*/}
-
 double	consts_getnumber (unsigned index){/*ADD CODE*/}
 char*	consts_getstring (unsigned index){/*ADD CODE*/}
 char*	libfuncs_getused (unsigned index){/*ADD CODE*/}

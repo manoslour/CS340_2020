@@ -101,7 +101,4 @@ void memclear_table (avm_memcell* m);
 void memclear_string (avm_memcell* m);
 void avm_memcellclear	(avm_memcell* m);
 
-void avm_warning(char* format);
-void avm_error(char* format, char* s);
-
 #endif
