@@ -66,7 +66,7 @@ void execute_call (instruction *instr){
 		}
 		default:	{
 			char* s = avm_tostring(func);
-			//avm_error("call: cannot bind '%s' to function! ", s);
+			printf("Error, call: cannot bind '%s' to function! ", s); //AVM_ERROR
 			free(s);
 			executionFinished = 1;
 		}
@@ -76,7 +76,7 @@ void execute_call (instruction *instr){
 void avm_dec_top (void){
 
 		if (!top) { /* Stack overflow */
-			//avm_error("Stack overflow");
+			printf("Error, Stack overflow\n"); //AVM_ERROR
 			executionFinished = 1;
 		}
 		else
@@ -135,7 +135,7 @@ library_func_t avm_getlibraryfunc(char* id){
 void avm_calllibfunc (char* id)	{
 	library_func_t f = avm_getlibraryfunc(id);
 	if (!f) {
-		//avm_error("unsupported lib func '%s' called! ", id);
+		printf("Error, unsupported lib func '%s' called!\n", id);
 		executionFinished = 1;
 	}
 	else {
@@ -179,9 +179,8 @@ void execute_pusharg (instruction* instr){
 
 void libfunc_typeof (void) {
 	unsigned n = avm_totalactuals();
-	if (n != 1){
-		//avm_error ("one argument (not %d) expected in 'typeof'", n);
-	}
+	if (n != 1)
+		printf("Error, one argument (not %d) expected in 'typeof'\n", n);
 	else {
 		/* That's how a libfunc returns a result
 			It has to only set the 'retval' register
@@ -221,7 +220,7 @@ void libfunc_totalarguments (void) {
 	avm_memcellclear (&retval);
 
 	if (!p_topsp) { 	/* if 0, no previous activ record */
-		//avm_error("totalarguments called outside a function");
+		printf("Error, totalarguments called outside a function\n");
 		retval.type = nil_m;
 	}
 	else {
