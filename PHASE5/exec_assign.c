@@ -27,7 +27,7 @@ void avm_assign(avm_memcell* lv, avm_memcell* rv){
             return;
     // From undefined r-value? warn!
 	if (rv->type == undef_m )
-        avm_warning("assigning from 'undef' content! ");
+        printf("assigning from 'undef' content!"); //AVM_WARNING
     // Clear old cell contents
 	avm_memcellclear(lv);
 

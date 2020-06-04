@@ -20,13 +20,13 @@ double mul_impl(double x, double y) {return x * y;}
 
 double div_impl(double x, double y) { 
 	if(y == 0)
-		avm_error("Error, trying to divide with zero", NULL);
+		printf("Error, trying to divide with zero"); //AVM_ERROR
 	return x/y;
 }
 
 double mod_impl(double x, double y)	{
 	if(y == 0)
-		avm_error("Error, trying to divide with zero", NULL);
+		printf("Error, trying to divide with zero"); //AVM_ERROR
 	return ((unsigned) x) % ((unsigned) y);
 }
 
@@ -38,7 +38,7 @@ void execute_arithmetic (instruction* instr) {
 	assert(rv1 && rv2);
 
 	if (rv1->type != number_m || rv2->type != number_m) {
-		//avm_error("not a number in arithmetic!");
+		printf("Error, not a number in arithmetic!"); //AVM_ERROR
 		executionFinished = 1;
 	}
 	else {
