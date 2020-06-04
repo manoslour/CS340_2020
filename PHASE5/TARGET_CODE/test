@@ -1,3 +1,4 @@
-x = "maria";
-y = "manos";
-z = "maria";
+x = 1;
+{
+    y = 2;
+}
