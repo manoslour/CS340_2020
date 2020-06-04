@@ -1,14 +1,3 @@
-x = 5;
+x = "maria";
 y = "manos";
-y = "loukas";
-
-x = a + b;
-
-
-function f(x, y){
-
-	if(x > y)
-		return x + y;
-	else
-		return x - y;
-}
+z = "maria";

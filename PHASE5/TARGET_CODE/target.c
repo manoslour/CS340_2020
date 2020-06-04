@@ -130,6 +130,14 @@ void initLibfuncs(){
 
 unsigned consts_newnumber (double n){
 
+	if(totalNumConsts){
+		for(int i = 0; i < totalNumConsts; i++){
+			if(numConsts[i] == n){
+				return i;
+			}
+		}
+	}
+	
 	unsigned ret_index;
 
 	if(numConsts == NULL)
@@ -146,6 +154,14 @@ unsigned consts_newnumber (double n){
 }
 
 unsigned consts_newstring (char* s){
+
+	if(totalStringConsts){
+		for(int i = 0; i < totalStringConsts; i++){
+			if(strcmp(stringConsts[i], s) == 0){
+				return i;
+			}
+		}
+	}
 
 	unsigned ret_index;
 
