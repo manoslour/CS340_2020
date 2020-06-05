@@ -107,7 +107,7 @@ void userfunctions(){
 }
 
 void libfunctions(){
-	initLibfuncs();
+	//initLibfuncs();
 	fprintf(fp, "#Libfunc Consts Array\n");
 	fprintf(fp, "%d\n", totalNamedLibfuncs);
 	for(int i = 0; i < totalNamedLibfuncs; i++)
@@ -181,6 +181,14 @@ unsigned consts_newstring (char* s){
 }
 
 unsigned libfuncs_newused (char* s){
+	if(totalNamedLibfuncs){
+		for(int i = 0; i < totalNamedLibfuncs; i++){
+			if(strcmp(namedLibfuncs[i], s) == 0){
+				return i;
+			}
+		}
+	}
+
 	unsigned ret_index;
 
 	if(namedLibfuncs == NULL)
@@ -234,8 +242,6 @@ void expandInstr(){
 */
 
 void emit_instr(instruction *t){
-	printf("Entered emit_instr\n");
-
 	// EXPAND INSTRUCTIONS
 	if (instructions == NULL)
 		instructions = (instruction*) malloc(sizeof(instruction));
@@ -254,7 +260,6 @@ void emit_instr(instruction *t){
 	i->srcLine = t->srcLine;
 
 	currInstr++;
-	printf("Exiting emit_instr\n");
 }
 
 unsigned nextinstructionlabel(void){
@@ -334,36 +339,30 @@ void make_operand (expr* e, vmarg* arg){
 		}
 		/* Constants */
 		case constbool_e: {
-			printf("constbool_e case \n");
 			arg->val = e->boolConst;
 			arg->type = bool_a;
 			break;
 		}
 		case conststring_e :{
-			printf("conststring_e case \n");
 			arg->val = consts_newstring(e->strConst); 
 			arg->type = string_a; 
 			break;
 		}
 		case constnum_e: {
-			printf("constnum_e case \n");
 			arg->val = consts_newnumber(e->numConst); 
 			arg->type = number_a; 
 			break;
 		}
 		case nil_e: {
-			printf("nil_e case \n");
 			arg->type = nil_a; 
 			break;
 		}
 		case programfunc_e : {
-			printf("programfunc_e case \n");
 			arg->type = userfunc_a ; 
 			arg->val = userfuncs_newfunc(e->sym);
 			break; 
 		} 
 		case libraryfunc_e: {
-			printf("libraryfunc_e case \n");
 			arg->type = libfunc_a; 
 			arg->val = libfuncs_newused(strdup(e->sym->name));
 			break;
@@ -373,7 +372,6 @@ void make_operand (expr* e, vmarg* arg){
 }
 
 void generate (vmopcode op, quad* quad ){
-	printf("Entered generate\n");
 	instruction* t = createInstruction();  
 	t->opcode = op;
 	t->srcLine = quad->line;
@@ -593,7 +591,6 @@ void generate_AND (quad* q){
 }
 
 void generate_PARAM (quad* q){
-	printf("Entered generate_PARAM\n");
 	q->taddress = nextinstructionlabel(); 
 	instruction* t = createInstruction();
 	t->srcLine = q->line;
@@ -622,7 +619,6 @@ void generate_CALL(quad* q){
 }
 
 void generate_GETRETVAL (quad* q){
-	printf("Entered gen_GETRETVAL\n");
 	q->taddress = nextinstructionlabel(); 
 	instruction* t= createInstruction();
 	t->srcLine = q->line;
@@ -684,7 +680,6 @@ void generate_FUNCEND(quad* q){
 	symbol* f = popFunc();
 	backpatch(f->returnList, nextinstructionlabel());
 	q->taddress = nextinstructionlabel();
-	printf("q->taddress = %d\n", q->taddress);
 
 	instruction* t = createInstruction();
 	t->srcLine = q->line;
@@ -695,7 +690,6 @@ void generate_FUNCEND(quad* q){
 }
 
 void backpatch(returnlist* list, int label){
-	printf("Entered backpatch\n");
 	returnlist *tmp = list;
 	while(tmp != NULL){
 		instructions[tmp->label].result->val = label;
@@ -704,20 +698,16 @@ void backpatch(returnlist* list, int label){
 }
 
 returnlist* append(returnlist *list, int label){
-	printf("Enterd append\n");
 	returnlist* newNode = (returnlist*) malloc(sizeof(returnlist));
 	newNode->label = label;
 	newNode->next = list;
 	list = newNode;
-	printf("Exiting append\n");
 	return list;
 }
 
 void exec_generate(void){
-
+	initLibfuncs();
 	for(unsigned i = 0; i < currQuad; ++i){
-		printf("---------------------------------EXEC GENERATE---------------------------------");
-		printf("\nmake generatee with op  = %d, curr quad : %d\n", quads[i].op, currProcessedQuad+1);
 		(*generators[quads[i].op])(quads+i);
 		currProcessedQuad++;
 	}
