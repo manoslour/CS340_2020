@@ -34,10 +34,6 @@ typedef char* (*tostring_func_t) (avm_memcell*);
 
 void avm_initialize (void);
 
-void libfunc_print (void);
-void libfunc_totalarguments (void);
-void libfunc_typeof (void);
-
 char* number_tostring (avm_memcell*);
 char* string_tostring (avm_memcell*);
 char* bool_tostring (avm_memcell*);
@@ -46,5 +42,18 @@ char* userfunc_tostring (avm_memcell*);
 char* libfunc_tostring (avm_memcell*);
 char* nil_tostring (avm_memcell*);
 char* undef_tostring (avm_memcell*);
+
+void libfunc_print(void);
+//void libfunc_input(void);
+//void libfunc_objectmemberkeys();
+//void libfunc_objecttotalmembers();
+//void libfunc_objectcopy();
+void libfunc_totalarguments();
+//void libfunc_argument();
+void libfunc_typeof(void);
+//void libfunc_strtonum();
+//void libfunc_sqrt();
+//void libfunc_cos();
+//void libfunc_sin();
 
 #endif
