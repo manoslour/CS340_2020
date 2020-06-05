@@ -2,7 +2,7 @@
 
 int pos = 0;
 int instNo = 0;
-int currInst = 0;
+extern int currInst;
 extern unsigned magicNumber;
 extern unsigned int totalStringconsts; 
 extern unsigned int totalGlobals; 
@@ -252,19 +252,19 @@ void printL(){
 		fprintf(file, " %d ", code[i].opcode);
 
 		if(code[i].result->type == -1 || code[i].result->val == -1)
-			fprintf(file, "%s", " ");
+			fprintf(file, "<%s>", " ");
 		else 
-			fprintf(file, " %d,%d ",code[i].result->type, code[i].result->val );
+			fprintf(file, " <%d,%d> ",code[i].result->type, code[i].result->val );
 
 		if(code[i].arg1->type == -1 || code[i].arg1->val == -1)
-			fprintf(file, "%s", " ");
+			fprintf(file, "{%s}", " ");
 		else 
-			fprintf(file, " %d,%d ",code[i].arg1->type, code[i].arg1->val );
+			fprintf(file, " {%d,%d} ",code[i].arg1->type, code[i].arg1->val );
 
 		if(code[i].arg2->type == -1 || code[i].arg2->val == -1)
-			fprintf(file, "%s", " ");
+			fprintf(file, "[%s]", " ");
 		else 
-			fprintf(file, " %d,%d ",code[i].arg2->type, code[i].arg2->val );
+			fprintf(file, "[ %d,%d ]",code[i].arg2->type, code[i].arg2->val );
 		
 		fprintf(file, "%d\n",code[i].srcLine);
 	}
@@ -337,7 +337,11 @@ void add_num_consts(char* s){
 
 void readBinary(){
 	FILE *fp ; 
-	fp = fopen("target.abc", "r"); 
+	fp = fopen("target.abc", "r");
+    if(!fp){
+        printf("Error cant open file\n"); 
+        return;
+    }
 	char *s = malloc(sizeof(int)); 
 	int  i = 0;
 	int ch;
@@ -525,7 +529,6 @@ void readBinary(){
                 }
                 *(instruction_n + i) = '\0' ;
                 int line = get_instr_line(instruction_n);
-                makeInstruction(instruction_n, instNo, line); 
         	}
         }
     }
