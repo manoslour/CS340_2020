@@ -59,7 +59,7 @@ void avm_tabledecrefcounter (avm_table* t);
 void avm_tablebucketsinit (avm_table_bucket** p);
 void avm_tablebucketsdestroy (avm_table_bucket** p);
 
-static void avm_initstack(void); 
+static void avm_initstack(void);
 
 double	consts_getnumber (unsigned index);
 char*	consts_getstring (unsigned index);
@@ -100,5 +100,6 @@ extern void execute_nop (instruction*);
 void memclear_table (avm_memcell* m);
 void memclear_string (avm_memcell* m);
 void avm_memcellclear	(avm_memcell* m);
+void printStack();
 
 #endif

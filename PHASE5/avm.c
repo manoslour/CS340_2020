@@ -1,5 +1,6 @@
 #include "avm.h"
 #include <assert.h>
+#include "readBinary.h"
 #include "exec_arith.h"
 #include "exec_funcs.h"
 #include "exec_table.h"
@@ -19,6 +20,7 @@ instruction* code = (instruction*) 0 ;
 unsigned totalActuals = 0 ;
 
 //------------------------------------------
+int currInst = 0;
 unsigned magicNumber;
 unsigned int totalStringconsts; 
 unsigned int totalGlobals; 
@@ -46,10 +48,10 @@ execute_func_t executeFuncs[] = {
 	execute_mul,
 	execute_div,
 	execute_mod,
-	//execute_uminus,
-	//execute_and,
-	//execute_or,
-	//execute_not,
+	execute_uminus,
+	execute_and,
+	execute_or,
+	execute_not,
 	execute_jeq,
 	execute_jne,
 	execute_jle,
@@ -131,6 +133,7 @@ avm_table* avm_tablenew (void) {
 }
 
 avm_memcell* avm_translate_operand (vmarg* arg, avm_memcell* reg){
+	printf("Entered avm translate_operand\n");
 	switch (arg->type){
 		case global_a:	return &stack[AVM_STACKSIZE - 1 - arg->val];
 		case local_a:	return &stack[topsp - arg->val];
@@ -138,30 +141,36 @@ avm_memcell* avm_translate_operand (vmarg* arg, avm_memcell* reg){
 		case retval_a:	return &retval;
         // Add assign_a?
 		case number_a:	{
+			printf("Making a number_a memcell\n");
 			reg->type = number_m;
 			reg->data.numVal = consts_getnumber(arg->val);
 			return reg;
 		}
 		case string_a:	{
+			printf("Making a string_a memcell\n");
 			reg->type = string_m;
 			reg->data.strVal = strdup(consts_getstring(arg->val));
 			return reg;
 		}
 		case bool_a:   {
+			printf("Making a bool_a memcell\n");
 			reg->type = bool_m;
 			reg->data.boolVal = arg->val;
 			return reg;
 		}
 		case nil_a:	{
+			printf("Making a nil_a memcell\n");
 			reg->type = nil_m;
 			return reg;
 		}
-		case userfunc_a:	{
+		case userfunc_a:{
+			printf("Making a userfunc_a memcell\n");
 			reg->type = userfunc_m;
 			reg->data.funcVal = arg->val;
 			return reg;
 		}
 		case libfunc_a:		{
+			printf("Making a libfunc memcell\n");
 			reg->type = libfunc_m;
 			reg->data.libfuncVal = libfuncs_getused(arg->val);
 			return reg;
@@ -171,6 +180,7 @@ avm_memcell* avm_translate_operand (vmarg* arg, avm_memcell* reg){
 }
 
 void execute_cycle (void){
+	printf("Entered execute_cycle\n");
 	if (executionFinished)
 		return ;
 	else if (pc == AVM_ENDING_PC) {
@@ -178,7 +188,7 @@ void execute_cycle (void){
 			return ;
 		}
 	else{
-
+		printf("entered else\n");
 		assert(pc < AVM_ENDING_PC);
 		instruction* instr = code + pc;
 		assert (
@@ -188,6 +198,7 @@ void execute_cycle (void){
 		if (instr->srcLine)	
             currLine = instr->srcLine;
 
+		printf("instr->opcode = %d\n", instr->opcode);
 		unsigned oldPC = pc ;
 		(*executeFuncs[instr->opcode])(instr);
 		
@@ -215,11 +226,62 @@ void memclear_table (avm_memcell* m) {
 	avm_tabledecrefcounter(m->data.tableVal);
 }
 
-double	consts_getnumber (unsigned index){/*ADD CODE*/}
-char*	consts_getstring (unsigned index){/*ADD CODE*/}
-char*	libfuncs_getused (unsigned index){/*ADD CODE*/}
+double	consts_getnumber (unsigned index){return numConsts[index];}
+char*	consts_getstring (unsigned index){return stringConsts[index];}
+char*	libfuncs_getused (unsigned index){return namedLibFuncs[index];}
+
+void execute_uminus(instruction* instr){}
+void execute_and(instruction* instr){}
+void execute_or(instruction* instr){}
+void execute_not(instruction* instr){}
+
+void printStack(){
+	for(int i = AVM_STACKSIZE; i >= top; i--){
+		printf("Memcell: %d->",i);
+		switch (stack[i].type)
+		{
+		case number_m:
+			printf("numval: %f", stack[i].data.numVal);
+			break;
+		case string_m: 
+			printf("strval: %s", stack[i].data.strVal);
+			break;
+		case bool_m:
+			printf("boolval: %c", stack[i].data.boolVal);
+			break;
+		case table_m:
+			printf("%d", stack[i].data.tableVal->refCounter);
+			break;
+		case userfunc_m:
+			printf("%d", stack[i].data.funcVal);
+			break;
+		case libfunc_m:
+			printf("libfuncval: %s", stack[i].data.libfuncVal);
+			break;
+		case nil_m:
+			printf("nill case");
+			break;
+		case undef_m:
+			printf("emty mem_Cell");
+			break;
+	
+		default: assert(0);
+
+		}
+		printf("\n");
+	}
+}
 
 int main(){
-	printf("LETS DO IT\n");
+	readBinary();
+	avm_initstack();
+	top = topsp = AVM_STACKSIZE - 1 - totalGlobals;
+	codeSize = currInst;
+	printf("top = %d\n", top);
+	while(!executionFinished){
+		execute_cycle();
+	}
+
 	return 0;
 }
+
