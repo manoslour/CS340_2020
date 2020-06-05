@@ -6,6 +6,7 @@ extern avm_memcell	retval;
 extern unsigned top;
 
 void execute_assign (instruction* instr){
+	printf("Entered exec_assign\n");
 
 		avm_memcell* lv = avm_translate_operand (instr->result, (avm_memcell*) 0);
 		avm_memcell* rv = avm_translate_operand (instr->arg1, &ax);
@@ -17,6 +18,7 @@ void execute_assign (instruction* instr){
 }
 
 void avm_assign(avm_memcell* lv, avm_memcell* rv){
+	printf("Entered avm_assign\n");
     // Same cells? destructive to assign!
 	if (lv == rv)
         return;
