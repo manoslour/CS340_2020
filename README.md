@@ -7,15 +7,17 @@ Creation of a fully functioning Compiler using Lex & Yacc, a virtual machine and
 #### TO-DO
 - PHASE_5
   - [ ] libfunc_totalarguments()
-  - [ ] Tables
-  - [ ] Functions (partially working atm)
+  - [ ] tables
+  - [ ] functions (partially working atm)
+  - [ ] equality operations
 
 #### TO-FIX
 
 - PHASE_3
-  - [ ] breaklist & returnlist handling
+  - [ ] breaklist & continuelist handling
   - [ ] nested for & while statements
   - [ ] stmtlist checks
   
 - PHASE_4
+  - [ ] nop handling
   - [ ] 0 is inserted in constsNums[ ] when performing:  **_x = num arithop num;_** 
