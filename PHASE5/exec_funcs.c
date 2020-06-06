@@ -12,8 +12,13 @@ extern instruction* code;
 extern unsigned totalActuals;
 extern void avm_assign (avm_memcell* lv, avm_memcell* rv);
 
+extern userfunc* userFuncs;
+extern unsigned currUserFunc ; 
+
 extern unsigned currLibFuncs ;
 extern char** namedLibFuncs; 
+typedef void (*library_func_t) (void);
+
 tostring_func_t tostringFuncs[] = {
 	number_tostring,
 	string_tostring,
@@ -24,9 +29,6 @@ tostring_func_t tostringFuncs[] = {
 	nil_tostring,
 	undef_tostring
 };
-
-typedef void (*library_func_t) (void);
-
 
 char *typeStrings[] = {
 	"number",
@@ -41,17 +43,17 @@ char *typeStrings[] = {
 
 library_func_t exexuteLibFunc[] = {
 	libfunc_print,
-	//libfunc_input,
-	//libfunc_objectmemberkeys,
-	//libfunc_objecttotalmembers,
-	//libfunc_objectcopy,
+	libfunc_input,
+	libfunc_objectmemberkeys,
+	libfunc_objecttotalmembers,
+	libfunc_objectcopy,
 	libfunc_totalarguments,
-	//libfunc_argument,
+	libfunc_argument,
 	libfunc_typeof,
-	//libfunc_strtonum,
-	//libfunc_sqrt,
-	//libfunc_cos,
-	//libfunc_sin	
+	libfunc_strtonum,
+	libfunc_sqrt,
+	libfunc_cos,
+	libfunc_sin	
 };
 
 char* number_tostring (avm_memcell* cell){
@@ -109,16 +111,12 @@ char* undef_tostring (avm_memcell* cell){
 }
 
 void execute_call (instruction *instr){
-	printf("\n-----Entered execute_call-----\n");
 	avm_memcell *func = avm_translate_operand (instr->arg1, &ax);
 	assert (func);
-	printf("\nCalling avm_callsaveenviroment in execute_call\n");
 	avm_callsaveenvironment();
-	printf("\nFinished avm_callsavenviroment in execute_call\n");
-
 	switch (func->type) {
 		case userfunc_m:{
-			pc = func->data.funcVal;
+			pc = userFuncs[func->data.funcVal].address;
 			assert (pc < AVM_ENDING_PC);
 			assert (code[pc].opcode == funcenter_v);
 			break;
@@ -150,38 +148,48 @@ void avm_dec_top (void){
 }
 
 void avm_push_envvalue (unsigned val){
-	printf("Entered avm_push_envalue\n");
+	//printf("Pushing to stack[%d]-> %d", top , val);
+//	perror("KOBLE");
 	stack[top].type = number_m;
 	stack[top].data.numVal = val;
 	avm_dec_top();
 }
 
 void avm_callsaveenvironment (void){
-	printf("Entered avm_callsaveenviroment\n");
+//	perror("Enterd call save inviroment");
 	avm_push_envvalue(totalActuals);
 	avm_push_envvalue(pc+1);
 	avm_push_envvalue(top + totalActuals + 2);
 	avm_push_envvalue(topsp);
 }
 
-userfunc* avm_getfuncinfo (unsigned address){
-    //needs implementation
+int avm_getfuncinfo (unsigned address){
+   int i; 
+   for (i = 0; i < currUserFunc; i++ ){
+	   if (address == userFuncs[i].address)
+	   		return userFuncs[i].localSize;
+   }
+   return -1;
 }
 
 void execute_funcenter (instruction* instr) {
 	avm_memcell* func = avm_translate_operand(instr->result, &ax);
+	
 	assert(func);
-	assert(pc == func->data.funcVal);	/*func address should match pc*/
+	assert(pc == userFuncs[func->data.funcVal].address);
+	//assert(pc == func->data.funcVal);	/*func address should match pc*/
 	/*callee actions*/
 	totalActuals = 0;
-	userfunc* funcInfo = avm_getfuncinfo (pc);
+	int functtallocals = avm_getfuncinfo (pc);
+	if (functtallocals == -1 ) {
+		assert(0);
+	}
 	topsp = top;
-	top = top - funcInfo->localSize;
+	top = top - functtallocals;
 }
 
 unsigned avm_get_envvalue (unsigned i) {
-	printf("Entered avm_get_envaluate\n");
-	assert (stack[i].type = number_m);
+	assert (stack[i].type == number_m);
 	unsigned val = (unsigned) stack[i].data.numVal;
 	assert (stack[i].data.numVal == ((double) val ));
 	return val;
@@ -198,14 +206,14 @@ void execute_funcexit (instruction* unused) {
 }
 
 library_func_t avm_getlibraryfunc(char* id){
-    for(int i=0; i<currLibFuncs; i++){
+    int i;
+	for(i=0; i<currLibFuncs; i++){
 		if(!strcmp(id, namedLibFuncs[i])) 
 			return exexuteLibFunc[i];
 	}
 }
 
 void avm_calllibfunc (char* id)	{
-	printf("Entered avm_calllibfunc\n");
 	library_func_t f = avm_getlibraryfunc(id);
 	if (!f) {
 		printf("Error, unsupported lib func '%s' called!\n", id);
@@ -216,12 +224,13 @@ void avm_calllibfunc (char* id)	{
 		topsp = top ; /* Enter function sequence. No stack locals*/
 		totalActuals = 0;
 		(*f)();  /* call library function */
-		if (!executionFinished) /*an error may naturally occur inside*/
+		if (!executionFinished){
 			execute_funcexit ((instruction*) 0); /*return sequence*/
+		} /*an error may naturally occur inside*/
 	}
 }
 
-unsigned avm_totalactuals (void)	{
+unsigned avm_totalactuals (void){
 	return avm_get_envvalue (topsp + AVM_NUMACTUALS_OFFSET);
 }
 
@@ -232,12 +241,11 @@ avm_memcell* avm_getactual (unsigned i)	{
 
 /* implementation of the lib function print
  it displays every argument at the console */
-
-void libfunc_print (void)	{
-	printf("Entered print\n");
+void libfunc_print (void){	
 	unsigned n = avm_totalactuals();
-	for (unsigned i = 0; i < n; ++i ) {
-		char* s = avm_tostring(avm_getactual(i)); 
+	unsigned i;
+	for ( i = 0; i < n; ++i ) {
+		char* s = avm_tostring(avm_getactual(i));
 		puts (s);
 		free (s);
 	}
@@ -252,8 +260,6 @@ void execute_pusharg (instruction* instr){
 }
 
 void libfunc_typeof (void) {
-	printf("Entered typeof()\n");
-	printStack();
 	unsigned n = avm_totalactuals();
 	if (n != 1)
 		printf("Error, one argument (not %d) expected in 'typeof'\n", n); //AVM_ERROR
@@ -261,26 +267,27 @@ void libfunc_typeof (void) {
 		/* That's how a libfunc returns a result
 			It has to only set the 'retval' register
 		*/
-		//printf("to retval esai %d\n",&retval );
 		avm_memcellclear(&retval);
 		retval.type = string_m;
 		retval.data.strVal = strdup(typeStrings[avm_getactual(0)->type]);
+		printf("\ntypeof = %s\n",retval.data.strVal );
 	}
 }
 
 void avm_registerlibfunc(char *id, library_func_t addr){
-    //
+    // DEN XREIAZETAI. EXOUME FTIAKSEI DISPATCHER
 }
 
 void avm_initialize (void)	{
-	avm_registerlibfunc ("print", libfunc_print);
+	// DEN XREIAZETAI. EXOUME FTIAKSEI DISPATCHER
+	//avm_registerlibfunc ("print", libfunc_print);
 	//avm_registerlibfunc ("input", libfunc_input);
 	//avm_registerlibfunc ("objectmemberkeys", libfunc_objectmemberkeys);
 	//avm_registerlibfunc ("objecttotalmembers", libfunc_objecttotalmembers);
 	//avm_registerlibfunc ("objectcopy", libfunc_objectcopy);
-	avm_registerlibfunc ("totalarguments", libfunc_totalarguments);
+	//avm_registerlibfunc ("totalarguments", libfunc_totalarguments);
 	//avm_registerlibfunc ("argument", libfunc_argument);
-	avm_registerlibfunc ("typeof", libfunc_typeof);
+	//avm_registerlibfunc ("typeof", libfunc_typeof);
 	//avm_registerlibfunc ("strtonum", libfunc_strtonum);
 	//avm_registerlibfunc ("sqrt", libfunc_sqrt);
 	//avm_registerlibfunc ("cos", libfunc_cos);
@@ -289,7 +296,7 @@ void avm_initialize (void)	{
 
 void libfunc_totalarguments (void) {
 
-	/* Get topsp of previouw activation record*/
+	/* Get topsp of previous activation record*/
 	unsigned p_topsp = avm_get_envvalue (topsp + AVM_SAVEDTOPSP_OFFSET);
 	avm_memcellclear (&retval);
 
@@ -308,3 +315,15 @@ char* avm_tostring (avm_memcell* m) {
 	assert (m->type >= 0 && m->type <= undef_m ); 
     return (*tostringFuncs[m->type]) (m);
 }
+
+void execute_jump(instruction* instr){pc = instr->result->val;}
+
+void libfunc_input(void){}
+void libfunc_objectmemberkeys(){}
+void libfunc_objecttotalmembers(){}
+void libfunc_objectcopy(){}
+void libfunc_argument(){}
+void libfunc_strtonum(){}
+void libfunc_sqrt(){}
+void libfunc_cos(){}
+void libfunc_sin(){}

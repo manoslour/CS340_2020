@@ -94,6 +94,7 @@ extern void execute_funcexit(instruction*);
 extern void execute_newtable(instruction*);
 extern void execute_tablegetelem(instruction*);
 extern void execute_tablesetelem(instruction*);
+extern void execute_jump(instruction*);
 extern void execute_nop (instruction*);
 //---------------------------------------------
 

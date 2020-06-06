@@ -11,7 +11,6 @@ avm_memcell stack[AVM_STACKSIZE];
 avm_memcell	ax, bx, cx;
 avm_memcell	retval;
 unsigned top, topsp;
-
 unsigned char executionFinished = 0 ;
 unsigned pc = 0 ;
 unsigned currLine = 0 ;
@@ -42,29 +41,30 @@ unsigned currUserFunc = 0;
 //------------------------------------------
 
 execute_func_t executeFuncs[] = {
-	execute_assign,
-	execute_add,
-	execute_sub,
-	execute_mul,
-	execute_div,
-	execute_mod,
-	execute_uminus,
-	execute_and,
-	execute_or,
-	execute_not,
-	execute_jeq,
-	execute_jne,
-	execute_jle,
-	execute_jge,
-	execute_jlt,
-	execute_jgt,
-	execute_call,
-	execute_pusharg,
-	execute_funcenter,
-	execute_funcexit,
-	execute_newtable,
-	execute_tablegetelem,
-	execute_tablesetelem,
+	execute_assign,	//0
+	execute_add,	//1
+	execute_sub,	//2
+	execute_mul,	//3
+	execute_div,	//4
+	execute_mod,	//5
+	execute_uminus, //6
+	execute_and,	//7
+	execute_or,		//8
+	execute_not,	//9
+	execute_jeq,	//10
+	execute_jne,	//11
+	execute_jle,	//12
+	execute_jge,	//13
+	execute_jlt,	//14
+	execute_jgt,	//15
+	execute_call,	//16
+	execute_pusharg,//17
+	execute_funcenter,//18
+	execute_funcexit,	//19
+	execute_newtable,	//20
+	execute_tablegetelem,//21
+	execute_tablesetelem, //22
+	execute_jump
 	//execute_nop
 };
 
@@ -80,7 +80,8 @@ memclear_func_t memclearFuncs[] = {
 };
 
 static void avm_initstack(void) {
-	for (unsigned i = 0; i < AVM_STACKSIZE; i++) {
+	unsigned i;
+	for (i = 0; i < AVM_STACKSIZE; i++) {
 		AVM_WIPEOUT (stack[i]); 
 		stack[i].type= undef_m;
 	}
@@ -97,14 +98,17 @@ void avm_tabledecrefcounter (avm_table* t) {
 }
 
 void avm_tablebucketsinit (avm_table_bucket** p) {
-	for (unsigned i = 0; i < AVM_TABLE_HASHSIZE; ++i) {
+	unsigned i;
+	for (i = 0; i < AVM_TABLE_HASHSIZE; ++i) {
 		p[i] = (avm_table_bucket*) 0;
 	}
 }
 
 void avm_tablebucketsdestroy (avm_table_bucket** p) {
-	for (unsigned i = 0; i < AVM_TABLE_HASHSIZE; ++i , ++p) {
-		for (avm_table_bucket* b = *p; b;){
+	unsigned i;
+	avm_table_bucket* b;
+	for (i = 0; i < AVM_TABLE_HASHSIZE; ++i , ++p) {
+		for (b = *p; b;){
 			avm_table_bucket* del = b;
 			b = b->next;
 			avm_memcellclear(&del->key); //& should leave?
@@ -133,44 +137,38 @@ avm_table* avm_tablenew (void) {
 }
 
 avm_memcell* avm_translate_operand (vmarg* arg, avm_memcell* reg){
-	printf("Entered avm translate_operand\n");
 	switch (arg->type){
-		case global_a:	return &stack[AVM_STACKSIZE - 1 - arg->val];
-		case local_a:	return &stack[topsp - arg->val];
-		case formal_a:	return &stack[topsp + AVM_STACKENV_SIZE + 1 + arg->val];
+		case global_a: return &stack[AVM_STACKSIZE - 1 - arg->val];
+		case local_a: return &stack[topsp - arg->val];
+		case formal_a: return &stack[topsp + AVM_STACKENV_SIZE + 1 + arg->val];
 		case retval_a:	return &retval;
-        // Add assign_a?
 		case number_a:	{
-			printf("Making a number_a memcell\n");
+			if(!reg)
+				reg = malloc(sizeof(avm_memcell));
 			reg->type = number_m;
 			reg->data.numVal = consts_getnumber(arg->val);
 			return reg;
 		}
 		case string_a:	{
-			printf("Making a string_a memcell\n");
 			reg->type = string_m;
 			reg->data.strVal = strdup(consts_getstring(arg->val));
 			return reg;
 		}
 		case bool_a:   {
-			printf("Making a bool_a memcell\n");
 			reg->type = bool_m;
 			reg->data.boolVal = arg->val;
 			return reg;
 		}
 		case nil_a:	{
-			printf("Making a nil_a memcell\n");
 			reg->type = nil_m;
 			return reg;
 		}
 		case userfunc_a:{
-			printf("Making a userfunc_a memcell\n");
 			reg->type = userfunc_m;
-			reg->data.funcVal = arg->val;
+			reg->data.funcVal = arg->val;			
 			return reg;
 		}
 		case libfunc_a:		{
-			printf("Making a libfunc memcell\n");
 			reg->type = libfunc_m;
 			reg->data.libfuncVal = libfuncs_getused(arg->val);
 			return reg;
@@ -180,15 +178,13 @@ avm_memcell* avm_translate_operand (vmarg* arg, avm_memcell* reg){
 }
 
 void execute_cycle (void){
-	printf("Entered execute_cycle\n");
 	if (executionFinished)
-		return ;
+		return;
 	else if (pc == AVM_ENDING_PC) {
 			executionFinished = 1;
 			return ;
 		}
 	else{
-		printf("entered else\n");
 		assert(pc < AVM_ENDING_PC);
 		instruction* instr = code + pc;
 		assert (
@@ -198,8 +194,8 @@ void execute_cycle (void){
 		if (instr->srcLine)	
             currLine = instr->srcLine;
 
-		printf("instr->opcode = %d\n", instr->opcode);
 		unsigned oldPC = pc ;
+		printf("\nExecute executeFunc[%d]\n",instr->opcode);
 		(*executeFuncs[instr->opcode])(instr);
 		
         if (pc == oldPC)	
@@ -226,7 +222,10 @@ void memclear_table (avm_memcell* m) {
 	avm_tabledecrefcounter(m->data.tableVal);
 }
 
-double	consts_getnumber (unsigned index){return numConsts[index];}
+double	consts_getnumber (unsigned index){
+	return numConsts[index];
+}
+
 char*	consts_getstring (unsigned index){return stringConsts[index];}
 char*	libfuncs_getused (unsigned index){return namedLibFuncs[index];}
 
@@ -236,7 +235,8 @@ void execute_or(instruction* instr){}
 void execute_not(instruction* instr){}
 
 void printStack(){
-	for(int i = AVM_STACKSIZE; i >= top; i--){
+	int i;
+	for(i = AVM_STACKSIZE; i >= top -10; i--){
 		printf("Memcell: %d->",i);
 		switch (stack[i].type)
 		{
@@ -264,8 +264,6 @@ void printStack(){
 		case undef_m:
 			printf("emty mem_Cell");
 			break;
-	
-		default: assert(0);
 
 		}
 		printf("\n");
@@ -275,13 +273,11 @@ void printStack(){
 int main(){
 	readBinary();
 	avm_initstack();
-	top = topsp = AVM_STACKSIZE - 1 - totalGlobals;
+	top = topsp = AVM_STACKSIZE - totalGlobals - 1;
 	codeSize = currInst;
-	printf("top = %d\n", top);
 	while(!executionFinished){
 		execute_cycle();
 	}
-
 	return 0;
 }
 

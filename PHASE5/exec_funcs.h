@@ -12,6 +12,7 @@ void execute_call (instruction*);
 void execute_pusharg (instruction*);
 void execute_funcenter (instruction*);
 void execute_funcexit (instruction*);
+void execute_jump(instruction*);
 
 char* avm_tostring (avm_memcell*);
 void avm_calllibfunc(char* funcName);
@@ -21,7 +22,7 @@ void avm_dec_top (void);
 void avm_push_envvalue (unsigned val);
 unsigned avm_get_envvalue (unsigned i);
 
-userfunc* avm_getfuncinfo (unsigned address);
+int avm_getfuncinfo (unsigned address);
 
 typedef void (*library_func_t) (void);
 library_func_t avm_getlibraryfunc (char* id); /*Typical hashing*/
@@ -44,16 +45,16 @@ char* nil_tostring (avm_memcell*);
 char* undef_tostring (avm_memcell*);
 
 void libfunc_print(void);
-//void libfunc_input(void);
-//void libfunc_objectmemberkeys();
-//void libfunc_objecttotalmembers();
-//void libfunc_objectcopy();
+void libfunc_input(void);
+void libfunc_objectmemberkeys();
+void libfunc_objecttotalmembers();
+void libfunc_objectcopy();
 void libfunc_totalarguments();
-//void libfunc_argument();
+void libfunc_argument();
 void libfunc_typeof(void);
-//void libfunc_strtonum();
-//void libfunc_sqrt();
-//void libfunc_cos();
-//void libfunc_sin();
+void libfunc_strtonum();
+void libfunc_sqrt();
+void libfunc_cos();
+void libfunc_sin();
 
 #endif

@@ -108,7 +108,7 @@ void makeInstruction(char* s, int instrNo, int line ){
         
         No = strtok(NULL, ">"); 
         if (!strcmp(No, " ")) {
-           rtype = -1;
+           rtype = 7;
             rval = -1;
         }
         else {
@@ -136,8 +136,8 @@ void makeInstruction(char* s, int instrNo, int line ){
         
         No = strtok(NULL, "}");
         if (!strcmp(No, "{ ")) {
+            type1 = 7;
             val1= -1;
-            type1 = -1;
         }
         else {
             char* tmp3 = malloc(sizeof(int));
@@ -164,7 +164,7 @@ void makeInstruction(char* s, int instrNo, int line ){
 
         No = strtok(NULL, "]");
         if (!strcmp(No, "[ ")){
-            type2 = -1;
+            type2 = 7;
             val2 = -1;
         }
         else {
@@ -217,22 +217,23 @@ int get_instr_line(char* s){
 
 void printL(){
 	FILE *file;
-	file = fopen("constArrays.txt", "w+");
+	file = fopen("constArrays.txt", "w");
 	fprintf(file, "Total global vars : %d\n", totalGlobals );
 	fprintf(file, "Const String Array :\n");
-	for(int i=0; i<curStringConsts; i++){
+	int i;
+	for( i=0; i<curStringConsts; i++){
 		fprintf(file, "%d: %s \n",i, stringConsts[i] );			
 	}
 
 	fprintf(file, "Const Nums Array :\n");
 
-	for(int i=0; i<currNumConst; i++){
+	for( i=0; i<currNumConst; i++){
 		fprintf(file, "%d: %lf \n",i, numConsts[i] );			
 	}
 	
 	fprintf(file, "User Functions Array :\n");
 
-	for(int i=0; i<currUserFunc; i++){
+	for( i=0; i<currUserFunc; i++){
 		fprintf(file, "%d: %d, %d, %s\n",i,
 			userFuncs[i].address,
 			userFuncs[i].localSize,
@@ -241,13 +242,13 @@ void printL(){
 
 	fprintf(file, "Named Libfuncs Array :\n");
 
-	for(int i=0; i<currLibFuncs; i++){
+	for( i=0; i<currLibFuncs; i++){
 		fprintf(file, "%d: %s \n",i, namedLibFuncs[i] );			
 	}
 
 	fprintf(file, "\n\nInstructions :\n" );
 
-	for(int i=0; i<currInst; i++){
+	for( i=0; i<currInst; i++){
 		fprintf(file, "%d ",i );
 		fprintf(file, " %d ", code[i].opcode);
 
@@ -532,7 +533,6 @@ void readBinary(){
         	}
         }
     }
-
 	fclose(fp);
   	printL();
 }

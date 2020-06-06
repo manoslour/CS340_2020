@@ -61,5 +61,8 @@ void execute_jeq (instruction* instr) {
 extern void execute_jne (instruction* instr){/* ADD CODE */}
 extern void execute_jle (instruction* instr){/* ADD CODE */}
 extern void execute_jge (instruction* instr){/* ADD CODE */}
-extern void execute_jlt (instruction* instr){/* ADD CODE */}
+extern void execute_jlt (instruction* instr){
+	printf("TO pc einai : %d\n", pc);
+
+}
 extern void execute_jgt (instruction* instr){/* ADD CODE */}
