@@ -26,5 +26,5 @@ target:
 
 clean:
 	rm *o
-	rm target.abc avm
+	rm target.abc avm constArrays.txt
 	cd TARGET_CODE/ && $(MAKE) clean
