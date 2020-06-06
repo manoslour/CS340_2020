@@ -1,23 +1,30 @@
-all: calc
+all: avm
 
-calc: scanner.c parser.c symTable.o stack.o target.o
-	gcc -o calc scanner.c parser.c symTable.o stack.o target.o
+avm: avm.c readBinary.o exec_arith.o exec_assign.o exec_equality.o exec_funcs.o exec_table.o target
+	gcc -o avm avm.c readBinary.o exec_arith.o exec_assign.o exec_equality.o exec_funcs.o exec_table.o
 
-scanner.c: scanner.l
-	flex --outfile=scanner.c scanner.l
+exec_arith.o: exec_arith.c
+	gcc -c exec_arith.c
 
-parser.c: parser.y
-	bison --yacc --defines -v --output=parser.c parser.y
+exec_assign.o: exec_assign.c
+	gcc -c exec_assign.c
 
-symTable.o: symTable.c
-	gcc -c symTable.c
+exec_equality.o: exec_equality.c
+	gcc -c exec_equality.c
 
-stack.o: stack.c
-	gcc -c stack.c
+exec_funcs.o: exec_funcs.c
+	gcc -c exec_funcs.c
 
-target.o: target.c
-	gcc -c target.c
+exec_table.o: exec_table.c
+	gcc -c exec_table.c
+
+readBinary.o: readBinary.c
+	gcc -c readBinary.c
+
+target:
+	cd TARGET_CODE/ && $(MAKE)
 
 clean:
 	rm *o
-	rm parser.c parser.h scanner.c calc syntaxAnalysis parser.output quads.txt target.abc
+	rm target.abc avm constArrays.txt
+	cd TARGET_CODE/ && $(MAKE) clean

@@ -129,6 +129,14 @@ void initLibfuncs(){
 }
 
 unsigned consts_newnumber (double n){
+	//Lookup for already inserted value
+	if(totalNumConsts){
+		for(int i = 0; i < totalNumConsts; i++){
+			if(numConsts[i] == n){
+				return i;
+			}
+		}
+	}	
 
 	unsigned ret_index;
 
@@ -146,6 +154,14 @@ unsigned consts_newnumber (double n){
 }
 
 unsigned consts_newstring (char* s){
+	//Lookup for already inserted string
+	if(totalStringConsts){
+		for(int i = 0; i < totalStringConsts; i++){
+			if(strcmp(stringConsts[i], s) == 0){
+				return i;
+			}
+		}
+	}
 
 	unsigned ret_index;
 
@@ -163,6 +179,15 @@ unsigned consts_newstring (char* s){
 }
 
 unsigned libfuncs_newused (char* s){
+	//Lookup for already inserted libFunc
+	if(totalNamedLibfuncs){
+		for(int i = 0; i < totalNamedLibfuncs; i++){
+			if(strcmp(namedLibfuncs[i], s) == 0){
+				printf("i = %d\n", i);
+				return i;
+			}
+		}
+	}
 	unsigned ret_index;
 
 	if(namedLibfuncs == NULL)
@@ -174,7 +199,7 @@ unsigned libfuncs_newused (char* s){
 }
 
 unsigned userfuncs_newfunc(symbol* sym){
-
+	//Lookup for already inserted userFunc
 	if(totalUserFuncs){
 		for(int i = 0; i < totalUserFuncs; i++){
 			if(strcmp(sym->name, userFuncs[i].id) == 0){
@@ -193,7 +218,7 @@ unsigned userfuncs_newfunc(symbol* sym){
 
 	ret_index = totalUserFuncs;
 
-	userFuncs[totalUserFuncs].address = sym->offset;
+	userFuncs[totalUserFuncs].address = sym->taddress;
 	userFuncs[totalUserFuncs].localSize = sym->totalLocals;
 	userFuncs[totalUserFuncs].id = strdup(sym->name);
 
@@ -678,7 +703,6 @@ void generate_FUNCEND(quad* q){
 
 void backpatch(returnlist* list, int label){
 	printf("Entered backpatch\n");
-	printf("list->label = %d\n", list->label);
 	returnlist *tmp = list;
 	while(tmp != NULL){
 		instructions[tmp->label].result->val = label;
