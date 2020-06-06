@@ -18,4 +18,4 @@ Creation of a fully functioning Compiler using Lex & Yacc, a virtual machine and
   - [ ] stmtlist checks
   
 - PHASE_4
-  - [ ] 0 is inserted in constsNums[] when performing:  **_x = num arithop num;_** 
+  - [ ] 0 is inserted in constsNums[ ] when performing:  **_x = num arithop num;_** 
