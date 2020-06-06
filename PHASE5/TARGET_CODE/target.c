@@ -85,7 +85,8 @@ void arrays(){
 void strings(){
 	fprintf(fp, "#String Consts Array\n");
 	fprintf(fp, "%d\n", totalStringConsts);
-	for(int i = 0; i < totalStringConsts; i++)
+	int i;
+	for(i = 0; i < totalStringConsts; i++)
 		fprintf(fp, "%d %s\n", i, stringConsts[i]);
 	fprintf(fp, "\n");
 }
@@ -93,7 +94,8 @@ void strings(){
 void numbers(){
 	fprintf(fp, "#Number Consts Array\n");
 	fprintf(fp, "%d\n", totalNumConsts);
-	for(int i = 0; i < totalNumConsts; i++)
+	int i;
+	for(i = 0; i < totalNumConsts; i++)
 		fprintf(fp, "%d %f\n", i, numConsts[i]);
 	fprintf(fp, "\n");
 }
@@ -101,7 +103,8 @@ void numbers(){
 void userfunctions(){
 	fprintf(fp, "#Userfunc Consts Array\n");
 	fprintf(fp, "%d\n", totalUserFuncs);
-	for(int i = 0; i < totalUserFuncs; i++)
+	int i;
+	for(i = 0; i < totalUserFuncs; i++)
 		fprintf(fp, "%d %d %d %s\n", i, userFuncs[i].address, userFuncs[i].localSize, userFuncs[i].id);
 	fprintf(fp, "\n");
 }
@@ -110,7 +113,8 @@ void libfunctions(){
 	//initLibfuncs();
 	fprintf(fp, "#Libfunc Consts Array\n");
 	fprintf(fp, "%d\n", totalNamedLibfuncs);
-	for(int i = 0; i < totalNamedLibfuncs; i++)
+	int i;
+	for(i = 0; i < totalNamedLibfuncs; i++)
 		fprintf(fp, "%d %s\n", i, namedLibfuncs[i]);
 	fprintf(fp, "\n");
 }
@@ -132,8 +136,9 @@ void initLibfuncs(){
 
 unsigned consts_newnumber (double n){
 
+	int i;
 	if(totalNumConsts){
-		for(int i = 0; i < totalNumConsts; i++){
+		for(i = 0; i < totalNumConsts; i++){
 			if(numConsts[i] == n){
 				return i;
 			}
@@ -156,9 +161,9 @@ unsigned consts_newnumber (double n){
 }
 
 unsigned consts_newstring (char* s){
-
+	int i;
 	if(totalStringConsts){
-		for(int i = 0; i < totalStringConsts; i++){
+		for(i = 0; i < totalStringConsts; i++){
 			if(strcmp(stringConsts[i], s) == 0){
 				return i;
 			}
@@ -181,9 +186,11 @@ unsigned consts_newstring (char* s){
 }
 
 unsigned libfuncs_newused (char* s){
+	int i;
 	if(totalNamedLibfuncs){
-		for(int i = 0; i < totalNamedLibfuncs; i++){
+		for(i = 0; i < totalNamedLibfuncs; i++){
 			if(strcmp(namedLibfuncs[i], s) == 0){
+				printf("i = %d\n", i);
 				return i;
 			}
 		}
@@ -200,9 +207,9 @@ unsigned libfuncs_newused (char* s){
 }
 
 unsigned userfuncs_newfunc(symbol* sym){
-
+	int i;
 	if(totalUserFuncs){
-		for(int i = 0; i < totalUserFuncs; i++){
+		for(i = 0; i < totalUserFuncs; i++){
 			if(strcmp(sym->name, userFuncs[i].id) == 0){
 				return i;
 			}
@@ -219,7 +226,7 @@ unsigned userfuncs_newfunc(symbol* sym){
 
 	ret_index = totalUserFuncs;
 
-	userFuncs[totalUserFuncs].address = sym->offset;
+	userFuncs[totalUserFuncs].address = sym->taddress;
 	userFuncs[totalUserFuncs].localSize = sym->totalLocals;
 	userFuncs[totalUserFuncs].id = strdup(sym->name);
 
@@ -707,7 +714,8 @@ returnlist* append(returnlist *list, int label){
 
 void exec_generate(void){
 	initLibfuncs();
-	for(unsigned i = 0; i < currQuad; ++i){
+	unsigned i;
+	for(i = 0; i < currQuad; ++i){
 		(*generators[quads[i].op])(quads+i);
 		currProcessedQuad++;
 	}
@@ -781,8 +789,8 @@ void printInstructions() {
 
 	fprintf(fp, "Instr#\t\topcode\t\t\tresult\t\targ1\t\targ2\t\tline\n");
 	fprintf(fp, "--------------------------------------------------------------------\n");
-
-	for(int i = 0; i < currInstr; i++){
+	int i;
+	for(i = 0; i < currInstr; i++){
 
 		fprintf(fp, "%-6d\t\t", i);
 		fprintf(fp, "%-6s\t\t\t", translateopcode_v(instructions[i].opcode));
@@ -810,8 +818,8 @@ void printInstructions() {
 
 	fprintf(fp, "Instr#\t\topcode\t\t\tresult\t\targ1\t\targ2\t\tline\n");
 	fprintf(fp, "--------------------------------------------------------------------\n");
-
-	for(int i = 0; i < currInstr; i++){
+	int i;
+	for(i = 0; i < currInstr; i++){
 
 		fprintf(fp, "%d ", i);
 		fprintf(fp, "%s", translateopcode_v(instructions[i].opcode));
