@@ -1,6 +1,7 @@
 # CS340_2020 / Compilers
 
 Collaboration Project for Undergraduate course [HY-340](http://www2.csd.uoc.gr/hy340/).
+
 Creation of a fully functioning Compiler using Lex & Yacc, a virtual machine and library functions.
 
 #### TO-DO
